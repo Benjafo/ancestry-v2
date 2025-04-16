@@ -25,7 +25,7 @@ function App() {
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
         <p>
-            Testing github workflows Testing
+            Testing github workflows
         </p>
       </div>
       <p className="read-the-docs">
