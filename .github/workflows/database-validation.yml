@@ -2,12 +2,12 @@ name: Database Validation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - '**/*.sql'
       - 'server/models/**'
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - '**/*.sql'
       - 'server/models/**'
