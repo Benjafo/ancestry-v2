@@ -51,12 +51,15 @@ async function seedDatabase() {
         // Drop all existing tables (optional if using CASCADE in schema.sql)
         console.log('Dropping existing tables...');
         await sequelize.query(`
-      DROP TABLE IF EXISTS document_persons CASCADE;
-      DROP TABLE IF EXISTS documents CASCADE;
-      DROP TABLE IF EXISTS events CASCADE;
-      DROP TABLE IF EXISTS relationships CASCADE;
-      DROP TABLE IF EXISTS persons CASCADE;
-    `);
+            DROP TABLE IF EXISTS document_persons CASCADE;
+            DROP TABLE IF EXISTS documents CASCADE;
+            DROP TABLE IF EXISTS events CASCADE;
+            DROP TABLE IF EXISTS relationships CASCADE;
+            DROP TABLE IF EXISTS persons CASCADE;
+            DROP TABLE IF EXISTS user_roles CASCADE;
+            DROP TABLE IF EXISTS users CASCADE;
+            DROP TABLE IF EXISTS roles CASCADE;
+        `);
 
         // Read schema.sql
         console.log('Reading schema file...');
@@ -67,6 +70,18 @@ async function seedDatabase() {
         console.log('Recreating database tables...');
         await sequelize.query(schema);
         console.log('Database schema recreated successfully');
+
+        // ==========================================
+        // Seed data for roles table
+        // ==========================================
+        console.log('Seeding roles table...');
+        await sequelize.query(`
+            INSERT INTO roles (role_id, name, description)
+            VALUES
+            (uuid_generate_v4(), 'client', 'Regular user who purchases genealogy research services'),
+            (uuid_generate_v4(), 'manager', 'Administrator who manages client data and research');
+        `);
+        console.log('Roles seeded successfully');
 
         // ==========================================
         // PLACEHOLDER: Seed data for persons table

@@ -55,3 +55,41 @@ CREATE TABLE
         person_id UUID REFERENCES persons (person_id),
         PRIMARY KEY (document_id, person_id)
     );
+
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users table
+CREATE TABLE
+    users (
+        user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP,
+        is_active BOOLEAN DEFAULT TRUE
+    );
+
+-- Roles table
+CREATE TABLE
+    roles (
+        role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(50) UNIQUE NOT NULL,
+        description TEXT
+    );
+
+-- User-Role junction table
+CREATE TABLE
+    user_roles (
+        user_id UUID REFERENCES users(user_id),
+        role_id UUID REFERENCES roles(role_id),
+        PRIMARY KEY (user_id, role_id)
+    );
+
+-- Insert default roles
+-- INSERT INTO roles (name, description) VALUES 
+--     ('client', 'Regular user who purchases genealogy research services'),
+--     ('manager', 'Administrator who manages client data and research');
