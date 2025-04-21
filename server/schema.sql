@@ -55,3 +55,16 @@ CREATE TABLE
         person_id UUID REFERENCES persons (person_id),
         PRIMARY KEY (document_id, person_id)
     );
+
+-- Users table
+CREATE TABLE
+    users (
+        user_id UUID PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        first_name VARCHAR(100),
+        last_name VARCHAR(100),
+        role VARCHAR(20) NOT NULL, -- client, manager, admin
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
