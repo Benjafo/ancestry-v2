@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 async function seedDatabase() {
@@ -95,13 +96,14 @@ async function seedDatabase() {
         // Seed data for users table
         // ==========================================
         console.log('Seeding users table...');
+        const hashedPassword = await bcrypt.hash('password123', 10);
         await sequelize.query(`
             INSERT INTO users (user_id, email, password, first_name, last_name, created_at, updated_at)
             VALUES
-            (uuid_generate_v4(), 'admin@example.com', '$2b$10$JcmUQDJ4/iGXJxQo2JzQP.uQJIjG7UXBKB6/LEGRCuQJ.d8/WJj92', 'Admin', 'User', NOW(), NOW()),
-            (uuid_generate_v4(), 'client@example.com', '$2b$10$JcmUQDJ4/iGXJxQo2JzQP.uQJIjG7UXBKB6/LEGRCuQJ.d8/WJj92', 'Test', 'Client', NOW(), NOW());
+            (uuid_generate_v4(), 'admin@example.com', '${hashedPassword}', 'Admin', 'User', NOW(), NOW()),
+            (uuid_generate_v4(), 'client@example.com', '${hashedPassword}', 'Test', 'Client', NOW(), NOW());
         `);
-        console.log('Users seeded successfully');
+        console.log('Users seeded successfully with password: password123');
 
         // ==========================================
         // Seed data for user_roles junction table
