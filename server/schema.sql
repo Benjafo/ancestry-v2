@@ -78,7 +78,9 @@ CREATE TABLE
     roles (
         role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         name VARCHAR(50) UNIQUE NOT NULL,
-        description TEXT
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- User-Role junction table
@@ -86,6 +88,8 @@ CREATE TABLE
     user_roles (
         user_id UUID REFERENCES users(user_id),
         role_id UUID REFERENCES roles(role_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, role_id)
     );
 

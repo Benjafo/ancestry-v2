@@ -5,15 +5,20 @@ require('dotenv').config();
 
 async function seedDatabase() {
     // First connect to the default 'postgres' database
-    const adminSequelize = new Sequelize({
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        username: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: 'postgres', // Connect to default postgres database
-        dialect: 'postgres',
-        logging: process.env.NODE_ENV === 'development' ? console.log : false
-    });
+    console.log('Connecting to the target database...');
+    console.log(process.env.DB_HOST, process.env.DB_PORT, process.env.DB_USER, process.env.DB_PASSWORD, process.env.DB_NAME);
+    const adminSequelize = new Sequelize(
+        process.env.DATABASE_URL.replace('/ancestrydb', '/postgres'),
+        {
+            // host: process.env.DB_HOST,
+            // port: process.env.DB_PORT,
+            // username: process.env.DB_USER,
+            // password: process.env.DB_PASSWORD,
+            // database: 'postgres', // Connect to default postgres database
+            dialect: 'postgres',
+            logging: process.env.NODE_ENV === 'development' ? console.log : false
+        }
+    );
 
     let sequelize;
 
@@ -38,15 +43,18 @@ async function seedDatabase() {
         await adminSequelize.close();
         
         // Now connect to the target database
-        sequelize = new Sequelize({
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT,
-            username: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
-            dialect: 'postgres',
-            logging: process.env.NODE_ENV === 'development' ? console.log : false
-        });
+        sequelize = new Sequelize(
+            process.env.DATABASE_URL,
+            {
+                // host: process.env.DB_HOST,
+                // port: process.env.DB_PORT,
+                // username: process.env.DB_USER,
+                // password: process.env.DB_PASSWORD,
+                // database: process.env.DB_NAME,
+                dialect: 'postgres',
+                logging: process.env.NODE_ENV === 'development' ? console.log : false
+            }
+        );
 
         // Drop all existing tables (optional if using CASCADE in schema.sql)
         console.log('Dropping existing tables...');
@@ -82,6 +90,32 @@ async function seedDatabase() {
             (uuid_generate_v4(), 'manager', 'Administrator who manages client data and research');
         `);
         console.log('Roles seeded successfully');
+
+        // ==========================================
+        // Seed data for users table
+        // ==========================================
+        console.log('Seeding users table...');
+        await sequelize.query(`
+            INSERT INTO users (user_id, email, password, first_name, last_name, created_at, updated_at)
+            VALUES
+            (uuid_generate_v4(), 'admin@example.com', '$2b$10$JcmUQDJ4/iGXJxQo2JzQP.uQJIjG7UXBKB6/LEGRCuQJ.d8/WJj92', 'Admin', 'User', NOW(), NOW()),
+            (uuid_generate_v4(), 'client@example.com', '$2b$10$JcmUQDJ4/iGXJxQo2JzQP.uQJIjG7UXBKB6/LEGRCuQJ.d8/WJj92', 'Test', 'Client', NOW(), NOW());
+        `);
+        console.log('Users seeded successfully');
+
+        // ==========================================
+        // Seed data for user_roles junction table
+        // ==========================================
+        console.log('Seeding user_roles table...');
+        await sequelize.query(`
+            INSERT INTO user_roles (user_id, role_id)
+            VALUES
+            ((SELECT user_id FROM users WHERE email = 'admin@example.com'), 
+            (SELECT role_id FROM roles WHERE name = 'manager')),
+            ((SELECT user_id FROM users WHERE email = 'client@example.com'), 
+            (SELECT role_id FROM roles WHERE name = 'client'));
+        `);
+        console.log('User roles seeded successfully');
 
         // ==========================================
         // PLACEHOLDER: Seed data for persons table
