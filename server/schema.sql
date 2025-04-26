@@ -55,3 +55,62 @@ CREATE TABLE
         person_id UUID REFERENCES persons (person_id),
         PRIMARY KEY (document_id, person_id)
     );
+
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users table
+CREATE TABLE
+    users (
+        user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP,
+        is_active BOOLEAN DEFAULT TRUE
+    );
+
+-- Roles table
+CREATE TABLE
+    roles (
+        role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(50) UNIQUE NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- User-Role junction table
+CREATE TABLE
+    user_roles (
+        user_id UUID REFERENCES users(user_id),
+        role_id UUID REFERENCES roles(role_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, role_id)
+    );
+
+-- Family Trees table
+CREATE TABLE
+    trees (
+        tree_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        created_by UUID REFERENCES users(user_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- User-Tree junction table
+CREATE TABLE
+    user_trees (
+        user_id UUID REFERENCES users(user_id),
+        tree_id UUID REFERENCES trees(tree_id),
+        access_level VARCHAR(50), -- 'view', 'edit', etc.
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, tree_id)
+    );
