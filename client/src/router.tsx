@@ -8,6 +8,7 @@ import {
 import { isAuthenticated } from './utils/auth';
 
 // Import pages
+import CreateTree from './pages/CreateTree';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
@@ -16,6 +17,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
+import TreeDetail from './pages/TreeDetail';
 
 // Import layout components
 import { Layout } from './components/layout/Layout';
@@ -115,6 +117,19 @@ const projectDetailRoute = new Route({
     component: ProjectDetail,
 });
 
+// Tree routes
+const createTreeRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/trees/new',
+    component: CreateTree,
+});
+
+const treeDetailRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/trees/$treeId',
+    component: TreeDetail,
+});
+
 const notFoundRoute = new Route({
     getParentRoute: () => rootRoute,
     path: '*',
@@ -131,6 +146,8 @@ const routeTree = rootRoute.addChildren([
         settingsRoute,
         projectsRoute,
         projectDetailRoute,
+        createTreeRoute,
+        treeDetailRoute,
     ]),
     notFoundRoute,
 ]);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { DashboardSummary, Notification, dashboardApi } from '../api/client';
+import { DashboardSummary, Notification, Tree, dashboardApi, treesApi } from '../api/client';
+import TreeList from '../components/trees/TreeList';
 import { getUser } from '../utils/auth';
 
 const Dashboard = () => {
@@ -8,6 +9,9 @@ const Dashboard = () => {
     const [error, setError] = useState<string | null>(null);
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [trees, setTrees] = useState<Tree[]>([]);
+    const [treesLoading, setTreesLoading] = useState(true);
+    const [treesError, setTreesError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -28,7 +32,20 @@ const Dashboard = () => {
             }
         };
 
+        const fetchTrees = async () => {
+            try {
+                const response = await treesApi.getTrees();
+                setTrees(response.trees);
+                setTreesLoading(false);
+            } catch (err) {
+                console.error('Error fetching trees:', err);
+                setTreesError('Failed to load family trees');
+                setTreesLoading(false);
+            }
+        };
+
         fetchDashboardData();
+        fetchTrees();
     }, []);
 
     if (isLoading) {
@@ -106,6 +123,18 @@ const Dashboard = () => {
                         ))}
                     </div>
                 </div>
+            </div>
+
+            {/* Family Trees */}
+            <div className="card bg-white shadow-sm rounded-lg p-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-medium text-gray-900">Your Family Trees</h2>
+                </div>
+                <TreeList 
+                    trees={trees} 
+                    isLoading={treesLoading} 
+                    error={treesError} 
+                />
             </div>
 
             {/* Notifications */}
