@@ -1,0 +1,288 @@
+import ky from 'ky';
+import { clearTokens, getRefreshToken, getToken, setToken, User } from '../utils/auth';
+
+// API response types
+export interface AuthResponse {
+    token: string;
+    refreshToken?: string;
+    user: User;
+    message: string;
+}
+
+const API_URL = 'http://localhost:3000/api';
+
+export const apiClient = ky.create({
+    prefixUrl: API_URL,
+    hooks: {
+        beforeRequest: [
+            request => {
+                const token = getToken();
+                if (token) {
+                    request.headers.set('Authorization', `Bearer ${token}`);
+                }
+            }
+        ],
+        afterResponse: [
+            async (request, options, response) => {
+                // Only attempt refresh if status is 401 (Unauthorized)
+                if (response.status === 401) {
+                    const refreshToken = getRefreshToken();
+                    
+                    // If we have a refresh token, try to get a new access token
+                    if (refreshToken) {
+                        try {
+                            // Create a new instance of ky without the auth interceptors to avoid loops
+                            const refreshClient = ky.create({
+                                prefixUrl: API_URL,
+                                retry: 0
+                            });
+                            
+                            // Request new access token
+                            const refreshResponse = await refreshClient.post('auth/refresh-token', {
+                                json: { refreshToken }
+                            });
+                            
+                            if (refreshResponse.ok) {
+                                const { accessToken } = await refreshResponse.json<{ accessToken: string }>();
+                                
+                                // Update the token in storage
+                                setToken(accessToken);
+                                
+                                // Retry the original request with the new token
+                                request.headers.set('Authorization', `Bearer ${accessToken}`);
+                                return ky(request);
+                            }
+                        } catch (error) {
+                            console.error('Token refresh failed:', error);
+                        }
+                    }
+                    
+                    // If refresh failed or no refresh token, clear tokens and redirect to login
+                    clearTokens();
+                    window.location.href = '/login';
+                }
+                
+                return response;
+            }
+        ]
+    },
+    retry: 0,
+    timeout: 30000,
+});
+
+// API service functions
+export const authApi = {
+    login: async (credentials: { email: string; password: string }): Promise<AuthResponse> => {
+        const response = await apiClient.post('auth/login', { json: credentials });
+        return response.json<AuthResponse>();
+    },
+    
+    register: async (userData: { 
+        email: string; 
+        password: string; 
+        first_name: string; 
+        last_name: string 
+    }): Promise<AuthResponse> => {
+        const response = await apiClient.post('auth/register', { json: userData });
+        return response.json<AuthResponse>();
+    },
+    
+    getProfile: async (): Promise<{ user: User }> => {
+        const response = await apiClient.get('auth/profile');
+        return response.json<{ user: User }>();
+    },
+    
+    refreshToken: async (refreshToken: string): Promise<{ accessToken: string }> => {
+        const response = await apiClient.post('auth/refresh-token', { 
+            json: { refreshToken } 
+        });
+        return response.json<{ accessToken: string }>();
+    },
+    
+    requestPasswordReset: async (email: string): Promise<{ message: string; resetToken?: string; resetUrl?: string }> => {
+        const response = await apiClient.post('auth/request-password-reset', { 
+            json: { email } 
+        });
+        return response.json<{ message: string; resetToken?: string; resetUrl?: string }>();
+    },
+    
+    resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
+        const response = await apiClient.post('auth/reset-password', { 
+            json: { token, password } 
+        });
+        return response.json<{ message: string }>();
+    },
+};
+
+export interface ClientProfile {
+    user_id: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    country?: string;
+    preferences?: {
+        emailNotifications: boolean;
+        researchUpdates: boolean;
+    };
+}
+
+export interface DashboardSummary {
+    projectCount: number;
+    recentActivity: {
+        id: string;
+        type: string;
+        description: string;
+        date: string;
+    }[];
+}
+
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    isRead: boolean;
+    date: string;
+}
+
+export interface Project {
+    id: string;
+    title: string;
+    description: string;
+    status: 'active' | 'completed' | 'on_hold';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ProjectDetail extends Project {
+    researcher: {
+        name: string;
+        email: string;
+    };
+    documents: {
+        id: string;
+        title: string;
+        type: string;
+        uploaded_at: string;
+    }[];
+    timeline: {
+        id: string;
+        date: string;
+        event: string;
+        description: string;
+    }[];
+}
+
+export interface Tree {
+    tree_id: string;
+    name: string;
+    description: string;
+    access_level?: string;
+    created_at: string;
+    updated_at: string;
+    creator?: {
+        user_id: string;
+        first_name: string;
+        last_name: string;
+        email: string;
+    };
+}
+
+export interface TreeDetail extends Tree {
+    persons?: {
+        person_id: string;
+        first_name: string;
+        last_name: string;
+        birth_date?: string;
+        death_date?: string;
+    }[];
+}
+
+export const clientApi = {
+    getProfile: async (): Promise<{ profile: ClientProfile }> => {
+        const response = await apiClient.get('client/profile');
+        return response.json();
+    },
+    
+    updateProfile: async (data: Partial<ClientProfile>): Promise<{ message: string; profile: ClientProfile }> => {
+        const response = await apiClient.put('client/profile', { json: data });
+        return response.json();
+    },
+};
+
+export const dashboardApi = {
+    getSummary: async (): Promise<DashboardSummary> => {
+        const response = await apiClient.get('dashboard/summary');
+        return response.json();
+    },
+    
+    getNotifications: async (): Promise<{ notifications: Notification[] }> => {
+        const response = await apiClient.get('dashboard/notifications');
+        return response.json();
+    },
+    
+    markNotificationAsRead: async (id: string): Promise<{ message: string; notification: Notification }> => {
+        const response = await apiClient.put(`dashboard/notifications/${id}/read`);
+        return response.json();
+    },
+};
+
+export const projectsApi = {
+    getProjects: async (): Promise<{ projects: Project[] }> => {
+        const response = await apiClient.get('projects');
+        return response.json();
+    },
+    
+    getProjectById: async (id: string): Promise<ProjectDetail> => {
+        const response = await apiClient.get(`projects/${id}`);
+        return response.json();
+    },
+    
+    createProject: async (data: { title: string; description: string }): Promise<{ message: string; project: Project }> => {
+        const response = await apiClient.post('projects', { json: data });
+        return response.json();
+    },
+    
+    updateProject: async (id: string, data: Partial<Project>): Promise<{ message: string; project: Project }> => {
+        const response = await apiClient.put(`projects/${id}`, { json: data });
+        return response.json();
+    },
+};
+
+export const treesApi = {
+    getTrees: async (): Promise<{ trees: Tree[] }> => {
+        const response = await apiClient.get('trees');
+        return response.json();
+    },
+    
+    getTreeById: async (id: string): Promise<{ tree: TreeDetail }> => {
+        const response = await apiClient.get(`trees/${id}`);
+        return response.json();
+    },
+    
+    createTree: async (data: { name: string; description: string }): Promise<{ message: string; tree: Tree }> => {
+        const response = await apiClient.post('trees', { json: data });
+        return response.json();
+    },
+    
+    updateTree: async (id: string, data: Partial<Tree>): Promise<{ message: string; tree: Tree }> => {
+        const response = await apiClient.put(`trees/${id}`, { json: data });
+        return response.json();
+    },
+    
+    deleteTree: async (id: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`trees/${id}`);
+        return response.json();
+    },
+    
+    assignUserToTree: async (treeId: string, data: { userId: string; accessLevel: 'view' | 'edit' }): Promise<{ message: string }> => {
+        const response = await apiClient.post(`trees/${treeId}/users`, { json: data });
+        return response.json();
+    },
+    
+    removeUserFromTree: async (treeId: string, userId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`trees/${treeId}/users/${userId}`);
+        return response.json();
+    }
+};
