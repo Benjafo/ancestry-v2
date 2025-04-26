@@ -44,7 +44,7 @@ const Register = () => {
         try {
             const { confirmPassword, ...registerData } = formData;
             const response = await authApi.register(registerData);
-            login(response.token, response.user);
+            login(response.token, response.user, response.refreshToken);
             navigate({ to: '/dashboard' });
         } catch (err) {
             console.error('Registration error:', err);

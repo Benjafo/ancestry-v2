@@ -1,7 +1,8 @@
 const User = require('./user');
 const Role = require('./role');
+const Tree = require('./tree');
 
-// Define associations
+// Define User-Role associations
 User.belongsToMany(Role, { 
     through: 'user_roles',
     foreignKey: 'user_id',
@@ -14,7 +15,27 @@ Role.belongsToMany(User, {
     otherKey: 'user_id'
 });
 
+// Define User-Tree associations
+User.belongsToMany(Tree, {
+    through: 'user_trees',
+    foreignKey: 'user_id',
+    otherKey: 'tree_id'
+});
+
+Tree.belongsToMany(User, {
+    through: 'user_trees',
+    foreignKey: 'tree_id',
+    otherKey: 'user_id'
+});
+
+// Define Tree creator association
+Tree.belongsTo(User, {
+    foreignKey: 'created_by',
+    as: 'creator'
+});
+
 module.exports = {
     User,
-    Role
+    Role,
+    Tree
 };

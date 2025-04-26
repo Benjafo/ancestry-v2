@@ -17,8 +17,7 @@ const Login = () => {
 
         try {
             const response = await authApi.login({ email, password });
-            console.log('Login response:', response);
-            login(response.token, response.user);
+            login(response.token, response.user, response.refreshToken);
             navigate({ to: '/dashboard' });
         } catch (err) {
             console.error('Login error:', err);
