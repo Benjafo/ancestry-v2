@@ -1,0 +1,539 @@
+const { User, Role, Project, Tree } = require('../models');
+
+// Get dashboard summary for managers
+exports.getDashboardSummary = async (req, res) => {
+    try {
+        // Fetch active clients count
+        const activeClients = await User.count({
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }],
+            where: { is_active: true }
+        });
+
+        // Fetch total clients count
+        const totalClients = await User.count({
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+
+        // Fetch active projects count
+        const activeProjects = await Project.count({
+            where: { status: 'active' }
+        });
+
+        // Fetch total projects count
+        const totalProjects = await Project.count();
+
+        // Fetch projects by status
+        const projectsByStatus = {
+            active: await Project.count({ where: { status: 'active' } }),
+            completed: await Project.count({ where: { status: 'completed' } }),
+            on_hold: await Project.count({ where: { status: 'on_hold' } })
+        };
+
+        // Fetch recent activity (simplified for now)
+        const recentActivity = await Project.findAll({
+            limit: 10,
+            order: [['updated_at', 'DESC']],
+            attributes: ['id', 'title', 'status', 'updated_at']
+        });
+
+        // Transform recent activity into a standardized format
+        const formattedActivity = recentActivity.map(project => ({
+            id: `activity-${project.id}`,
+            type: 'project_update',
+            description: `Project "${project.title}" was updated`,
+            entityId: project.id,
+            entityType: 'project',
+            date: project.updated_at
+        }));
+
+        // For now, return empty pending tasks (to be implemented later)
+        const pendingTasks = [];
+
+        res.status(200).json({
+            activeClients,
+            totalClients,
+            activeProjects,
+            totalProjects,
+            recentActivity: formattedActivity,
+            pendingTasks,
+            projectsByStatus
+        });
+    } catch (error) {
+        console.error('Manager dashboard error:', error);
+        res.status(500).json({ message: 'Server error retrieving manager dashboard' });
+    }
+};
+
+// Get all users with optional filtering
+exports.getUsers = async (req, res) => {
+    try {
+        const { filter = 'all' } = req.query;
+        
+        let whereCondition = {};
+        let includeCondition = [{ model: Role }];
+        
+        if (filter === 'clients') {
+            includeCondition = [{
+                model: Role,
+                where: { name: 'client' }
+            }];
+        } else if (filter === 'managers') {
+            includeCondition = [{
+                model: Role,
+                where: { name: 'manager' }
+            }];
+        }
+        
+        const users = await User.findAll({
+            include: includeCondition,
+            attributes: { exclude: ['password'] }
+        });
+        
+        // Format users to include roles
+        const formattedUsers = users.map(user => {
+            const userData = user.toJSON();
+            return {
+                ...userData,
+                roles: userData.Roles ? userData.Roles.map(role => role.name) : []
+            };
+        });
+        
+        res.status(200).json({ users: formattedUsers });
+    } catch (error) {
+        console.error('Get users error:', error);
+        res.status(500).json({ message: 'Server error retrieving users' });
+    }
+};
+
+// Get a specific user by ID
+exports.getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const user = await User.findByPk(userId, {
+            include: [{ model: Role }],
+            attributes: { exclude: ['password'] }
+        });
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Format user to include roles
+        const userData = user.toJSON();
+        const formattedUser = {
+            ...userData,
+            roles: userData.Roles ? userData.Roles.map(role => role.name) : []
+        };
+        
+        res.status(200).json({ user: formattedUser });
+    } catch (error) {
+        console.error('Get user error:', error);
+        res.status(500).json({ message: 'Server error retrieving user' });
+    }
+};
+
+// Create a new user
+exports.createUser = async (req, res) => {
+    try {
+        const { email, password, first_name, last_name, role } = req.body;
+        
+        // Check if user already exists
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+        
+        // Create new user
+        const user = await User.create({
+            email,
+            password, // Will be hashed by the model hook
+            first_name,
+            last_name,
+            is_active: true
+        });
+        
+        // Find the requested role
+        const userRole = await Role.findOne({ where: { name: role } });
+        if (!userRole) {
+            return res.status(400).json({ message: 'Invalid role' });
+        }
+        
+        // Assign role to user
+        await user.addRole(userRole);
+        
+        // Get user with roles
+        const createdUser = await User.findByPk(user.user_id, {
+            include: [{ model: Role }],
+            attributes: { exclude: ['password'] }
+        });
+        
+        // Format user to include roles
+        const userData = createdUser.toJSON();
+        const formattedUser = {
+            ...userData,
+            roles: userData.Roles ? userData.Roles.map(role => role.name) : []
+        };
+        
+        res.status(201).json({
+            message: 'User created successfully',
+            user: formattedUser
+        });
+    } catch (error) {
+        console.error('Create user error:', error);
+        res.status(500).json({ message: 'Server error creating user' });
+    }
+};
+
+// Update a user
+exports.updateUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { first_name, last_name, role } = req.body;
+        
+        // Find user
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Update user properties
+        if (first_name) user.first_name = first_name;
+        if (last_name) user.last_name = last_name;
+        
+        await user.save();
+        
+        // Update role if provided
+        if (role) {
+            // Find the requested role
+            const userRole = await Role.findOne({ where: { name: role } });
+            if (!userRole) {
+                return res.status(400).json({ message: 'Invalid role' });
+            }
+            
+            // Remove existing roles
+            const currentRoles = await user.getRoles();
+            await user.removeRoles(currentRoles);
+            
+            // Assign new role
+            await user.addRole(userRole);
+        }
+        
+        // Get updated user with roles
+        const updatedUser = await User.findByPk(userId, {
+            include: [{ model: Role }],
+            attributes: { exclude: ['password'] }
+        });
+        
+        // Format user to include roles
+        const userData = updatedUser.toJSON();
+        const formattedUser = {
+            ...userData,
+            roles: userData.Roles ? userData.Roles.map(role => role.name) : []
+        };
+        
+        res.status(200).json({
+            message: 'User updated successfully',
+            user: formattedUser
+        });
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ message: 'Server error updating user' });
+    }
+};
+
+// Deactivate a user
+exports.deactivateUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Find user
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Deactivate user
+        user.is_active = false;
+        await user.save();
+        
+        res.status(200).json({ message: 'User deactivated successfully' });
+    } catch (error) {
+        console.error('Deactivate user error:', error);
+        res.status(500).json({ message: 'Server error deactivating user' });
+    }
+};
+
+// Reactivate a user
+exports.reactivateUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Find user
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Reactivate user
+        user.is_active = true;
+        await user.save();
+        
+        res.status(200).json({ message: 'User reactivated successfully' });
+    } catch (error) {
+        console.error('Reactivate user error:', error);
+        res.status(500).json({ message: 'Server error reactivating user' });
+    }
+};
+
+// Reset user password
+exports.resetUserPassword = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Find user
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Generate temporary password
+        const temporaryPassword = Math.random().toString(36).slice(-8);
+        
+        // Update user password
+        user.password = temporaryPassword; // Will be hashed by the model hook
+        await user.save();
+        
+        res.status(200).json({
+            message: 'Password reset successfully',
+            temporaryPassword
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Server error resetting password' });
+    }
+};
+
+// Get client assignments
+exports.getClientAssignments = async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        
+        // Verify client exists
+        const client = await User.findByPk(clientId, {
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        
+        // Get client's projects
+        const projects = await Project.findAll({
+            include: [{
+                model: User,
+                where: { user_id: clientId }
+            }]
+        });
+        
+        // Get client's trees
+        const trees = await Tree.findAll({
+            include: [{
+                model: User,
+                where: { user_id: clientId },
+                through: { attributes: ['access_level'] }
+            }]
+        });
+        
+        // Format trees to include access level
+        const formattedTrees = trees.map(tree => {
+            const treeData = tree.toJSON();
+            return {
+                ...treeData,
+                access_level: treeData.Users[0].user_trees.access_level
+            };
+        });
+        
+        res.status(200).json({
+            projects,
+            trees: formattedTrees
+        });
+    } catch (error) {
+        console.error('Get client assignments error:', error);
+        res.status(500).json({ message: 'Server error retrieving client assignments' });
+    }
+};
+
+// Assign client to project
+exports.assignClientToProject = async (req, res) => {
+    try {
+        const { clientId, projectId } = req.params;
+        
+        // Verify client exists
+        const client = await User.findByPk(clientId, {
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        
+        // Verify project exists
+        const project = await Project.findByPk(projectId);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        
+        // Assign client to project
+        await project.addUser(clientId);
+        
+        res.status(200).json({ message: 'Client assigned to project successfully' });
+    } catch (error) {
+        console.error('Assign client to project error:', error);
+        res.status(500).json({ message: 'Server error assigning client to project' });
+    }
+};
+
+// Remove client from project
+exports.removeClientFromProject = async (req, res) => {
+    try {
+        const { clientId, projectId } = req.params;
+        
+        // Verify client exists
+        const client = await User.findByPk(clientId, {
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        
+        // Verify project exists
+        const project = await Project.findByPk(projectId);
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        
+        // Remove client from project
+        await project.removeUser(clientId);
+        
+        res.status(200).json({ message: 'Client removed from project successfully' });
+    } catch (error) {
+        console.error('Remove client from project error:', error);
+        res.status(500).json({ message: 'Server error removing client from project' });
+    }
+};
+
+// Assign client to tree
+exports.assignClientToTree = async (req, res) => {
+    try {
+        const { clientId, treeId } = req.params;
+        const { accessLevel } = req.body;
+        
+        // Verify client exists
+        const client = await User.findByPk(clientId, {
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        
+        // Verify tree exists
+        const tree = await Tree.findByPk(treeId);
+        if (!tree) {
+            return res.status(404).json({ message: 'Tree not found' });
+        }
+        
+        // Validate access level
+        if (!['view', 'edit'].includes(accessLevel)) {
+            return res.status(400).json({ message: 'Invalid access level. Must be "view" or "edit"' });
+        }
+        
+        // Assign client to tree with specified access level
+        await tree.addUser(clientId, { 
+            through: { access_level: accessLevel }
+        });
+        
+        res.status(200).json({ message: 'Client assigned to tree successfully' });
+    } catch (error) {
+        console.error('Assign client to tree error:', error);
+        res.status(500).json({ message: 'Server error assigning client to tree' });
+    }
+};
+
+// Remove client from tree
+exports.removeClientFromTree = async (req, res) => {
+    try {
+        const { clientId, treeId } = req.params;
+        
+        // Verify client exists
+        const client = await User.findByPk(clientId, {
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        
+        // Verify tree exists
+        const tree = await Tree.findByPk(treeId);
+        if (!tree) {
+            return res.status(404).json({ message: 'Tree not found' });
+        }
+        
+        // Remove client from tree
+        await tree.removeUser(clientId);
+        
+        res.status(200).json({ message: 'Client removed from tree successfully' });
+    } catch (error) {
+        console.error('Remove client from tree error:', error);
+        res.status(500).json({ message: 'Server error removing client from tree' });
+    }
+};
+
+// Get assignment history
+exports.getAssignmentHistory = async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        
+        // Verify client exists
+        const client = await User.findByPk(clientId, {
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }]
+        });
+        
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        
+        // For now, return empty history (to be implemented with a proper history table later)
+        res.status(200).json({ history: [] });
+    } catch (error) {
+        console.error('Get assignment history error:', error);
+        res.status(500).json({ message: 'Server error retrieving assignment history' });
+    }
+};
