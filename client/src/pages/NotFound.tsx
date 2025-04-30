@@ -30,7 +30,7 @@ const NotFound = () => {
                 </div>
                 <div className="mt-6">
                     <Link
-                        to="/"
+                        to="/dashboard"
                         className="btn-primary inline-flex items-center px-4 py-2"
                     >
                         <svg

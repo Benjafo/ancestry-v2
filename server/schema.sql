@@ -114,3 +114,101 @@ CREATE TABLE
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, tree_id)
     );
+
+-- Projects table
+CREATE TABLE
+    projects (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(50) DEFAULT 'active',
+        researcher_id UUID REFERENCES users(user_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Project-User junction table
+CREATE TABLE
+    project_users (
+        project_id UUID REFERENCES projects(id),
+        user_id UUID REFERENCES users(user_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (project_id, user_id)
+    );
+
+-- Project Documents table
+CREATE TABLE
+    project_documents (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        project_id UUID REFERENCES projects(id),
+        title VARCHAR(255) NOT NULL,
+        type VARCHAR(100),
+        file_path VARCHAR(255),
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Project Timeline table
+CREATE TABLE
+    project_timelines (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        project_id UUID REFERENCES projects(id),
+        date DATE NOT NULL,
+        event VARCHAR(255) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Client Profiles table
+CREATE TABLE
+    client_profiles (
+        user_id UUID PRIMARY KEY REFERENCES users(user_id),
+        phone VARCHAR(50),
+        address VARCHAR(255),
+        city VARCHAR(100),
+        state VARCHAR(100),
+        zip_code VARCHAR(20),
+        country VARCHAR(100),
+        email_notifications BOOLEAN DEFAULT TRUE,
+        research_updates BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Notifications table
+CREATE TABLE
+    notifications (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(user_id),
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Activities table
+CREATE TABLE
+    activities (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(user_id),
+        type VARCHAR(100) NOT NULL,
+        description TEXT NOT NULL,
+        entity_id UUID,
+        entity_type VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Password Reset Tokens table
+CREATE TABLE
+    password_reset_tokens (
+        token VARCHAR(255) PRIMARY KEY,
+        user_id UUID REFERENCES users(user_id),
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );

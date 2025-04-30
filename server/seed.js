@@ -3,6 +3,9 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+// Import the models
+const { User, Role } = require('./models');
+
 async function seedDatabase() {
     // First connect to the default 'postgres' database
     console.log('Connecting to the target database...');
@@ -55,67 +58,82 @@ async function seedDatabase() {
                 logging: process.env.NODE_ENV === 'development' ? console.log : false
             }
         );
+        
+        // Start a transaction to ensure data consistency
+        const transaction = await sequelize.transaction();
 
-        // Drop all existing tables (optional if using CASCADE in schema.sql)
-        console.log('Dropping existing tables...');
-        await sequelize.query(`
-            DROP TABLE IF EXISTS document_persons CASCADE;
-            DROP TABLE IF EXISTS documents CASCADE;
-            DROP TABLE IF EXISTS events CASCADE;
-            DROP TABLE IF EXISTS relationships CASCADE;
-            DROP TABLE IF EXISTS persons CASCADE;
-            DROP TABLE IF EXISTS user_roles CASCADE;
-            DROP TABLE IF EXISTS users CASCADE;
-            DROP TABLE IF EXISTS roles CASCADE;
-        `);
+        try {
+            // Drop all existing tables (optional if using CASCADE in schema.sql)
+            console.log('Dropping existing tables...');
+            await sequelize.query(`
+                DROP TABLE IF EXISTS document_persons CASCADE;
+                DROP TABLE IF EXISTS documents CASCADE;
+                DROP TABLE IF EXISTS events CASCADE;
+                DROP TABLE IF EXISTS relationships CASCADE;
+                DROP TABLE IF EXISTS persons CASCADE;
+                DROP TABLE IF EXISTS user_roles CASCADE;
+                DROP TABLE IF EXISTS users CASCADE;
+                DROP TABLE IF EXISTS roles CASCADE;
+                DROP TABLE IF EXISTS trees CASCADE;
+                DROP TABLE IF EXISTS user_trees CASCADE;
+            `, { transaction });
 
-        // Read schema.sql
-        console.log('Reading schema file...');
-        const schemaPath = '/app/schema.sql';
-        const schema = fs.readFileSync(schemaPath, 'utf8');
+            // Read schema.sql
+            console.log('Reading schema file...');
+            const schemaPath = '/app/schema.sql';
+            const schema = fs.readFileSync(schemaPath, 'utf8');
 
-        // Execute schema.sql using raw query
-        console.log('Recreating database tables...');
-        await sequelize.query(schema);
-        console.log('Database schema recreated successfully');
+            // Execute schema.sql using raw query
+            console.log('Recreating database tables...');
+            await sequelize.query(schema, { transaction });
+            console.log('Database schema recreated successfully');
 
-        // ==========================================
-        // Seed data for roles table
-        // ==========================================
-        console.log('Seeding roles table...');
-        await sequelize.query(`
-            INSERT INTO roles (role_id, name, description)
-            VALUES
-            (uuid_generate_v4(), 'client', 'Regular user who purchases genealogy research services'),
-            (uuid_generate_v4(), 'manager', 'Administrator who manages client data and research');
-        `);
-        console.log('Roles seeded successfully');
+            // Create roles using Sequelize models
+            console.log('Seeding roles table...');
+            const clientRole = await Role.create({
+                name: 'client',
+                description: 'Regular user who purchases genealogy research services'
+            }, { transaction });
+            
+            const managerRole = await Role.create({
+                name: 'manager',
+                description: 'Administrator who manages client data and research'
+            }, { transaction });
+            
+            console.log('Roles seeded successfully');
 
-        // ==========================================
-        // Seed data for users table
-        // ==========================================
-        console.log('Seeding users table...');
-        await sequelize.query(`
-            INSERT INTO users (user_id, email, password, first_name, last_name, created_at, updated_at)
-            VALUES
-            (uuid_generate_v4(), 'admin@example.com', '$2b$10$JcmUQDJ4/iGXJxQo2JzQP.uQJIjG7UXBKB6/LEGRCuQJ.d8/WJj92', 'Admin', 'User', NOW(), NOW()),
-            (uuid_generate_v4(), 'client@example.com', '$2b$10$JcmUQDJ4/iGXJxQo2JzQP.uQJIjG7UXBKB6/LEGRCuQJ.d8/WJj92', 'Test', 'Client', NOW(), NOW());
-        `);
-        console.log('Users seeded successfully');
+            // Create users using Sequelize models
+            console.log('Seeding users table...');
+            const adminUser = await User.create({
+                email: 'admin@example.com',
+                password: 'password123', // Will be hashed by model hooks
+                first_name: 'Admin',
+                last_name: 'User'
+            }, { transaction });
+            
+            const clientUser = await User.create({
+                email: 'client@example.com',
+                password: 'password123', // Will be hashed by model hooks
+                first_name: 'Test',
+                last_name: 'Client'
+            }, { transaction });
+            
+            console.log('Users seeded successfully with password: password123');
 
-        // ==========================================
-        // Seed data for user_roles junction table
-        // ==========================================
-        console.log('Seeding user_roles table...');
-        await sequelize.query(`
-            INSERT INTO user_roles (user_id, role_id)
-            VALUES
-            ((SELECT user_id FROM users WHERE email = 'admin@example.com'), 
-            (SELECT role_id FROM roles WHERE name = 'manager')),
-            ((SELECT user_id FROM users WHERE email = 'client@example.com'), 
-            (SELECT role_id FROM roles WHERE name = 'client'));
-        `);
-        console.log('User roles seeded successfully');
+            // Assign roles to users using Sequelize associations
+            console.log('Assigning roles to users...');
+            await adminUser.addRole(managerRole, { transaction });
+            await clientUser.addRole(clientRole, { transaction });
+            console.log('User roles assigned successfully');
+
+            // Commit the transaction
+            await transaction.commit();
+            console.log('Database seeding completed successfully');
+        } catch (error) {
+            // Rollback the transaction if there was an error
+            await transaction.rollback();
+            throw error; // Re-throw to be caught by the outer catch block
+        }
 
         // ==========================================
         // PLACEHOLDER: Seed data for persons table
@@ -182,8 +200,6 @@ async function seedDatabase() {
              (SELECT person_id FROM persons WHERE first_name = 'Jane'));
         `);
         */
-
-        console.log('Database seeding completed successfully');
 
     } catch (error) {
         console.error('Error seeding database:', error);

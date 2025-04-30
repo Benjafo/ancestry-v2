@@ -5,12 +5,14 @@ import {
     Router,
     redirect
 } from '@tanstack/react-router';
-import { isAuthenticated } from './utils/auth';
+import { hasRole, isAuthenticated } from './utils/auth';
 
 // Import pages
+import ClientAssignment from './pages/ClientAssignment';
 import CreateTree from './pages/CreateTree';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import ManagerDashboard from './pages/ManagerDashboard';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
 import ProjectDetail from './pages/ProjectDetail';
@@ -18,6 +20,7 @@ import Projects from './pages/Projects';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
 import TreeDetail from './pages/TreeDetail';
+import UserManagement from './pages/UserManagement';
 
 // Import layout components
 import { Layout } from './components/layout/Layout';
@@ -136,6 +139,49 @@ const notFoundRoute = new Route({
     component: NotFound,
 });
 
+// Manager routes
+const managerDashboardRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/manager/dashboard',
+    component: ManagerDashboard,
+    beforeLoad: async () => {
+        // Check if user has manager role
+        if (!hasRole('manager')) {
+            throw redirect({
+                to: '/dashboard',
+            });
+        }
+    },
+});
+
+const userManagementRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/manager/users',
+    component: UserManagement,
+    beforeLoad: async () => {
+        // Check if user has manager role
+        if (!hasRole('manager')) {
+            throw redirect({
+                to: '/dashboard',
+            });
+        }
+    },
+});
+
+const clientAssignmentRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/manager/client-assignment',
+    component: ClientAssignment,
+    beforeLoad: async () => {
+        // Check if user has manager role
+        if (!hasRole('manager')) {
+            throw redirect({
+                to: '/dashboard',
+            });
+        }
+    },
+});
+
 // Create the router
 const routeTree = rootRoute.addChildren([
     loginRoute,
@@ -148,6 +194,10 @@ const routeTree = rootRoute.addChildren([
         projectDetailRoute,
         createTreeRoute,
         treeDetailRoute,
+        // Manager routes
+        managerDashboardRoute,
+        userManagementRoute,
+        clientAssignmentRoute,
     ]),
     notFoundRoute,
 ]);

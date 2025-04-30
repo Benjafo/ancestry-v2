@@ -199,6 +199,48 @@ export interface TreeDetail extends Tree {
     }[];
 }
 
+export interface UserDetails extends User {
+    is_active: boolean;
+    last_login?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ManagerDashboardSummary {
+    activeClients: number;
+    totalClients: number;
+    activeProjects: number;
+    totalProjects: number;
+    recentActivity: {
+        id: string;
+        type: string;
+        description: string;
+        entityId: string;
+        entityType: string;
+        date: string;
+    }[];
+    pendingTasks: {
+        id: string;
+        description: string;
+        priority: 'high' | 'medium' | 'low';
+        dueDate: string;
+    }[];
+    projectsByStatus: {
+        active: number;
+        completed: number;
+        on_hold: number;
+    };
+}
+
+export interface ClientAssignment {
+    client_id: string;
+    entity_id: string;
+    entity_type: 'project' | 'tree';
+    access_level: 'view' | 'edit';
+    assigned_at: string;
+    assigned_by: string;
+}
+
 export const clientApi = {
     getProfile: async (): Promise<{ profile: ClientProfile }> => {
         const response = await apiClient.get('client/profile');
@@ -283,6 +325,92 @@ export const treesApi = {
     
     removeUserFromTree: async (treeId: string, userId: string): Promise<{ message: string }> => {
         const response = await apiClient.delete(`trees/${treeId}/users/${userId}`);
+        return response.json();
+    }
+};
+
+export const managerApi = {
+    // Dashboard
+    getDashboardSummary: async (): Promise<ManagerDashboardSummary> => {
+        const response = await apiClient.get('manager/dashboard');
+        return response.json();
+    },
+    
+    // User Management
+    getUsers: async (filter: 'all' | 'clients' | 'managers' = 'all'): Promise<{ users: UserDetails[] }> => {
+        const response = await apiClient.get(`manager/users?filter=${filter}`);
+        return response.json();
+    },
+    
+    getUserById: async (userId: string): Promise<{ user: UserDetails }> => {
+        const response = await apiClient.get(`manager/users/${userId}`);
+        return response.json();
+    },
+    
+    createUser: async (userData: {
+        email: string;
+        password: string;
+        first_name: string;
+        last_name: string;
+        role: string;
+    }): Promise<{ message: string; user: UserDetails }> => {
+        const response = await apiClient.post('manager/users', { json: userData });
+        return response.json();
+    },
+    
+    updateUser: async (userId: string, userData: Partial<UserDetails>): Promise<{ message: string; user: UserDetails }> => {
+        const response = await apiClient.put(`manager/users/${userId}`, { json: userData });
+        return response.json();
+    },
+    
+    deactivateUser: async (userId: string): Promise<{ message: string }> => {
+        const response = await apiClient.put(`manager/users/${userId}/deactivate`);
+        return response.json();
+    },
+    
+    reactivateUser: async (userId: string): Promise<{ message: string }> => {
+        const response = await apiClient.put(`manager/users/${userId}/reactivate`);
+        return response.json();
+    },
+    
+    resetUserPassword: async (userId: string): Promise<{ message: string; temporaryPassword: string }> => {
+        const response = await apiClient.post(`manager/users/${userId}/reset-password`);
+        return response.json();
+    },
+    
+    // Client Assignment
+    getClientAssignments: async (clientId: string): Promise<{ 
+        projects: Project[]; 
+        trees: Tree[] 
+    }> => {
+        const response = await apiClient.get(`manager/clients/${clientId}/assignments`);
+        return response.json();
+    },
+    
+    assignClientToProject: async (clientId: string, projectId: string): Promise<{ message: string }> => {
+        const response = await apiClient.post(`manager/clients/${clientId}/projects/${projectId}`);
+        return response.json();
+    },
+    
+    removeClientFromProject: async (clientId: string, projectId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`manager/clients/${clientId}/projects/${projectId}`);
+        return response.json();
+    },
+    
+    assignClientToTree: async (clientId: string, treeId: string, accessLevel: 'view' | 'edit'): Promise<{ message: string }> => {
+        const response = await apiClient.post(`manager/clients/${clientId}/trees/${treeId}`, {
+            json: { accessLevel }
+        });
+        return response.json();
+    },
+    
+    removeClientFromTree: async (clientId: string, treeId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`manager/clients/${clientId}/trees/${treeId}`);
+        return response.json();
+    },
+    
+    getAssignmentHistory: async (clientId: string): Promise<{ history: ClientAssignment[] }> => {
+        const response = await apiClient.get(`manager/clients/${clientId}/assignment-history`);
         return response.json();
     }
 };
