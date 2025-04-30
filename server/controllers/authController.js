@@ -1,11 +1,10 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { User, Role } = require('../models');
+const { User, Role, PasswordResetToken } = require('../models');
+const { Op } = require('sequelize');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'your-refresh-secret-key';
-
-// Store for password reset tokens (in a real app, this would be in a database)
-const passwordResetTokens = new Map();
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -229,12 +228,13 @@ exports.requestPasswordReset = async (req, res) => {
         
         // Generate reset token
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+        const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
         
-        // Store token (in a real app, this would be saved in the database)
-        passwordResetTokens.set(resetToken, {
+        // Store token in database
+        await PasswordResetToken.create({
+            token: resetToken,
             user_id: user.user_id,
-            expiry: resetTokenExpiry
+            expires_at: resetTokenExpiry
         });
         
         // In a real app, send email with reset link
@@ -243,7 +243,7 @@ exports.requestPasswordReset = async (req, res) => {
             message: 'If your email is registered, you will receive a password reset link',
             // The following would not be included in a production app
             resetToken,
-            resetUrl: `http://localhost:5173/reset-password?token=${resetToken}`
+            resetUrl: `${CLIENT_URL}/reset-password?token=${resetToken}`
         });
     } catch (error) {
         console.error('Password reset request error:', error);
@@ -257,14 +257,21 @@ exports.resetPassword = async (req, res) => {
         const { token, password } = req.body;
         
         // Check if token exists and is valid
-        const resetData = passwordResetTokens.get(token);
+        const resetToken = await PasswordResetToken.findOne({
+            where: {
+                token,
+                expires_at: {
+                    [Op.gt]: new Date()
+                }
+            }
+        });
         
-        if (!resetData || resetData.expiry < Date.now()) {
+        if (!resetToken) {
             return res.status(400).json({ message: 'Invalid or expired reset token' });
         }
         
         // Find user
-        const user = await User.findByPk(resetData.user_id);
+        const user = await User.findByPk(resetToken.user_id);
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -275,7 +282,7 @@ exports.resetPassword = async (req, res) => {
         await user.save();
         
         // Remove used token
-        passwordResetTokens.delete(token);
+        await resetToken.destroy();
         
         res.status(200).json({ message: 'Password reset successful' });
     } catch (error) {
