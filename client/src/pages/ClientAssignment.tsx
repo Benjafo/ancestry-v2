@@ -119,7 +119,7 @@ const ClientAssignment = () => {
         if (!selectedClient) return;
         
         try {
-            await managerApi.removeClientFromTree(selectedClient, treeId);
+            await managerApi.removeClientFromProject(selectedClient, treeId);
             setSuccessMessage('Client removed from tree successfully');
             fetchClientAssignments(selectedClient);
             
