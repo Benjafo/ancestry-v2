@@ -172,6 +172,18 @@ export interface ProjectDetail extends Project {
         event: string;
         description: string;
     }[];
+    persons?: {
+        person_id: string;
+        first_name: string;
+        last_name: string;
+        birth_date?: string;
+        death_date?: string;
+    }[];
+    access_level?: 'view' | 'edit';
+    creator?: {
+        first_name: string;
+        last_name: string;
+    };
 }
 
 

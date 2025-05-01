@@ -170,9 +170,9 @@ const ManagerDashboard = () => {
                                             {new Date(activity.date).toLocaleString()}
                                         </p>
                                     </div>
-                                    {activity.entityType === 'project' && (
+                                    {activity.type === 'project_update' && (
                                         <Link 
-                                            to={`/projects/${activity.entityId}`} 
+                                            to={`/projects/${activity.projectId}`} 
                                             className="text-xs text-primary-600 hover:text-primary-800"
                                         >
                                             View
@@ -221,7 +221,7 @@ const ManagerDashboard = () => {
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Link to="/manager/users" className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
                         <svg className="h-8 w-8 text-primary-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -239,12 +239,6 @@ const ManagerDashboard = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         <span className="text-sm font-medium text-gray-900">New Project</span>
-                    </Link>
-                    <Link to="/trees/new" className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
-                        <svg className="h-8 w-8 text-primary-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                        </svg>
-                        <span className="text-sm font-medium text-gray-900">New Tree</span>
                     </Link>
                 </div>
             </div>

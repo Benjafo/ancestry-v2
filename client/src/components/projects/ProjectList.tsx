@@ -1,13 +1,13 @@
 import { Link } from '@tanstack/react-router';
-import { Tree } from '../../api/client';
+import { Project } from '../../api/client';
 
-interface TreeListProps {
-    trees: Tree[];
+interface ProjectListProps {
+    projects: Project[];
     isLoading: boolean;
     error: string | null;
 }
 
-const TreeList = ({ trees, isLoading, error }: TreeListProps) => {
+const ProjectList = ({ projects, isLoading, error }: ProjectListProps) => {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-40">
@@ -33,13 +33,13 @@ const TreeList = ({ trees, isLoading, error }: TreeListProps) => {
         );
     }
 
-    if (trees.length === 0) {
+    if (projects.length === 0) {
         return (
             <div className="text-center py-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Family Trees</h3>
-                <p className="text-gray-500 mb-4">You don't have any family trees yet.</p>
-                <Link to="/trees/new" className="btn-primary">
-                    Create Your First Tree
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Projects</h3>
+                <p className="text-gray-500 mb-4">You don't have any projects yet.</p>
+                <Link to="/projects/new" className="btn-primary">
+                    Create Your First Project
                 </Link>
             </div>
         );
@@ -47,26 +47,36 @@ const TreeList = ({ trees, isLoading, error }: TreeListProps) => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {trees.map((tree) => (
-                <div key={tree.tree_id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+            {projects.map((project) => (
+                <div key={project.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div className="p-5">
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">{tree.name}</h3>
-                        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{tree.description}</p>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">{project.title}</h3>
+                        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{project.description}</p>
                         <div className="flex justify-between items-center">
                             <span className="text-xs text-gray-500">
-                                {new Date(tree.created_at).toLocaleDateString()}
+                                {new Date(project.created_at).toLocaleDateString()}
                             </span>
-                            <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                {tree.access_level === 'edit' ? 'Editor' : 'Viewer'}
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                                project.status === 'active' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : project.status === 'completed' 
+                                        ? 'bg-blue-100 text-blue-800' 
+                                        : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                                {project.status === 'active' 
+                                    ? 'Active' 
+                                    : project.status === 'completed' 
+                                        ? 'Completed' 
+                                        : 'On Hold'}
                             </span>
                         </div>
                     </div>
                     <div className="bg-gray-50 px-5 py-3">
                         <Link 
-                            to={`/trees/${tree.tree_id}`} 
+                            to={`/projects/${project.id}`} 
                             className="text-primary-600 hover:text-primary-800 font-medium text-sm"
                         >
-                            View Tree →
+                            View Project →
                         </Link>
                     </div>
                 </div>
@@ -75,4 +85,4 @@ const TreeList = ({ trees, isLoading, error }: TreeListProps) => {
     );
 };
 
-export default TreeList;
+export default ProjectList;
