@@ -23,7 +23,7 @@ export const apiClient = ky.create({
             }
         ],
         afterResponse: [
-            async (request, options, response) => {
+            async (request, {/* options */}, response) => {
                 // Only attempt refresh if status is 401 (Unauthorized)
                 if (response.status === 401) {
                     const refreshToken = getRefreshToken();
