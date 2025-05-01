@@ -45,20 +45,6 @@ exports.updateUserValidation = [
 ];
 
 /**
- * Validation for client assignment to tree
- */
-exports.assignClientToTreeValidation = [
-    param('clientId')
-        .isUUID().withMessage(errorMessages.uuid),
-    
-    param('treeId')
-        .isUUID().withMessage(errorMessages.uuid),
-    
-    body('accessLevel')
-        .isIn(['view', 'edit']).withMessage('Access level must be either "view" or "edit"')
-];
-
-/**
  * Validation for client ID parameter
  */
 exports.clientIdValidation = [
@@ -71,14 +57,6 @@ exports.clientIdValidation = [
  */
 exports.projectIdValidation = [
     param('projectId')
-        .isUUID().withMessage(errorMessages.uuid)
-];
-
-/**
- * Validation for tree ID parameter
- */
-exports.treeIdValidation = [
-    param('treeId')
         .isUUID().withMessage(errorMessages.uuid)
 ];
 

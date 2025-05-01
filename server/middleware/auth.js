@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { User, Tree } = require('../models');
+const { User } = require('../models');
 
 // Verify JWT token
 exports.verifyToken = (req, res, next) => {
@@ -52,46 +52,46 @@ exports.hasAnyRole = (roles) => {
     };
 };
 
-// Check if user has access to a specific tree
-exports.hasTreeAccess = (accessLevel = 'view') => {
+// Check if user has access to a specific project
+exports.hasProjectAccess = (accessLevel = 'view') => {
     return async (req, res, next) => {
         try {
             if (!req.user) {
                 return res.status(403).json({ message: 'Forbidden' });
             }
             
-            const treeId = req.params.treeId;
+            const projectId = req.params.projectId;
             
-            if (!treeId) {
-                return res.status(400).json({ message: 'Tree ID is required' });
+            if (!projectId) {
+                return res.status(400).json({ message: 'Project ID is required' });
             }
             
-            // Managers have access to all trees
+            // Managers have access to all projects
             if (req.user.roles.includes('manager')) {
                 return next();
             }
             
-            // Check if user has access to the tree
+            // Check if user has access to the project
             const user = await User.findByPk(req.user.user_id, {
                 include: [{
-                    model: Tree,
+                    model: Project,
                     through: {
                         where: { 
-                            tree_id: treeId,
+                            project_id: projectId,
                             ...(accessLevel === 'edit' ? { access_level: 'edit' } : {})
                         }
                     }
                 }]
             });
             
-            if (!user || user.Trees.length === 0) {
-                return res.status(403).json({ message: 'You do not have access to this tree' });
+            if (!user || user.Projects.length === 0) {
+                return res.status(403).json({ message: 'You do not have access to this project' });
             }
             
             next();
         } catch (error) {
-            console.error('Tree access check error:', error);
-            res.status(500).json({ message: 'Server error checking tree access' });
+            console.error('Project access check error:', error);
+            res.status(500).json({ message: 'Server error checking project access' });
         }
     };
 };

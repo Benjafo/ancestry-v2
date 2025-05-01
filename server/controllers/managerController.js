@@ -1,4 +1,4 @@
-const { User, Role, Project, Tree } = require('../models');
+const { User, Role, Project } = require('../models');
 
 // Get dashboard summary for managers
 exports.getDashboardSummary = async (req, res) => {
@@ -341,31 +341,22 @@ exports.getClientAssignments = async (req, res) => {
         const projects = await Project.findAll({
             include: [{
                 model: User,
-                where: { user_id: clientId }
-            }]
-        });
-        
-        // Get client's trees
-        const trees = await Tree.findAll({
-            include: [{
-                model: User,
                 where: { user_id: clientId },
                 through: { attributes: ['access_level'] }
             }]
         });
         
-        // Format trees to include access level
-        const formattedTrees = trees.map(tree => {
-            const treeData = tree.toJSON();
+        // Format projects to include access level
+        const formattedProjects = projects.map(project => {
+            const projectData = project.toJSON();
             return {
-                ...treeData,
-                access_level: treeData.Users[0].user_trees.access_level
+                ...projectData,
+                access_level: projectData.Users[0]?.project_users?.access_level || 'view'
             };
         });
         
         res.status(200).json({
-            projects,
-            trees: formattedTrees
+            projects: formattedProjects
         });
     } catch (error) {
         console.error('Get client assignments error:', error);
@@ -377,6 +368,7 @@ exports.getClientAssignments = async (req, res) => {
 exports.assignClientToProject = async (req, res) => {
     try {
         const { clientId, projectId } = req.params;
+        const { accessLevel = 'view' } = req.body;
         
         // Verify client exists
         const client = await User.findByPk(clientId, {
@@ -396,8 +388,15 @@ exports.assignClientToProject = async (req, res) => {
             return res.status(404).json({ message: 'Project not found' });
         }
         
-        // Assign client to project
-        await project.addUser(clientId);
+        // Validate access level
+        if (!['view', 'edit'].includes(accessLevel)) {
+            return res.status(400).json({ message: 'Invalid access level. Must be "view" or "edit"' });
+        }
+        
+        // Assign client to project with specified access level
+        await project.addUser(clientId, { 
+            through: { access_level: accessLevel }
+        });
         
         res.status(200).json({ message: 'Client assigned to project successfully' });
     } catch (error) {
@@ -439,79 +438,6 @@ exports.removeClientFromProject = async (req, res) => {
     }
 };
 
-// Assign client to tree
-exports.assignClientToTree = async (req, res) => {
-    try {
-        const { clientId, treeId } = req.params;
-        const { accessLevel } = req.body;
-        
-        // Verify client exists
-        const client = await User.findByPk(clientId, {
-            include: [{
-                model: Role,
-                where: { name: 'client' }
-            }]
-        });
-        
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
-        }
-        
-        // Verify tree exists
-        const tree = await Tree.findByPk(treeId);
-        if (!tree) {
-            return res.status(404).json({ message: 'Tree not found' });
-        }
-        
-        // Validate access level
-        if (!['view', 'edit'].includes(accessLevel)) {
-            return res.status(400).json({ message: 'Invalid access level. Must be "view" or "edit"' });
-        }
-        
-        // Assign client to tree with specified access level
-        await tree.addUser(clientId, { 
-            through: { access_level: accessLevel }
-        });
-        
-        res.status(200).json({ message: 'Client assigned to tree successfully' });
-    } catch (error) {
-        console.error('Assign client to tree error:', error);
-        res.status(500).json({ message: 'Server error assigning client to tree' });
-    }
-};
-
-// Remove client from tree
-exports.removeClientFromTree = async (req, res) => {
-    try {
-        const { clientId, treeId } = req.params;
-        
-        // Verify client exists
-        const client = await User.findByPk(clientId, {
-            include: [{
-                model: Role,
-                where: { name: 'client' }
-            }]
-        });
-        
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
-        }
-        
-        // Verify tree exists
-        const tree = await Tree.findByPk(treeId);
-        if (!tree) {
-            return res.status(404).json({ message: 'Tree not found' });
-        }
-        
-        // Remove client from tree
-        await tree.removeUser(clientId);
-        
-        res.status(200).json({ message: 'Client removed from tree successfully' });
-    } catch (error) {
-        console.error('Remove client from tree error:', error);
-        res.status(500).json({ message: 'Server error removing client from tree' });
-    }
-};
 
 // Get assignment history
 exports.getAssignmentHistory = async (req, res) => {
