@@ -93,6 +93,16 @@ async function seedDatabase() {
             console.log('Recreating database tables...');
             await sequelize.query(schema, { transaction });
             console.log('Database schema recreated successfully');
+            
+            // Read constraints.sql
+            console.log('Reading constraints file...');
+            const constraintsPath = '/app/constraints.sql';
+            const constraints = fs.readFileSync(constraintsPath, 'utf8');
+
+            // Execute constraints.sql using raw query
+            console.log('Adding database constraints...');
+            await sequelize.query(constraints, { transaction });
+            console.log('Database constraints added successfully');
 
             // Create roles using Sequelize models
             console.log('Seeding roles table...');
