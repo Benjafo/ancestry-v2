@@ -1,10 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ManagerDashboardSummary, managerApi } from '../api/client';
-import { getUser } from '../utils/auth';
 
 const ManagerDashboard = () => {
-    const user = getUser();
+    // const user = getUser(); // Commented out due to linting error (unused variable)
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [dashboardData, setDashboardData] = useState<ManagerDashboardSummary | null>(null);

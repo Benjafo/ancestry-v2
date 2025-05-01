@@ -16,6 +16,34 @@ jobs:
     defaults:
       run:
         working-directory: ./server
+    
+    # Add PostgreSQL service
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres  # Start with default postgres database
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    # Add environment variables for the test job
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/ancestrydb
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: ancestrydb
+      NODE_ENV: test
+      JWT_SECRET: test_jwt_secret
 
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +57,18 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+      
+      # Create database and run schema.sql
+      - name: Set up database
+        run: |
+          # Create the database
+          PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE ancestrydb;"
+          
+          # Run schema.sql to create tables
+          PGPASSWORD=postgres psql -h localhost -U postgres -d ancestrydb -f schema.sql
+          
+          # Run basic seed data for tests
+          node seed.js
       
       - name: Run tests
         run: npm test

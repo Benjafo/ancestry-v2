@@ -44,7 +44,7 @@ const Register = () => {
         setIsLoading(true);
 
         try {
-            const { confirmPassword, ...registerData } = formData;
+            const { /* confirmPassword, */ ...registerData } = formData;
             const response = await authApi.register(registerData);
             login(response.token, response.user, response.refreshToken);
             navigate({ to: '/dashboard' });
