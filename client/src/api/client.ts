@@ -402,3 +402,5 @@ export const managerApi = {
             json: { accessLevel }
         });
         return response.json();
+    }
+}
