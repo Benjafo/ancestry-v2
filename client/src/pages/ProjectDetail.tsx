@@ -7,7 +7,7 @@ const ProjectDetail = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
 
     useEffect(() => {
         const fetchProjectDetails = async () => {
@@ -183,6 +183,16 @@ const ProjectDetail = () => {
                         >
                             Timeline ({project.timeline.length})
                         </button>
+                        <button
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                                activeTab === 'family_members'
+                                    ? 'border-primary-500 text-primary-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                            onClick={() => setActiveTab('family_members')}
+                        >
+                            Family Members {project.persons && `(${project.persons.length})`}
+                        </button>
                     </nav>
                 </div>
 
@@ -297,6 +307,38 @@ const ProjectDetail = () => {
                                     ))}
                                 </ul>
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'family_members' && (
+                        <div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Family Members</h3>
+                            {!project.persons || project.persons.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">No family members have been added to this project yet.</p>
+                                    {project.access_level === 'edit' && (
+                                        <button className="btn-primary mt-4">Add First Person</button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {project.persons.map(person => (
+                                        <div key={person.person_id} className="border rounded-lg p-4">
+                                            <h3 className="font-medium text-gray-900">
+                                                {person.first_name} {person.last_name}
+                                            </h3>
+                                            <div className="text-sm text-gray-500 mt-2">
+                                                {person.birth_date && (
+                                                    <p>Born: {new Date(person.birth_date).toLocaleDateString()}</p>
+                                                )}
+                                                {person.death_date && (
+                                                    <p>Died: {new Date(person.death_date).toLocaleDateString()}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

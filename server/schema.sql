@@ -93,28 +93,6 @@ CREATE TABLE
         PRIMARY KEY (user_id, role_id)
     );
 
--- Family Trees table
-CREATE TABLE
-    trees (
-        tree_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        created_by UUID REFERENCES users(user_id),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- User-Tree junction table
-CREATE TABLE
-    user_trees (
-        user_id UUID REFERENCES users(user_id),
-        tree_id UUID REFERENCES trees(tree_id),
-        access_level VARCHAR(50), -- 'view', 'edit', etc.
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (user_id, tree_id)
-    );
-
 -- Projects table
 CREATE TABLE
     projects (
@@ -132,6 +110,7 @@ CREATE TABLE
     project_users (
         project_id UUID REFERENCES projects(id),
         user_id UUID REFERENCES users(user_id),
+        access_level VARCHAR(50) DEFAULT 'view', -- 'view', 'edit', etc.
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (project_id, user_id)

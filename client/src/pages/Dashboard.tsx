@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { DashboardSummary, Notification, Tree, dashboardApi, treesApi } from '../api/client';
-import TreeList from '../components/trees/TreeList';
+import { DashboardSummary, Notification, Project, dashboardApi, projectsApi } from '../api/client';
+import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
 
 const Dashboard = () => {
@@ -9,9 +9,9 @@ const Dashboard = () => {
     const [error, setError] = useState<string | null>(null);
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [trees, setTrees] = useState<Tree[]>([]);
-    const [treesLoading, setTreesLoading] = useState(true);
-    const [treesError, setTreesError] = useState<string | null>(null);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [projectsLoading, setProjectsLoading] = useState(true);
+    const [projectsError, setProjectsError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -32,20 +32,20 @@ const Dashboard = () => {
             }
         };
 
-        const fetchTrees = async () => {
+        const fetchProjects = async () => {
             try {
-                const response = await treesApi.getTrees();
-                setTrees(response.trees);
-                setTreesLoading(false);
+                const response = await projectsApi.getProjects();
+                setProjects(response.projects);
+                setProjectsLoading(false);
             } catch (err) {
-                console.error('Error fetching trees:', err);
-                setTreesError('Failed to load family trees');
-                setTreesLoading(false);
+                console.error('Error fetching projects:', err);
+                setProjectsError('Failed to load projects');
+                setProjectsLoading(false);
             }
         };
 
         fetchDashboardData();
-        fetchTrees();
+        fetchProjects();
     }, []);
 
     if (isLoading) {
@@ -125,15 +125,15 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Family Trees */}
+            {/* Projects */}
             <div className="card bg-white shadow-sm rounded-lg p-6">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-medium text-gray-900">Your Family Trees</h2>
+                    <h2 className="text-lg font-medium text-gray-900">Your Projects</h2>
                 </div>
-                <TreeList 
-                    trees={trees} 
-                    isLoading={treesLoading} 
-                    error={treesError} 
+                <ProjectList 
+                    projects={projects} 
+                    isLoading={projectsLoading} 
+                    error={projectsError} 
                 />
             </div>
 

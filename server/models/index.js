@@ -1,6 +1,5 @@
 const User = require('./user');
 const Role = require('./role');
-const Tree = require('./tree');
 const Project = require('./project');
 const ProjectDocument = require('./projectDocument');
 const ProjectTimeline = require('./projectTimeline');
@@ -22,26 +21,7 @@ Role.belongsToMany(User, {
     otherKey: 'user_id'
 });
 
-// Define User-Tree associations
-User.belongsToMany(Tree, {
-    through: 'user_trees',
-    foreignKey: 'user_id',
-    otherKey: 'tree_id'
-});
-
-Tree.belongsToMany(User, {
-    through: 'user_trees',
-    foreignKey: 'tree_id',
-    otherKey: 'user_id'
-});
-
-// Define Tree creator association
-Tree.belongsTo(User, {
-    foreignKey: 'created_by',
-    as: 'creator'
-});
-
-// Define Project associations
+// Define Project associations with access levels
 Project.belongsTo(User, {
     foreignKey: 'researcher_id',
     as: 'researcher'
@@ -108,7 +88,6 @@ PasswordResetToken.belongsTo(User, {
 module.exports = {
     User,
     Role,
-    Tree,
     Project,
     ProjectDocument,
     ProjectTimeline,
