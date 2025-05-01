@@ -4,7 +4,7 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 // Import the models
-const { User, Role } = require('./models');
+const { User, Role, Tree, Project, ProjectDocument, ProjectTimeline } = require('./models');
 
 async function seedDatabase() {
     // First connect to the default 'postgres' database
@@ -76,6 +76,14 @@ async function seedDatabase() {
                 DROP TABLE IF EXISTS roles CASCADE;
                 DROP TABLE IF EXISTS trees CASCADE;
                 DROP TABLE IF EXISTS user_trees CASCADE;
+                DROP TABLE IF EXISTS projects CASCADE;
+                DROP TABLE IF EXISTS project_users CASCADE;
+                DROP TABLE IF EXISTS project_documents CASCADE;
+                DROP TABLE IF EXISTS project_timelines CASCADE;
+                DROP TABLE IF EXISTS client_profiles CASCADE;
+                DROP TABLE IF EXISTS notifications CASCADE;
+                DROP TABLE IF EXISTS activities CASCADE;
+                DROP TABLE IF EXISTS password_reset_tokens CASCADE;
             `, { transaction });
 
             // Read schema.sql
@@ -126,6 +134,105 @@ async function seedDatabase() {
             await clientUser.addRole(clientRole, { transaction });
             console.log('User roles assigned successfully');
 
+            // Create test data for admin user
+            console.log('Creating test data for admin user...');
+            
+            // Create three family trees for the admin user
+            const adminTree1 = await Tree.create({
+                name: 'Smith Family Tree',
+                description: 'Historical records of the Smith family dating back to the 1800s',
+                created_by: adminUser.user_id
+            }, { transaction });
+
+            const adminTree2 = await Tree.create({
+                name: 'Johnson Ancestry',
+                description: 'Complete genealogy of the Johnson family with European roots',
+                created_by: adminUser.user_id
+            }, { transaction });
+
+            const adminTree3 = await Tree.create({
+                name: 'Williams Heritage',
+                description: 'Comprehensive family history of the Williams lineage',
+                created_by: adminUser.user_id
+            }, { transaction });
+            
+            console.log('Admin trees created successfully');
+
+            // Create three research projects managed by the admin
+            const project1 = await Project.create({
+                title: 'Smith Family Immigration Records',
+                description: 'Research project to trace Smith family immigration patterns from Ireland to the United States',
+                status: 'active',
+                researcher_id: adminUser.user_id
+            }, { transaction });
+
+            /* const project2 = */ await Project.create({
+                title: 'Johnson European Ancestry',
+                description: 'Investigation into Johnson family roots in Scandinavia and Germany',
+                status: 'active',
+                researcher_id: adminUser.user_id
+            }, { transaction });
+
+            /* const project3 = */ await Project.create({
+                title: 'Williams Military Service',
+                description: 'Documentation of Williams family members who served in various military conflicts',
+                status: 'on_hold',
+                researcher_id: adminUser.user_id
+            }, { transaction });
+            
+            console.log('Admin projects created successfully');
+
+            // Add documents to the first project
+            await ProjectDocument.create({
+                project_id: project1.id,
+                title: 'Ship Passenger Manifest',
+                type: 'document',
+                file_path: '/documents/manifest.pdf'
+            }, { transaction });
+
+            await ProjectDocument.create({
+                project_id: project1.id,
+                title: 'Birth Certificate',
+                type: 'certificate',
+                file_path: '/documents/birth_certificate.pdf'
+            }, { transaction });
+            
+            console.log('Project documents created successfully');
+
+            // Add timeline events to the first project
+            await ProjectTimeline.create({
+                project_id: project1.id,
+                date: new Date('1892-04-15'),
+                event: 'Arrival at Ellis Island',
+                description: 'First Smith family members arrived in the United States through Ellis Island'
+            }, { transaction });
+
+            await ProjectTimeline.create({
+                project_id: project1.id,
+                date: new Date('1895-06-22'),
+                event: 'Settlement in Boston',
+                description: 'Smith family established their first home in Boston, Massachusetts'
+            }, { transaction });
+            
+            console.log('Project timeline events created successfully');
+
+            // Assign subset of data to client user
+            console.log('Assigning data to client user...');
+            
+            // Assign one tree to the client user with view access
+            await sequelize.query(`
+                INSERT INTO user_trees (user_id, tree_id, access_level, created_at, updated_at)
+                VALUES ('${clientUser.user_id}', '${adminTree1.tree_id}', 'view', NOW(), NOW())
+            `, { transaction });
+            
+            // Assign one project to the client user
+            await sequelize.query(`
+                INSERT INTO project_users (project_id, user_id, created_at, updated_at)
+                VALUES ('${project1.id}', '${clientUser.user_id}', NOW(), NOW())
+            `, { transaction });
+            
+            console.log('Client data assignment completed successfully');
+
             // Commit the transaction
             await transaction.commit();
             console.log('Database seeding completed successfully');
@@ -134,72 +241,6 @@ async function seedDatabase() {
             await transaction.rollback();
             throw error; // Re-throw to be caught by the outer catch block
         }
-
-        // ==========================================
-        // PLACEHOLDER: Seed data for persons table
-        // ==========================================
-        /*
-        console.log('Seeding persons table...');
-        await sequelize.query(`
-          INSERT INTO persons (person_id, first_name, last_name, gender, birth_date)
-          VALUES 
-            (uuid_generate_v4(), 'John', 'Doe', 'Male', '1950-01-01'),
-            (uuid_generate_v4(), 'Jane', 'Doe', 'Female', '1952-05-15');
-        `);
-        */
-
-        // ==========================================
-        // PLACEHOLDER: Seed data for relationships table
-        // ==========================================
-        /*
-        console.log('Seeding relationships table...');
-        await sequelize.query(`
-          INSERT INTO relationships (relationship_id, person1_id, person2_id, relationship_type)
-          VALUES 
-            (uuid_generate_v4(), (SELECT person_id FROM persons WHERE first_name = 'John'), 
-             (SELECT person_id FROM persons WHERE first_name = 'Jane'), 'spouse');
-        `);
-        */
-
-        // ==========================================
-        // PLACEHOLDER: Seed data for events table
-        // ==========================================
-        /*
-        console.log('Seeding events table...');
-        await sequelize.query(`
-          INSERT INTO events (event_id, person_id, event_type, event_date)
-          VALUES 
-            (uuid_generate_v4(), (SELECT person_id FROM persons WHERE first_name = 'John'), 
-             'marriage', '1975-06-12');
-        `);
-        */
-
-        // ==========================================
-        // PLACEHOLDER: Seed data for documents table
-        // ==========================================
-        /*
-        console.log('Seeding documents table...');
-        await sequelize.query(`
-          INSERT INTO documents (document_id, title, document_type, upload_date)
-          VALUES 
-            (uuid_generate_v4(), 'Marriage Certificate', 'certificate', NOW());
-        `);
-        */
-
-        // ==========================================
-        // PLACEHOLDER: Seed data for document_persons junction table
-        // ==========================================
-        /*
-        console.log('Seeding document_persons table...');
-        await sequelize.query(`
-          INSERT INTO document_persons (document_id, person_id)
-          VALUES 
-            ((SELECT document_id FROM documents WHERE title = 'Marriage Certificate'),
-             (SELECT person_id FROM persons WHERE first_name = 'John')),
-            ((SELECT document_id FROM documents WHERE title = 'Marriage Certificate'),
-             (SELECT person_id FROM persons WHERE first_name = 'Jane'));
-        `);
-        */
 
     } catch (error) {
         console.error('Error seeding database:', error);
