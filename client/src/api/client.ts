@@ -23,7 +23,7 @@ export const apiClient = ky.create({
             }
         ],
         afterResponse: [
-            async (request, options, response) => {
+            async (request, _, response) => {
                 // Only attempt refresh if status is 401 (Unauthorized)
                 if (response.status === 401) {
                     const refreshToken = getRefreshToken();
@@ -402,15 +402,5 @@ export const managerApi = {
             json: { accessLevel }
         });
         return response.json();
-    },
-    
-    removeClientFromTree: async (clientId: string, treeId: string): Promise<{ message: string }> => {
-        const response = await apiClient.delete(`manager/clients/${clientId}/trees/${treeId}`);
-        return response.json();
-    },
-    
-    getAssignmentHistory: async (clientId: string): Promise<{ history: ClientAssignment[] }> => {
-        const response = await apiClient.get(`manager/clients/${clientId}/assignment-history`);
-        return response.json();
     }
-};
+}

@@ -81,7 +81,7 @@ const UserManagement = () => {
         }
         
         try {
-            const response = await managerApi.createUser(formData);
+            /* const response = */ await managerApi.createUser(formData);
             setSuccessMessage('User created successfully');
             setIsCreateModalOpen(false);
             setFormData({
@@ -111,8 +111,8 @@ const UserManagement = () => {
         }
         
         try {
-            const { password, ...updateData } = formData;
-            const response = await managerApi.updateUser(selectedUser.user_id, updateData);
+            const { /* password, */ ...updateData } = formData;
+            /* const response = */ await managerApi.updateUser(selectedUser.user_id, updateData);
             setSuccessMessage('User updated successfully');
             setIsEditModalOpen(false);
             fetchUsers();

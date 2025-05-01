@@ -119,7 +119,7 @@ const ClientAssignment = () => {
         if (!selectedClient) return;
         
         try {
-            await managerApi.removeClientFromTree(selectedClient, treeId);
+            await managerApi.removeClientFromProject(selectedClient, treeId);
             setSuccessMessage('Client removed from tree successfully');
             fetchClientAssignments(selectedClient);
             
@@ -143,16 +143,17 @@ const ClientAssignment = () => {
         return clientAssignments.trees.some(tree => tree.tree_id === treeId);
     };
 
-    const getTreeAccessLevel = (treeId: string) => {
-        if (!clientAssignments) return null;
-        const tree = clientAssignments.trees.find(tree => tree.tree_id === treeId);
-        return tree?.access_level || null;
-    };
+    // Commented out due to linting errors (unused functions)
+    // const getTreeAccessLevel = (treeId: string) => {
+    //     if (!clientAssignments) return null;
+    //     const tree = clientAssignments.trees.find(tree => tree.tree_id === treeId);
+    //     return tree?.access_level || null;
+    // };
 
-    const getSelectedClient = () => {
-        if (!selectedClient) return null;
-        return clients.find(client => client.user_id === selectedClient);
-    };
+    // const getSelectedClient = () => {
+    //     if (!selectedClient) return null;
+    //     return clients.find(client => client.user_id === selectedClient);
+    // };
 
     if (isLoading) {
         return (

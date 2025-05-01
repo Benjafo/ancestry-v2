@@ -81,10 +81,10 @@ const Profile = () => {
 
         try {
             // Extract only the client profile fields (not first_name, last_name, email)
-            const { first_name, last_name, email, ...profileData } = formData;
+            const { /* first_name, last_name, email, */ ...profileData } = formData;
             
             // Update profile via API
-            const response = await clientApi.updateProfile(profileData);
+            /* const response = */ await clientApi.updateProfile(profileData);
             
             setSuccess('Profile updated successfully');
             setIsSaving(false);
