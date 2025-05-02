@@ -1,0 +1,538 @@
+
+> server@0.0.0 test
+> jest --passWithNoTests
+
+FAIL tests/document.test.js
+  Document Model Validation
+    ✓ should validate document type (23 ms)
+    ✓ should validate required fields (3 ms)
+    ✓ should normalize document type to lowercase (2 ms)
+    ✓ should trim whitespace from title and source (3 ms)
+    ✓ should set upload date to current date if not provided (2 ms)
+    ✓ should validate file extension matches document type (1 ms)
+    ✓ should validate MIME type (3 ms)
+    ✓ should validate file size is non-negative (2 ms)
+    ✓ should validate date of original is a valid date (1 ms)
+  Document-Person Association Validation
+    ✓ should validate document-person association
+    ✓ should validate birth certificate date matches birth date (1 ms)
+    ✕ should detect birth certificate date mismatch with birth date (3 ms)
+    ✕ should detect death certificate date mismatch with death date (1 ms)
+    ✕ should detect document date before person's birth (1 ms)
+    ✕ should detect document date after person's death (1 ms)
+
+  ● Document-Person Association Validation › should detect birth certificate date mismatch with birth date
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "Birth certificate date should match"
+    Received array: ["Birth certificate date should match person's birth date"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      211 |         // Validation should fail
+      212 |         expect(result.isValid).toBe(false);
+    > 213 |         expect(result.errors).toContain(expect.stringContaining('Birth certificate date should match'));
+          |                               ^
+      214 |     });
+      215 |
+      216 |     test('should detect death certificate date mismatch with death date', () => {
+
+      at Object.toContain (tests/document.test.js:213:31)
+
+  ● Document-Person Association Validation › should detect death certificate date mismatch with death date
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "Death certificate date should match"
+    Received array: ["Death certificate date should match person's death date"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      238 |         // Validation should fail
+      239 |         expect(result.isValid).toBe(false);
+    > 240 |         expect(result.errors).toContain(expect.stringContaining('Death certificate date should match'));
+          |                               ^
+      241 |     });
+      242 |
+      243 |     test('should detect document date before person\'s birth', () => {
+
+      at Object.toContain (tests/document.test.js:240:31)
+
+  ● Document-Person Association Validation › should detect document date before person's birth
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "before person's birth"
+    Received array: ["Document date is more than 1 year before person's birth"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      265 |         // Validation should fail
+      266 |         expect(result.isValid).toBe(false);
+    > 267 |         expect(result.errors).toContain(expect.stringContaining('before person\'s birth'));
+          |                               ^
+      268 |     });
+      269 |
+      270 |     test('should detect document date after person\'s death', () => {
+
+      at Object.toContain (tests/document.test.js:267:31)
+
+  ● Document-Person Association Validation › should detect document date after person's death
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "after person's death"
+    Received array: ["Document date is more than 1 year after person's death"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      292 |         // Validation should fail
+      293 |         expect(result.isValid).toBe(false);
+    > 294 |         expect(result.errors).toContain(expect.stringContaining('after person\'s death'));
+          |                               ^
+      295 |     });
+      296 | });
+      297 |
+
+      at Object.toContain (tests/document.test.js:294:31)
+
+FAIL tests/person.test.js
+  Person Model Validation
+    ✓ should validate birth date before death date (30 ms)
+    ✓ should validate birth date not in future (2 ms)
+    ✓ should validate death date not in future (1 ms)
+    ✓ should validate gender values (2 ms)
+    ✓ should validate required fields (1 ms)
+    ✓ should normalize gender to lowercase
+    ✓ should trim whitespace from name fields (1 ms)
+    ✕ should flag unusually high ages (3 ms)
+  Person Events Validation
+    ✓ should validate events against person birth/death dates (1 ms)
+    ✕ should detect events before birth (1 ms)
+    ✕ should detect events after death
+  Parent-Child Relationship Validation
+    ✓ should validate reasonable parent-child age difference
+    ✕ should detect parent too young (1 ms)
+    ✕ should detect parent too old
+
+  ● Person Model Validation › should flag unusually high ages
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "exceeds 110 years"
+    Received array: ["Age at death (150 years) exceeds 120 years. Please verify dates."]
+
+      118 |         // Validation should fail with warning
+      119 |         expect(result.isValid).toBe(false);
+    > 120 |         expect(result.warnings).toContain(expect.stringContaining('exceeds 110 years'));
+          |                                 ^
+      121 |     });
+      122 | });
+      123 |
+
+      at Object.toContain (tests/person.test.js:120:33)
+
+  ● Person Events Validation › should detect events before birth
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "before person's birth date"
+    Received array: ["Event 'marriage' date (1940-06-15) is before person's birth date (1950-01-01)"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      181 |         // Validation should fail
+      182 |         expect(result.isValid).toBe(false);
+    > 183 |         expect(result.errors).toContain(expect.stringContaining('before person\'s birth date'));
+          |                               ^
+      184 |     });
+      185 |
+      186 |     test('should detect events after death', () => {
+
+      at Object.toContain (tests/person.test.js:183:31)
+
+  ● Person Events Validation › should detect events after death
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "after person's death date"
+    Received array: ["Event 'residence' date (2022-06-15) is after person's death date (2020-01-01)"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      207 |         // Validation should fail
+      208 |         expect(result.isValid).toBe(false);
+    > 209 |         expect(result.errors).toContain(expect.stringContaining('after person\'s death date'));
+          |                               ^
+      210 |     });
+      211 | });
+      212 |
+
+      at Object.toContain (tests/person.test.js:209:31)
+
+  ● Parent-Child Relationship Validation › should detect parent too young
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "unusually small"
+    Received array: ["Parent-child age difference (8 years) is unusually small. Parent would have been under 12 years old."]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      252 |         // Validation should fail
+      253 |         expect(result.isValid).toBe(false);
+    > 254 |         expect(result.warnings).toContain(expect.stringContaining('unusually small'));
+          |                                 ^
+      255 |     });
+      256 |
+      257 |     test('should detect parent too old', () => {
+
+      at Object.toContain (tests/person.test.js:254:33)
+
+  ● Parent-Child Relationship Validation › should detect parent too old
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "unusually large"
+    Received array: ["Parent-child age difference (80 years) is unusually large. Parent would have been over 70 years old."]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      274 |         // Validation should fail
+      275 |         expect(result.isValid).toBe(false);
+    > 276 |         expect(result.warnings).toContain(expect.stringContaining('unusually large'));
+          |                                 ^
+      277 |     });
+      278 | });
+      279 |
+
+      at Object.toContain (tests/person.test.js:276:33)
+
+FAIL tests/relationship.test.js
+  Relationship Model Validation
+    ✓ should validate relationship type (21 ms)
+    ✓ should validate relationship qualifier (4 ms)
+    ✓ should validate start date before end date (7 ms)
+    ✓ should validate different persons (1 ms)
+    ✕ should normalize relationship type and qualifier to lowercase (1 ms)
+    ✓ should require marriage date for spouse relationships (1 ms)
+    ✓ should validate relationship consistency (1 ms)
+  Relationship Cross-Entity Validation
+    ✓ should validate relationship between two persons (1 ms)
+    ✓ should detect parent born after child (1 ms)
+    ✓ should detect circular relationships (1 ms)
+  Marriage Validation
+    ✓ should validate marriage dates (1 ms)
+    ✕ should detect marriage before birth (3 ms)
+    ✕ should detect marriage after death (1 ms)
+    ✕ should detect unusually young marriage age (1 ms)
+
+  ● Relationship Model Validation › should normalize relationship type and qualifier to lowercase
+
+    SequelizeValidationError: Validation error: Person 1 ID must be a valid UUID,
+    Validation error: Person 2 ID must be a valid UUID
+
+      65 |
+      66 |         // Trigger beforeValidate hook
+    > 67 |         await relationship.validate();
+         |         ^
+      68 |
+      69 |         // Type and qualifier should be normalized to lowercase
+      70 |         expect(relationship.relationship_type).toBe('parent');
+
+      at InstanceValidator._validate (node_modules/sequelize/src/instance-validator.js:78:13)
+      at InstanceValidator._validateAndRunHooks (node_modules/sequelize/src/instance-validator.js:111:7)
+      at InstanceValidator.validate (node_modules/sequelize/src/instance-validator.js:93:12)
+      at Object.<anonymous> (tests/relationship.test.js:67:9)
+
+  ● Marriage Validation › should detect marriage before birth
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "before"
+    Received array: ["Marriage date is before John's birth date", "Marriage date is before Jane's birth date", "John's age at marriage (-10 years) is unusually young", "Jane's age at marriage (-15 years) is unusually young"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      263 |         // Validation should fail
+      264 |         expect(result.isValid).toBe(false);
+    > 265 |         expect(result.warnings).toContain(expect.stringContaining('before'));
+          |                                 ^
+      266 |     });
+      267 |
+      268 |     test('should detect marriage after death', () => {
+
+      at Object.toContain (tests/relationship.test.js:265:33)
+
+  ● Marriage Validation › should detect marriage after death
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "after"
+    Received array: ["Marriage date is after John's death date"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      296 |         // Validation should fail
+      297 |         expect(result.isValid).toBe(false);
+    > 298 |         expect(result.warnings).toContain(expect.stringContaining('after'));
+          |                                 ^
+      299 |     });
+      300 |
+      301 |     test('should detect unusually young marriage age', () => {
+
+      at Object.toContain (tests/relationship.test.js:298:33)
+
+  ● Marriage Validation › should detect unusually young marriage age
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "unusually young"
+    Received array: ["John's age at marriage (10 years) is unusually young", "Jane's age at marriage (5 years) is unusually young"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      328 |         // Validation should fail
+      329 |         expect(result.isValid).toBe(false);
+    > 330 |         expect(result.warnings).toContain(expect.stringContaining('unusually young'));
+          |                                 ^
+      331 |     });
+      332 | });
+      333 |
+
+      at Object.toContain (tests/relationship.test.js:330:33)
+
+FAIL tests/event.test.js
+  Event Model Validation
+    ✓ should validate event type (19 ms)
+    ✓ should validate event date not in future (2 ms)
+    ✕ should normalize event type to lowercase
+    ✕ should trim whitespace from location (1 ms)
+    ✕ should require date for birth and death events (1 ms)
+    ✕ should validate event consistency
+  Event Chronology Validation
+    ✓ should validate event chronology with person birth/death dates
+    ✓ should detect event before birth (3 ms)
+    ✓ should detect event after death
+    ✓ should validate birth event matches birth date (1 ms)
+    ✓ should detect birth event mismatch with birth date
+  Historical Consistency Validation
+    ✓ should validate historical consistency of dates (1 ms)
+    ✓ should detect dates in the future
+    ✕ should detect unreasonably old dates (1 ms)
+    ✓ should validate US Census years
+    ✕ should detect invalid US Census years
+    ✕ should identify military service during major wars (1 ms)
+    ✕ should identify immigration during major waves
+
+  ● Event Model Validation › should normalize event type to lowercase
+
+    SequelizeValidationError: Validation error: Person ID must be a valid UUID
+
+      40 |
+      41 |         // Trigger beforeValidate hook
+    > 42 |         await event.validate();
+         |         ^
+      43 |
+      44 |         // Event type should be normalized to lowercase
+      45 |         expect(event.event_type).toBe('birth');
+
+      at InstanceValidator._validate (node_modules/sequelize/src/instance-validator.js:78:13)
+      at InstanceValidator._validateAndRunHooks (node_modules/sequelize/src/instance-validator.js:111:7)
+      at InstanceValidator.validate (node_modules/sequelize/src/instance-validator.js:93:12)
+      at Object.<anonymous> (tests/event.test.js:42:9)
+
+  ● Event Model Validation › should trim whitespace from location
+
+    SequelizeValidationError: Validation error: Person ID must be a valid UUID
+
+      56 |
+      57 |         // Trigger beforeValidate hook
+    > 58 |         await event.validate();
+         |         ^
+      59 |
+      60 |         // Location should be trimmed
+      61 |         expect(event.event_location).toBe('New York');
+
+      at InstanceValidator._validate (node_modules/sequelize/src/instance-validator.js:78:13)
+      at InstanceValidator._validateAndRunHooks (node_modules/sequelize/src/instance-validator.js:111:7)
+      at InstanceValidator.validate (node_modules/sequelize/src/instance-validator.js:93:12)
+      at Object.<anonymous> (tests/event.test.js:58:9)
+
+  ● Event Model Validation › should require date for birth and death events
+
+    expect(received).not.toContain(expected) // indexOf
+
+    Expected substring: not "Date is required for birth events"
+    Received string:        "Validation error: Date is required for birth events,
+    Validation error: Person ID must be a valid UUID"
+
+      78 |         } catch (error) {
+      79 |             // If we get here, the validation failed for some other reason
+    > 80 |             expect(error.message).not.toContain('Date is required for birth events');
+         |                                       ^
+      81 |         }
+      82 |     });
+      83 |
+
+      at Object.toContain (tests/event.test.js:80:39)
+
+  ● Event Model Validation › should validate event consistency
+
+    expect(received).resolves.toBe()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [SequelizeValidationError: Validation error: Person ID must be a valid UUID]
+
+      91 |
+      92 |         // Validation should pass
+    > 93 |         await expect(event.validate()).resolves.toBe(undefined);
+         |               ^
+      94 |     });
+      95 | });
+      96 |
+
+      at expect (node_modules/expect/build/index.js:113:15)
+      at Object.expect (tests/event.test.js:93:15)
+
+  ● Historical Consistency Validation › should detect unreasonably old dates
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "before 1400"
+    Received array: ["Date (1300) is before 1400. Reliable genealogical records are rare before this period."]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      259 |         // Validation should fail
+      260 |         expect(result.isValid).toBe(false);
+    > 261 |         expect(result.warnings).toContain(expect.stringContaining('before 1400'));
+          |                                 ^
+      262 |     });
+      263 |
+      264 |     test('should validate US Census years', () => {
+
+      at Object.toContain (tests/event.test.js:261:33)
+
+  ● Historical Consistency Validation › should detect invalid US Census years
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "not a US Census year"
+    Received array: ["1943 is not a US Census year. US Census was conducted in: 1790, 1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870, 1880, 1890, 1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      286 |         // Validation should fail
+      287 |         expect(result.isValid).toBe(false);
+    > 288 |         expect(result.warnings).toContain(expect.stringContaining('not a US Census year'));
+          |                                 ^
+      289 |     });
+      290 |
+      291 |     test('should identify military service during major wars', () => {
+
+      at Object.toContain (tests/event.test.js:288:33)
+
+  ● Historical Consistency Validation › should identify military service during major wars
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "World War II"
+    Received array: ["Military service in 1943 coincides with: World War II"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      299 |
+      300 |         // Validation should pass but with informational warning
+    > 301 |         expect(result.warnings).toContain(expect.stringContaining('World War II'));
+          |                                 ^
+      302 |     });
+      303 |
+      304 |     test('should identify immigration during major waves', () => {
+
+      at Object.toContain (tests/event.test.js:301:33)
+
+  ● Historical Consistency Validation › should identify immigration during major waves
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: StringContaining "New Immigration"
+    Received array: ["Immigration in 1900 falls within: New Immigration"]
+
+    Looks like you wanted to test for object/array equality with the stricter `toContain` matcher. You probably need to use `toContainEqual` instead.
+
+      312 |
+      313 |         // Validation should pass but with informational warning
+    > 314 |         expect(result.warnings).toContain(expect.stringContaining('New Immigration'));
+          |                                 ^
+      315 |     });
+      316 | });
+      317 |
+
+      at Object.toContain (tests/event.test.js:314:33)
+
+  console.log
+    Executing (default): DROP TABLE IF EXISTS "project_users" CASCADE;
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+
+ ....
+ 
+  console.log
+    Executing (default): INSERT INTO "user_roles" ("created_at","updated_at","user_id","role_id") VALUES ('2025-05-02 01:32:50.082 +00:00','2025-05-02 01:32:50.082 +00:00','7ec51b5a-061a-46ca-bd8e-3f8afedb0e00','d80f0953-6190-4a10-8412-355378acfccd') RETURNING "created_at","updated_at","user_id","role_id";
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+          at async Promise.all (index 0)
+
+[0mPOST /api/auth/register [32m201 [0m89.774 ms - 698[0m
+  console.log
+    Executing (default): SELECT "user_id", "email", "password", "first_name", "last_name", "last_login", "is_active", "created_at" AS "createdAt", "updated_at" AS "updatedAt" FROM "users" AS "User" WHERE "User"."email" = 'test@example.com';
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+
+[0mPOST /api/auth/register [33m400 [0m2.800 ms - 33[0m
+  console.log
+    Executing (default): SELECT "User"."user_id", "User"."email", "User"."password", "User"."first_name", "User"."last_name", "User"."last_login", "User"."is_active", "User"."created_at" AS "createdAt", "User"."updated_at" AS "updatedAt", "Roles"."role_id" AS "Roles.role_id", "Roles"."name" AS "Roles.name", "Roles"."description" AS "Roles.description", "Roles"."created_at" AS "Roles.createdAt", "Roles"."updated_at" AS "Roles.updatedAt", "Roles->user_roles"."created_at" AS "Roles.user_roles.createdAt", "Roles->user_roles"."updated_at" AS "Roles.user_roles.updatedAt", "Roles->user_roles"."user_id" AS "Roles.user_roles.user_id", "Roles->user_roles"."role_id" AS "Roles.user_roles.role_id" FROM "users" AS "User" LEFT OUTER JOIN ( "user_roles" AS "Roles->user_roles" INNER JOIN "roles" AS "Roles" ON "Roles"."role_id" = "Roles->user_roles"."role_id") ON "User"."user_id" = "Roles->user_roles"."user_id" WHERE "User"."email" = 'test@example.com';
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+
+  console.log
+    Executing (default): UPDATE "users" SET "last_login"=$1,"updated_at"=$2 WHERE "user_id" = $3
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+
+[0mPOST /api/auth/login [32m200 [0m55.559 ms - 686[0m
+  console.log
+    Executing (default): SELECT "User"."user_id", "User"."email", "User"."password", "User"."first_name", "User"."last_name", "User"."last_login", "User"."is_active", "User"."created_at" AS "createdAt", "User"."updated_at" AS "updatedAt", "Roles"."role_id" AS "Roles.role_id", "Roles"."name" AS "Roles.name", "Roles"."description" AS "Roles.description", "Roles"."created_at" AS "Roles.createdAt", "Roles"."updated_at" AS "Roles.updatedAt", "Roles->user_roles"."created_at" AS "Roles.user_roles.createdAt", "Roles->user_roles"."updated_at" AS "Roles.user_roles.updatedAt", "Roles->user_roles"."user_id" AS "Roles.user_roles.user_id", "Roles->user_roles"."role_id" AS "Roles.user_roles.role_id" FROM "users" AS "User" LEFT OUTER JOIN ( "user_roles" AS "Roles->user_roles" INNER JOIN "roles" AS "Roles" ON "Roles"."role_id" = "Roles->user_roles"."role_id") ON "User"."user_id" = "Roles->user_roles"."user_id" WHERE "User"."email" = 'test@example.com';
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+
+[0mPOST /api/auth/login [33m401 [0m45.918 ms - 33[0m
+  console.log
+    Executing (default): SELECT "User"."user_id", "User"."email", "User"."first_name", "User"."last_name", "User"."last_login", "User"."is_active", "User"."created_at" AS "createdAt", "User"."updated_at" AS "updatedAt", "Roles"."role_id" AS "Roles.role_id", "Roles"."name" AS "Roles.name", "Roles"."description" AS "Roles.description", "Roles"."created_at" AS "Roles.createdAt", "Roles"."updated_at" AS "Roles.updatedAt", "Roles->user_roles"."created_at" AS "Roles.user_roles.createdAt", "Roles->user_roles"."updated_at" AS "Roles.user_roles.updatedAt", "Roles->user_roles"."user_id" AS "Roles.user_roles.user_id", "Roles->user_roles"."role_id" AS "Roles.user_roles.role_id" FROM "users" AS "User" LEFT OUTER JOIN ( "user_roles" AS "Roles->user_roles" INNER JOIN "roles" AS "Roles" ON "Roles"."role_id" = "Roles->user_roles"."role_id") ON "User"."user_id" = "Roles->user_roles"."user_id" WHERE "User"."user_id" = '7ec51b5a-061a-46ca-bd8e-3f8afedb0e00';
+
+      at Sequelize.log (node_modules/sequelize/src/sequelize.js:1281:15)
+
+[0mGET /api/auth/profile [32m200 [0m6.248 ms - 144[0m
+[0mGET /api/auth/profile [33m401 [0m1.110 ms - 37[0m
+[0mGET /api/auth/profile [33m401 [0m1.104 ms - 38[0m
+PASS tests/auth.test.js
+  Authentication API
+    POST /api/auth/register
+      ✓ should register a new user (108 ms)
+      ✓ should not register a user with an existing email (8 ms)
+    POST /api/auth/login
+      ✓ should login an existing user (58 ms)
+      ✓ should not login with invalid credentials (48 ms)
+    GET /api/auth/profile
+      ✓ should access profile with valid token (9 ms)
+      ✓ should not access profile without token (3 ms)
+      ✓ should not access profile with invalid token (4 ms)
+
+Test Suites: 4 failed, 1 passed, 5 total
+Tests:       21 failed, 47 passed, 68 total
+Snapshots:   0 total
+Time:        2.326 s, estimated 3 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

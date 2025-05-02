@@ -258,7 +258,7 @@ describe('Historical Consistency Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.warnings).toContain(expect.stringContaining('before 1400'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('before 1400')]));
     });
 
     test('should validate US Census years', () => {
@@ -285,7 +285,7 @@ describe('Historical Consistency Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.warnings).toContain(expect.stringContaining('not a US Census year'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('not a US Census year')]));
     });
 
     test('should identify military service during major wars', () => {
@@ -298,7 +298,7 @@ describe('Historical Consistency Validation', () => {
         const result = validateHistoricalConsistency(wwiiDate, eventType, location);
 
         // Validation should pass but with informational warning
-        expect(result.warnings).toContain(expect.stringContaining('World War II'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('World War II')]));
     });
 
     test('should identify immigration during major waves', () => {
@@ -311,6 +311,6 @@ describe('Historical Consistency Validation', () => {
         const result = validateHistoricalConsistency(immigrationDate, eventType, location);
 
         // Validation should pass but with informational warning
-        expect(result.warnings).toContain(expect.stringContaining('New Immigration'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('New Immigration')]));
     });
 });

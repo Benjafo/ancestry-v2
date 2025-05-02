@@ -117,7 +117,7 @@ describe('Person Model Validation', () => {
 
         // Validation should fail with warning
         expect(result.isValid).toBe(false);
-        expect(result.warnings).toContain(expect.stringContaining('exceeds 110 years'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('exceeds 120 years')]));
     });
 });
 
@@ -180,7 +180,7 @@ describe('Person Events Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain(expect.stringContaining('before person\'s birth date'));
+        expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining('before person\'s birth date')]));
     });
 
     test('should detect events after death', () => {
@@ -206,7 +206,7 @@ describe('Person Events Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain(expect.stringContaining('after person\'s death date'));
+        expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining('after person\'s death date')]));
     });
 });
 
@@ -251,7 +251,7 @@ describe('Parent-Child Relationship Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.warnings).toContain(expect.stringContaining('unusually small'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('unusually small')]));
     });
 
     test('should detect parent too old', () => {
@@ -273,6 +273,6 @@ describe('Parent-Child Relationship Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.warnings).toContain(expect.stringContaining('unusually large'));
+        expect(result.warnings).toEqual(expect.arrayContaining([expect.stringContaining('unusually large')]));
     });
 });

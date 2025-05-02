@@ -210,7 +210,7 @@ describe('Document-Person Association Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain(expect.stringContaining('Birth certificate date should match'));
+        expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining('Birth certificate date should match')]));
     });
 
     test('should detect death certificate date mismatch with death date', () => {
@@ -237,7 +237,7 @@ describe('Document-Person Association Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain(expect.stringContaining('Death certificate date should match'));
+        expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining('Death certificate date should match')]));
     });
 
     test('should detect document date before person\'s birth', () => {
@@ -264,7 +264,7 @@ describe('Document-Person Association Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain(expect.stringContaining('before person\'s birth'));
+        expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining('before person\'s birth')]));
     });
 
     test('should detect document date after person\'s death', () => {
@@ -291,6 +291,6 @@ describe('Document-Person Association Validation', () => {
 
         // Validation should fail
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain(expect.stringContaining('after person\'s death'));
+        expect(result.errors).toEqual(expect.arrayContaining([expect.stringContaining('after person\'s death')]));
     });
 });
