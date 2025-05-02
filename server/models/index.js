@@ -8,6 +8,13 @@ const Notification = require('./notification');
 const Activity = require('./activity');
 const PasswordResetToken = require('./passwordResetToken');
 
+// Genealogical data models
+const Person = require('./person');
+const Relationship = require('./relationship');
+const Event = require('./event');
+const Document = require('./document');
+const DocumentPerson = require('./documentPerson');
+
 // Define User-Role associations
 User.belongsToMany(Role, { 
     through: 'user_roles',
@@ -85,6 +92,52 @@ PasswordResetToken.belongsTo(User, {
     foreignKey: 'user_id'
 });
 
+// Define genealogical data associations
+Person.hasMany(Event, {
+    foreignKey: 'person_id',
+    as: 'events'
+});
+
+Event.belongsTo(Person, {
+    foreignKey: 'person_id'
+});
+
+Person.belongsToMany(Document, {
+    through: DocumentPerson,
+    foreignKey: 'person_id',
+    otherKey: 'document_id',
+    as: 'documents'
+});
+
+Document.belongsToMany(Person, {
+    through: DocumentPerson,
+    foreignKey: 'document_id',
+    otherKey: 'person_id',
+    as: 'persons'
+});
+
+// Define relationship associations
+// Note: We need to define both directions for relationships
+Person.hasMany(Relationship, {
+    foreignKey: 'person1_id',
+    as: 'relationshipsAsSubject'
+});
+
+Person.hasMany(Relationship, {
+    foreignKey: 'person2_id',
+    as: 'relationshipsAsObject'
+});
+
+Relationship.belongsTo(Person, {
+    foreignKey: 'person1_id',
+    as: 'person1'
+});
+
+Relationship.belongsTo(Person, {
+    foreignKey: 'person2_id',
+    as: 'person2'
+});
+
 module.exports = {
     User,
     Role,
@@ -94,5 +147,11 @@ module.exports = {
     ClientProfile,
     Notification,
     Activity,
-    PasswordResetToken
+    PasswordResetToken,
+    // Genealogical data models
+    Person,
+    Relationship,
+    Event,
+    Document,
+    DocumentPerson
 };

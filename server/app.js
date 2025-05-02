@@ -13,6 +13,12 @@ var dashboardRouter = require('./routes/dashboard');
 var projectsRouter = require('./routes/projects');
 var managerRouter = require('./routes/manager');
 
+// Genealogical data routes
+var personsRouter = require('./routes/persons');
+var relationshipsRouter = require('./routes/relationships');
+var eventsRouter = require('./routes/events');
+var documentsRouter = require('./routes/documents');
+
 var app = express();
 
 // Enable CORS for all routes
@@ -60,6 +66,12 @@ app.use('/api/client', clientRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/manager', managerRouter);
+
+// Register genealogical data routes
+app.use('/api/persons', personsRouter);
+app.use('/api/relationships', relationshipsRouter);
+app.use('/api/events', eventsRouter);
+app.use('/api/documents', documentsRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

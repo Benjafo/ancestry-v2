@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectController');
 const { verifyToken } = require('../middleware/auth');
+const { validate } = require('../middleware/validation');
+const { 
+    createProjectValidation,
+    updateProjectValidation,
+    projectIdValidation,
+    addProjectDocumentValidation,
+    addProjectTimelineValidation
+} = require('../validations/projectValidations');
 
 // All routes require authentication
 router.use(verifyToken);
@@ -18,20 +26,20 @@ router.get('/', projectController.getProjects);
  * @desc    Get project by ID
  * @access  Private
  */
-router.get('/:id', projectController.getProjectById);
+router.get('/:id', validate(projectIdValidation), projectController.getProjectById);
 
 /**
  * @route   POST /api/projects
  * @desc    Create a new project
  * @access  Private
  */
-router.post('/', projectController.createProject);
+router.post('/', validate(createProjectValidation), projectController.createProject);
 
 /**
  * @route   PUT /api/projects/:id
  * @desc    Update a project
  * @access  Private
  */
-router.put('/:id', projectController.updateProject);
+router.put('/:id', validate(updateProjectValidation), projectController.updateProject);
 
 module.exports = router;
