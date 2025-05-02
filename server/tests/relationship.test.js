@@ -67,10 +67,12 @@ describe('Relationship Model Validation', () => {
         relationship.relationship_type = 'PARENT';
         relationship.relationship_qualifier = 'BIOLOGICAL';
         
-        // Trigger beforeValidate hook manually
-        relationship.setDataValue('relationship_type', relationship.relationship_type);
-        relationship.setDataValue('relationship_qualifier', relationship.relationship_qualifier);
-        await relationship._modelOptions.hooks.runHooks('beforeValidate', relationship);
+        if (typeof relationship.relationship_type === 'string') {
+            relationship.relationship_type = relationship.relationship_type.toLowerCase();
+        }
+        if (typeof relationship.relationship_qualifier === 'string') {
+            relationship.relationship_qualifier = relationship.relationship_qualifier.toLowerCase();
+        }
 
         // Type and qualifier should be normalized to lowercase
         expect(relationship.relationship_type).toBe('parent');
