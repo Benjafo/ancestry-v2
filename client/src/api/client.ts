@@ -279,6 +279,174 @@ export const projectsApi = {
 };
 
 
+// Event types
+export interface Event {
+    event_id: string;
+    person_id: string;
+    event_type: string;
+    event_date: string;
+    event_location?: string;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+// Document types
+export interface Document {
+    document_id: string;
+    title: string;
+    document_type: string;
+    file_path: string;
+    upload_date: string;
+    file_size?: number;
+    mime_type?: string;
+    description?: string;
+    source?: string;
+    date_of_original?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface DocumentPersonAssociation {
+    document_id: string;
+    person_id: string;
+    relevance?: string;
+    notes?: string;
+}
+
+// Event API service
+export const eventsApi = {
+    getEvents: async (params?: any): Promise<{ events: Event[]; metadata: any }> => {
+        const response = await apiClient.get('events', { searchParams: params });
+        return response.json();
+    },
+    
+    getEventById: async (eventId: string): Promise<Event> => {
+        const response = await apiClient.get(`events/${eventId}`);
+        return response.json();
+    },
+    
+    createEvent: async (eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
+        const response = await apiClient.post('events', { json: eventData });
+        return response.json();
+    },
+    
+    updateEvent: async (eventId: string, eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
+        const response = await apiClient.put(`events/${eventId}`, { json: eventData });
+        return response.json();
+    },
+    
+    deleteEvent: async (eventId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`events/${eventId}`);
+        return response.json();
+    },
+    
+    getEventsByPersonId: async (personId: string): Promise<Event[]> => {
+        const response = await apiClient.get(`events/person/${personId}`);
+        return response.json();
+    },
+    
+    getEventsByType: async (type: string): Promise<Event[]> => {
+        const response = await apiClient.get(`events/type/${type}`);
+        return response.json();
+    },
+    
+    getEventsByDateRange: async (startDate: string, endDate: string): Promise<Event[]> => {
+        const response = await apiClient.get(`events/date-range?startDate=${startDate}&endDate=${endDate}`);
+        return response.json();
+    },
+    
+    getEventsByLocation: async (location: string): Promise<Event[]> => {
+        const response = await apiClient.get(`events/location/${location}`);
+        return response.json();
+    },
+    
+    getPersonTimeline: async (personId: string): Promise<Event[]> => {
+        const response = await apiClient.get(`events/timeline/${personId}`);
+        return response.json();
+    }
+};
+
+// Document API service
+export const documentsApi = {
+    getDocuments: async (params?: any): Promise<{ documents: Document[]; metadata: any }> => {
+        const response = await apiClient.get('documents', { searchParams: params });
+        return response.json();
+    },
+    
+    getDocumentById: async (documentId: string): Promise<Document> => {
+        const response = await apiClient.get(`documents/${documentId}`);
+        return response.json();
+    },
+    
+    createDocument: async (documentData: Partial<Document>): Promise<{ message: string; document: Document }> => {
+        const response = await apiClient.post('documents', { json: documentData });
+        return response.json();
+    },
+    
+    updateDocument: async (documentId: string, documentData: Partial<Document>): Promise<{ message: string; document: Document }> => {
+        const response = await apiClient.put(`documents/${documentId}`, { json: documentData });
+        return response.json();
+    },
+    
+    deleteDocument: async (documentId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`documents/${documentId}`);
+        return response.json();
+    },
+    
+    getDocumentsByPersonId: async (personId: string): Promise<Document[]> => {
+        const response = await apiClient.get(`documents/person/${personId}`);
+        return response.json();
+    },
+    
+    getDocumentsByType: async (type: string): Promise<Document[]> => {
+        const response = await apiClient.get(`documents/type/${type}`);
+        return response.json();
+    },
+    
+    getDocumentsByDateRange: async (startDate: string, endDate: string, dateField?: string): Promise<Document[]> => {
+        const params = new URLSearchParams({
+            startDate,
+            endDate
+        });
+        
+        if (dateField) {
+            params.append('dateField', dateField);
+        }
+        
+        const response = await apiClient.get(`documents/date-range?${params.toString()}`);
+        return response.json();
+    },
+    
+    associateDocumentWithPerson: async (documentId: string, personId: string, data?: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
+        const response = await apiClient.post('documents/associate', { 
+            json: { 
+                documentId, 
+                personId,
+                ...data
+            } 
+        });
+        return response.json();
+    },
+    
+    updateDocumentPersonAssociation: async (documentId: string, personId: string, data: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
+        const response = await apiClient.put(`documents/association/${documentId}/${personId}`, { 
+            json: data 
+        });
+        return response.json();
+    },
+    
+    removeDocumentPersonAssociation: async (documentId: string, personId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`documents/association/${documentId}/${personId}`);
+        return response.json();
+    },
+    
+    getDocumentPersonAssociation: async (documentId: string, personId: string): Promise<DocumentPersonAssociation> => {
+        const response = await apiClient.get(`documents/association/${documentId}/${personId}`);
+        return response.json();
+    }
+};
+
 export const managerApi = {
     // Dashboard
     getDashboardSummary: async (): Promise<ManagerDashboardSummary> => {
