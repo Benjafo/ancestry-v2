@@ -1,12 +1,12 @@
 // No need to import expect as it's globally available in Jest
-const { sequelize } = require('../config/database');
+const { sequelize } = require('../../config/database');
 const { Op } = require('sequelize');
-const personRepository = require('../repositories/personRepository');
-const relationshipRepository = require('../repositories/relationshipRepository');
-const personService = require('../services/personService');
-const relationshipService = require('../services/relationshipService');
-const TransactionManager = require('../utils/transactionManager');
-const QueryBuilder = require('../utils/queryBuilder');
+const personRepository = require('../../repositories/personRepository');
+const relationshipRepository = require('../../repositories/relationshipRepository');
+const personService = require('../../services/personService');
+const relationshipService = require('../../services/relationshipService');
+const TransactionManager = require('../../utils/transactionManager');
+const QueryBuilder = require('../../utils/queryBuilder');
 const { v4: uuidv4 } = require('uuid');
 
 /**
