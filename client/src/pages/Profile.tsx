@@ -106,7 +106,7 @@ const Profile = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-900">Your Profile</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Your Profile</h1>
             </div>
 
             {error && (
@@ -139,11 +139,11 @@ const Profile = () => {
                 </div>
             )}
 
-            <div className="bg-white shadow-sm rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 First Name
                             </label>
                             <input
@@ -157,7 +157,7 @@ const Profile = () => {
                             />
                         </div>
                         <div>
-                            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Last Name
                             </label>
                             <input
@@ -171,7 +171,7 @@ const Profile = () => {
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Email Address
                             </label>
                             <input
@@ -184,10 +184,10 @@ const Profile = () => {
                                 required
                                 disabled
                             />
-                            <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed</p>
                         </div>
                         <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Phone Number
                             </label>
                             <input
@@ -201,11 +201,11 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-200 pt-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Address Information</h3>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Address Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
-                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Street Address
                                 </label>
                                 <input
@@ -218,7 +218,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     City
                                 </label>
                                 <input
@@ -231,7 +231,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     State / Province
                                 </label>
                                 <input
@@ -244,7 +244,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     ZIP / Postal Code
                                 </label>
                                 <input
@@ -257,7 +257,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Country
                                 </label>
                                 <select
@@ -277,8 +277,8 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-200 pt-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Preferences</h3>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Preferences</h3>
                         <div className="space-y-4">
                             <div className="flex items-start">
                                 <div className="flex items-center h-5">
@@ -292,10 +292,10 @@ const Profile = () => {
                                     />
                                 </div>
                                 <div className="ml-3 text-sm">
-                                    <label htmlFor="emailNotifications" className="font-medium text-gray-700">
+                                    <label htmlFor="emailNotifications" className="font-medium text-gray-700 dark:text-gray-300">
                                         Email Notifications
                                     </label>
-                                    <p className="text-gray-500">Receive email notifications about your account and research updates.</p>
+                                    <p className="text-gray-500 dark:text-gray-400">Receive email notifications about your account and research updates.</p>
                                 </div>
                             </div>
                             <div className="flex items-start">
@@ -310,10 +310,10 @@ const Profile = () => {
                                     />
                                 </div>
                                 <div className="ml-3 text-sm">
-                                    <label htmlFor="researchUpdates" className="font-medium text-gray-700">
+                                    <label htmlFor="researchUpdates" className="font-medium text-gray-700 dark:text-gray-300">
                                         Research Updates
                                     </label>
-                                    <p className="text-gray-500">Receive notifications when there are updates to your research projects.</p>
+                                    <p className="text-gray-500 dark:text-gray-400">Receive notifications when there are updates to your research projects.</p>
                                 </div>
                             </div>
                         </div>
