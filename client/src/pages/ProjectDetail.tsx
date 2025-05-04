@@ -172,7 +172,7 @@ const ProjectDetail = () => {
                             }`}
                             onClick={() => setActiveTab('documents')}
                         >
-                            Documents ({project.documents.length})
+                            Documents ({project.documents?.length || 0})
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
@@ -182,7 +182,7 @@ const ProjectDetail = () => {
                             }`}
                             onClick={() => setActiveTab('timeline')}
                         >
-                            Timeline ({project.timeline.length})
+                            Timeline ({project.timeline?.length || 0})
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
@@ -206,14 +206,22 @@ const ProjectDetail = () => {
                             
                             <h3 className="text-lg font-medium text-gray-900 mt-6">Recent Activity</h3>
                             <div className="mt-2 space-y-4">
-                                <div className="bg-gray-50 p-4 rounded-md">
-                                    <p className="text-sm text-gray-600">
-                                        <span className="font-medium">Document Added:</span> {project.documents[0].title}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {new Date(project.documents[0].uploaded_at).toLocaleString()}
-                                    </p>
-                                </div>
+                                {project.documents && project.documents.length > 0 ? (
+                                    <div className="bg-gray-50 p-4 rounded-md">
+                                        <p className="text-sm text-gray-600">
+                                            <span className="font-medium">Document Added:</span> {project.documents[0].title}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {new Date(project.documents[0].uploaded_at).toLocaleString()}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-gray-50 p-4 rounded-md">
+                                        <p className="text-sm text-gray-600">
+                                            <span className="font-medium">No Documents:</span> No documents have been added to this project yet.
+                                        </p>
+                                    </div>
+                                )}
                                 <div className="bg-gray-50 p-4 rounded-md">
                                     <p className="text-sm text-gray-600">
                                         <span className="font-medium">Research Note:</span> Found connection to Williams family through marriage records
@@ -244,32 +252,38 @@ const ProjectDetail = () => {
                                 </div>
                             </div>
                             <div className="overflow-hidden bg-white shadow sm:rounded-md">
-                                <ul className="divide-y divide-gray-200">
-                                    {project.documents.map((document) => (
-                                        <li key={document.id}>
-                                            <a href="#" className="block hover:bg-gray-50">
-                                                <div className="flex items-center px-4 py-4 sm:px-6">
-                                                    <div className="flex-shrink-0">
-                                                        {getDocumentTypeIcon(document.type)}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1 px-4">
+                                {project.documents && project.documents.length > 0 ? (
+                                    <ul className="divide-y divide-gray-200">
+                                        {project.documents.map((document) => (
+                                            <li key={document.id}>
+                                                <a href="#" className="block hover:bg-gray-50">
+                                                    <div className="flex items-center px-4 py-4 sm:px-6">
+                                                        <div className="flex-shrink-0">
+                                                            {getDocumentTypeIcon(document.type)}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1 px-4">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-primary-600 truncate">{document.title}</p>
+                                                                <p className="mt-1 flex items-center text-sm text-gray-500">
+                                                                    <span className="truncate">Type: {document.type}</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-primary-600 truncate">{document.title}</p>
-                                                            <p className="mt-1 flex items-center text-sm text-gray-500">
-                                                                <span className="truncate">Type: {document.type}</span>
+                                                            <p className="text-sm text-gray-500">
+                                                                {new Date(document.uploaded_at).toLocaleDateString()}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm text-gray-500">
-                                                            {new Date(document.uploaded_at).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500">No documents have been added to this project yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -278,35 +292,41 @@ const ProjectDetail = () => {
                         <div>
                             <h3 className="text-lg font-medium text-gray-900 mb-4">Timeline</h3>
                             <div className="flow-root">
-                                <ul className="-mb-8">
-                                    {project.timeline.map((event, eventIdx) => (
-                                        <li key={event.id}>
-                                            <div className="relative pb-8">
-                                                {eventIdx !== project.timeline.length - 1 ? (
-                                                    <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                                                ) : null}
-                                                <div className="relative flex space-x-3">
-                                                    <div>
-                                                        <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white">
-                                                            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                            </svg>
-                                                        </span>
-                                                    </div>
-                                                    <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                {project.timeline && project.timeline.length > 0 ? (
+                                    <ul className="-mb-8">
+                                        {project.timeline.map((event, eventIdx) => (
+                                            <li key={event.id}>
+                                                <div className="relative pb-8">
+                                                    {eventIdx !== project.timeline.length - 1 ? (
+                                                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                                    ) : null}
+                                                    <div className="relative flex space-x-3">
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">{event.event}</p>
-                                                            <p className="text-sm text-gray-500">{event.description}</p>
+                                                            <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white">
+                                                                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </span>
                                                         </div>
-                                                        <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                                                            <time dateTime={event.date}>{new Date(event.date).toLocaleDateString()}</time>
+                                                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-900">{event.event}</p>
+                                                                <p className="text-sm text-gray-500">{event.description}</p>
+                                                            </div>
+                                                            <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                                                                <time dateTime={event.date}>{new Date(event.date).toLocaleDateString()}</time>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500">No timeline events have been added to this project yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
