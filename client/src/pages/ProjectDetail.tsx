@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
 
 const ProjectDetail = () => {
-    const { projectId } = useParams({ from: '/projects/:projectId' });
+    const { projectId } = useParams({ from: '/auth/projects/$projectId' });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
