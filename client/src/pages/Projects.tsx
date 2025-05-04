@@ -128,7 +128,11 @@ const Projects = () => {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h2 className="text-xl font-medium text-gray-900">
-                                        <Link to={`/projects/${project.id}`} className="hover:text-primary-600">
+                                        <Link 
+                                            to="/projects/$projectId" 
+                                            params={{ projectId: project.id }}
+                                            className="hover:text-primary-600"
+                                        >
                                             {project.title}
                                         </Link>
                                     </h2>

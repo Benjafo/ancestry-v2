@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
 
 const ProjectDetail = () => {
-    const { projectId } = useParams({ from: '/projects/$projectId' });
+    const { projectId } = useParams({ from: '/projects/:projectId' });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
 
     useEffect(() => {
+        console.log('Fetching project details for ID:', projectId);
         const fetchProjectDetails = async () => {
             try {
                 const projectData = await projectsApi.getProjectById(projectId);

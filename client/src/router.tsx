@@ -114,8 +114,8 @@ const projectsRoute = new Route({
 
 const projectDetailRoute = new Route({
     getParentRoute: () => authLayoutRoute,
-    path: '/projects/$projectId',
-    component: ProjectDetail,
+    path: '/projects/:projectId',
+    component: ProjectDetail
 });
 
 

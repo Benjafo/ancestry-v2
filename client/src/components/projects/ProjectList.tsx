@@ -73,7 +73,8 @@ const ProjectList = ({ projects, isLoading, error }: ProjectListProps) => {
                     </div>
                     <div className="bg-gray-50 px-5 py-3">
                         <Link 
-                            to={`/projects/${project.id}`} 
+                            to="/projects/:projectId"
+                            params={{ projectId: project.id }}
                             className="text-primary-600 hover:text-primary-800 font-medium text-sm"
                         >
                             View Project →

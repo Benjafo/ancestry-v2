@@ -172,7 +172,8 @@ const ManagerDashboard = () => {
                                     </div>
                                     {activity.type === 'project_update' && (
                                         <Link 
-                                            to={`/projects/${activity.projectId}`} 
+                                            to="/projects/:projectId"
+                                            params={{ projectId: activity.projectId }}
                                             className="text-xs text-primary-600 hover:text-primary-800"
                                         >
                                             View
