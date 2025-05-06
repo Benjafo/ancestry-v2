@@ -1,4 +1,4 @@
-const { Project, ProjectDocument, ProjectTimeline, User } = require('../models');
+const { Project, ProjectDocument, ProjectTimeline, User, Person } = require('../models');
 
 // Get all projects
 exports.getProjects = async (req, res) => {
@@ -73,6 +73,11 @@ exports.getProjectById = async (req, res) => {
                 {
                     model: ProjectTimeline,
                     as: 'timeline'
+                },
+                {
+                    model: Person,
+                    as: 'persons',
+                    through: { attributes: [] } // Exclude junction table attributes
                 }
             ]
         });
