@@ -133,6 +133,17 @@ CREATE TABLE
         PRIMARY KEY (project_id, user_id)
     );
 
+-- Project-Person junction table
+CREATE TABLE
+    project_persons (
+        project_id UUID REFERENCES projects(id),
+        person_id UUID REFERENCES persons(person_id),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (project_id, person_id)
+    );
+
 -- Project Documents table
 CREATE TABLE
     project_documents (

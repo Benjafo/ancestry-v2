@@ -4,7 +4,7 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 // Import the models
-const { User, Role, Project, ProjectDocument, ProjectTimeline, Person, Relationship, Event, Document, DocumentPerson } = require('./models');
+const { User, Role, Project, ProjectDocument, ProjectTimeline, Person, Relationship, Event, Document, DocumentPerson, ProjectPerson } = require('./models');
 
 async function seedDatabase() {
     // First connect to the default 'postgres' database
@@ -732,6 +732,66 @@ async function seedDatabase() {
             await DocumentPerson.create({
                 document_id: familyPhotoDoc.document_id,
                 person_id: johnSmithJr.person_id
+            }, { transaction });
+            
+            // ===== CONNECT PERSONS TO PROJECT =====
+            console.log('Connecting persons to project...');
+            
+            // Connect all Smith family members to the project
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: johnSmithSr.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: marySmith.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: johnSmithJr.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: margaretSmith.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: thomasSmith.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: michaelSmith.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: jenniferDavis.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: davidSmith.person_id
+            }, { transaction });
+            
+            // Connect Johnson family members to the project (they're related by marriage)
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: robertJohnson.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: elizabethJohnson.person_id
+            }, { transaction });
+            
+            await ProjectPerson.create({
+                project_id: project1.id,
+                person_id: sarahMiller.person_id
             }, { transaction });
             
             console.log('Family data added successfully');

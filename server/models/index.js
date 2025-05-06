@@ -14,6 +14,7 @@ const Relationship = require('./relationship');
 const Event = require('./event');
 const Document = require('./document');
 const DocumentPerson = require('./documentPerson');
+const ProjectPerson = require('./projectPerson');
 
 // Define User-Role associations
 User.belongsToMany(Role, { 
@@ -116,6 +117,21 @@ Document.belongsToMany(Person, {
     as: 'persons'
 });
 
+// Define Project-Person associations
+Project.belongsToMany(Person, {
+    through: ProjectPerson,
+    foreignKey: 'project_id',
+    otherKey: 'person_id',
+    as: 'persons'
+});
+
+Person.belongsToMany(Project, {
+    through: ProjectPerson,
+    foreignKey: 'person_id',
+    otherKey: 'project_id',
+    as: 'projects'
+});
+
 // Define relationship associations
 // Note: We need to define both directions for relationships
 Person.hasMany(Relationship, {
@@ -153,5 +169,6 @@ module.exports = {
     Relationship,
     Event,
     Document,
-    DocumentPerson
+    DocumentPerson,
+    ProjectPerson
 };
