@@ -98,6 +98,19 @@ const ClientAssignment = () => {
         if (!clientAssignments) return false;
         return clientAssignments.projects.some(project => project.id === projectId);
     };
+    
+    const formatStatus = (status: string): string => {
+        switch (status) {
+            case 'active':
+                return 'Active';
+            case 'completed':
+                return 'Completed';
+            case 'on_hold':
+                return 'On Hold';
+            default:
+                return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+    };
 
     // const getSelectedClient = () => {
     //     if (!selectedClient) return null;
@@ -213,7 +226,7 @@ const ClientAssignment = () => {
                                                 <div key={project.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                                                     <div>
                                                         <div className="font-medium text-sm dark:text-white">{project.title}</div>
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400">{project.status}</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(project.status)}</div>
                                                     </div>
                                                     <button 
                                                         className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
@@ -238,7 +251,7 @@ const ClientAssignment = () => {
                                                     <div key={project.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                                                         <div>
                                                             <div className="font-medium text-sm dark:text-white">{project.title}</div>
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400">{project.status}</div>
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(project.status)}</div>
                                                         </div>
                                                         <button 
                                                             className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
