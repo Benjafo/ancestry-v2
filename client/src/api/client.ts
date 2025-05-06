@@ -314,9 +314,17 @@ export interface DocumentPersonAssociation {
     notes?: string;
 }
 
+// API metadata interface
+export interface ApiMetadata {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 // Event API service
 export const eventsApi = {
-    getEvents: async (params?: any): Promise<{ events: Event[]; metadata: any }> => {
+    getEvents: async (params?: Record<string, string | number | boolean>): Promise<{ events: Event[]; metadata: ApiMetadata }> => {
         const response = await apiClient.get('events', { searchParams: params });
         return response.json();
     },
@@ -369,7 +377,7 @@ export const eventsApi = {
 
 // Document API service
 export const documentsApi = {
-    getDocuments: async (params?: any): Promise<{ documents: Document[]; metadata: any }> => {
+    getDocuments: async (params?: Record<string, string | number | boolean>): Promise<{ documents: Document[]; metadata: ApiMetadata }> => {
         const response = await apiClient.get('documents', { searchParams: params });
         return response.json();
     },

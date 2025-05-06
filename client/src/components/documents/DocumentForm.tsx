@@ -18,7 +18,8 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
         source: '',
         date_of_original: ''
     });
-    const [file, setFile] = useState<File | null>(null);
+    // We need this state to hold the file, even though we don't directly use the variable
+    const [_file, setFile] = useState<File | null>(null);
 
     const documentTypes = [
         { value: 'certificate', label: 'Certificate' },
@@ -50,7 +51,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                     };
                     
                     setFormData(formattedDocument);
-                } catch (err: any) {
+                } catch (err: Error | unknown) {
                     setError(err.message || 'Failed to load document data');
                     console.error(err);
                 } finally {
