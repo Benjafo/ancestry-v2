@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { projectsApi } from '../../api/client';
+import { Project, projectsApi } from '../../api/client';
 
 interface CreateProjectModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: (project: any) => void;
+    onSuccess: (project: Project) => void;
 }
 
 const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalProps) => {
