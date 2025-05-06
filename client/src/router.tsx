@@ -114,8 +114,8 @@ const projectsRoute = new Route({
 
 const projectDetailRoute = new Route({
     getParentRoute: () => authLayoutRoute,
-    path: '/projects/$projectId',
-    component: ProjectDetail,
+    path: '/projects/$projectId', 
+    component: ProjectDetail
 });
 
 
@@ -186,7 +186,7 @@ const routeTree = rootRoute.addChildren([
     notFoundRoute,
 ]);
 
-export const router = new Router({ routeTree });
+export const router = new Router({ routeTree});
 
 // Register router types
 declare module '@tanstack/react-router' {

@@ -98,6 +98,19 @@ const ClientAssignment = () => {
         if (!clientAssignments) return false;
         return clientAssignments.projects.some(project => project.id === projectId);
     };
+    
+    const formatStatus = (status: string): string => {
+        switch (status) {
+            case 'active':
+                return 'Active';
+            case 'completed':
+                return 'Completed';
+            case 'on_hold':
+                return 'On Hold';
+            default:
+                return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+    };
 
     // const getSelectedClient = () => {
     //     if (!selectedClient) return null;
@@ -115,7 +128,7 @@ const ClientAssignment = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-900">Client Assignment</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Client Assignment</h1>
                 <Link to="/manager/dashboard" className="btn-secondary">
                     Back to Dashboard
                 </Link>
@@ -157,33 +170,33 @@ const ClientAssignment = () => {
                 </div>
             )}
 
-            <div className="bg-white shadow-sm rounded-lg p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Select Client</h2>
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Select Client</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {clients.length === 0 ? (
-                        <p className="text-gray-500 col-span-full">No clients found</p>
+                        <p className="text-gray-500 dark:text-gray-400 col-span-full">No clients found</p>
                     ) : (
                         clients.map(client => (
                             <div 
                                 key={client.user_id} 
                                 className={`border rounded-lg p-4 cursor-pointer transition-colors ${
                                     selectedClient === client.user_id 
-                                        ? 'border-primary-500 bg-primary-50' 
-                                        : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+                                        ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900' 
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
                                 }`}
                                 onClick={() => setSelectedClient(client.user_id)}
                             >
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                        <span className="text-primary-800 font-medium">
+                                    <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                        <span className="text-primary-800 dark:text-primary-200 font-medium">
                                             {client.first_name.charAt(0)}{client.last_name.charAt(0)}
                                         </span>
                                     </div>
                                     <div className="ml-4">
-                                        <div className="text-sm font-medium text-gray-900">
+                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                                             {client.first_name} {client.last_name}
                                         </div>
-                                        <div className="text-sm text-gray-500">{client.email}</div>
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">{client.email}</div>
                                     </div>
                                 </div>
                             </div>
@@ -195,8 +208,8 @@ const ClientAssignment = () => {
             {selectedClient && (
                 <div className="grid grid-cols-1 gap-6">
                     {/* Projects Assignment */}
-                    <div className="bg-white shadow-sm rounded-lg p-6">
-                        <h2 className="text-lg font-medium text-gray-900 mb-4">Project Assignments</h2>
+                    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Project Assignments</h2>
                         {isLoadingAssignments ? (
                             <div className="flex justify-center items-center h-32">
                                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
@@ -204,19 +217,19 @@ const ClientAssignment = () => {
                         ) : (
                             <>
                                 <div className="mb-4">
-                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Assigned Projects</h3>
+                                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Projects</h3>
                                     {!clientAssignments || clientAssignments.projects.length === 0 ? (
-                                        <p className="text-gray-500 text-sm">No projects assigned</p>
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm">No projects assigned</p>
                                     ) : (
                                         <div className="space-y-2">
                                             {clientAssignments.projects.map(project => (
-                                                <div key={project.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                                                <div key={project.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                                                     <div>
-                                                        <div className="font-medium text-sm">{project.title}</div>
-                                                        <div className="text-xs text-gray-500">{project.status}</div>
+                                                        <div className="font-medium text-sm dark:text-white">{project.title}</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(project.status)}</div>
                                                     </div>
                                                     <button 
-                                                        className="text-red-600 hover:text-red-800 text-sm"
+                                                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
                                                         onClick={() => handleRemoveFromProject(project.id)}
                                                     >
                                                         Remove
@@ -227,21 +240,21 @@ const ClientAssignment = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Available Projects</h3>
+                                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Available Projects</h3>
                                     {projects.filter(project => !isProjectAssigned(project.id)).length === 0 ? (
-                                        <p className="text-gray-500 text-sm">No available projects</p>
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm">No available projects</p>
                                     ) : (
                                         <div className="space-y-2">
                                             {projects
                                                 .filter(project => !isProjectAssigned(project.id))
                                                 .map(project => (
-                                                    <div key={project.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                                                    <div key={project.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                                                         <div>
-                                                            <div className="font-medium text-sm">{project.title}</div>
-                                                            <div className="text-xs text-gray-500">{project.status}</div>
+                                                            <div className="font-medium text-sm dark:text-white">{project.title}</div>
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(project.status)}</div>
                                                         </div>
                                                         <button 
-                                                            className="text-primary-600 hover:text-primary-800 text-sm"
+                                                            className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
                                                             onClick={() => handleAssignToProject(project.id)}
                                                         >
                                                             Assign
@@ -260,9 +273,9 @@ const ClientAssignment = () => {
             )}
 
             {selectedClient && (
-                <div className="bg-white shadow-sm rounded-lg p-6">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Assignment History</h2>
-                    <p className="text-gray-500 text-center py-4">Assignment history will be available in a future update.</p>
+                <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Assignment History</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">Assignment history will be available in a future update.</p>
                 </div>
             )}
         </div>

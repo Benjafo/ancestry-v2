@@ -201,7 +201,7 @@ const UserManagement = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">User Management</h1>
                 <button 
                     className="btn-primary"
                     onClick={() => {
@@ -278,24 +278,24 @@ const UserManagement = () => {
                 </div>
             )}
 
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-                <div className="p-6 border-b border-gray-200">
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                         <div className="flex space-x-2">
                             <button 
-                                className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-800'}`}
+                                className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                                 onClick={() => setFilter('all')}
                             >
                                 All Users
                             </button>
                             <button 
-                                className={`px-4 py-2 rounded-md ${filter === 'clients' ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-800'}`}
+                                className={`px-4 py-2 rounded-md ${filter === 'clients' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                                 onClick={() => setFilter('clients')}
                             >
                                 Clients
                             </button>
                             <button 
-                                className={`px-4 py-2 rounded-md ${filter === 'managers' ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-800'}`}
+                                className={`px-4 py-2 rounded-md ${filter === 'managers' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                                 onClick={() => setFilter('managers')}
                             >
                                 Managers
@@ -319,33 +319,33 @@ const UserManagement = () => {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Email
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Role
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Last Login
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                         No users found
                                     </td>
                                 </tr>
@@ -354,24 +354,24 @@ const UserManagement = () => {
                                     <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                                    <span className="text-primary-800 font-medium">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                                    <span className="text-primary-800 dark:text-primary-200 font-medium">
                                                         {user.first_name.charAt(0)}{user.last_name.charAt(0)}
                                                     </span>
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                         {user.first_name} {user.last_name}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{user.email}</div>
+                                            <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {user.roles.map(role => (
-                                                <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                     {role}
                                                 </span>
                                             ))}
@@ -379,13 +379,13 @@ const UserManagement = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                                 user.is_active 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                             }`}>
                                                 {user.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {user.last_login 
                                                 ? new Date(user.last_login).toLocaleString() 
                                                 : 'Never'
@@ -394,27 +394,27 @@ const UserManagement = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
                                                 <button 
-                                                    className="text-primary-600 hover:text-primary-900"
+                                                    className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
                                                     onClick={() => openEditModal(user)}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button 
-                                                    className="text-yellow-600 hover:text-yellow-900"
+                                                    className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                                                     onClick={() => handleResetPassword(user.user_id)}
                                                 >
                                                     Reset Password
                                                 </button>
                                                 {user.is_active ? (
                                                     <button 
-                                                        className="text-red-600 hover:text-red-900"
+                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                         onClick={() => handleDeactivateUser(user.user_id)}
                                                     >
                                                         Deactivate
                                                     </button>
                                                 ) : (
                                                     <button 
-                                                        className="text-green-600 hover:text-green-900"
+                                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                                                         onClick={() => handleReactivateUser(user.user_id)}
                                                     >
                                                         Reactivate
@@ -433,9 +433,9 @@ const UserManagement = () => {
             {/* Create User Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-medium text-gray-900">Create New User</h2>
+                            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Create New User</h2>
                             <button 
                                 className="text-gray-400 hover:text-gray-500"
                                 onClick={() => setIsCreateModalOpen(false)}
@@ -448,7 +448,7 @@ const UserManagement = () => {
                         <form onSubmit={handleCreateUser}>
                             <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Email
                                     </label>
                                     <input
@@ -464,7 +464,7 @@ const UserManagement = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Password
                                     </label>
                                     <input
@@ -480,7 +480,7 @@ const UserManagement = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         First Name
                                     </label>
                                     <input
@@ -496,7 +496,7 @@ const UserManagement = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Last Name
                                     </label>
                                     <input
@@ -512,7 +512,7 @@ const UserManagement = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Role
                                     </label>
                                     <select
@@ -553,9 +553,9 @@ const UserManagement = () => {
             {/* Edit User Modal */}
             {isEditModalOpen && selectedUser && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-medium text-gray-900">Edit User</h2>
+                            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Edit User</h2>
                             <button 
                                 className="text-gray-400 hover:text-gray-500"
                                 onClick={() => setIsEditModalOpen(false)}
@@ -568,21 +568,21 @@ const UserManagement = () => {
                         <form onSubmit={handleUpdateUser}>
                             <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Email
                                     </label>
                                     <input
                                         type="email"
                                         id="email"
                                         name="email"
-                                        className="form-input mt-1 block w-full rounded-md bg-gray-100"
+                                        className="form-input mt-1 block w-full rounded-md bg-gray-100 dark:bg-gray-700"
                                         value={formData.email}
                                         disabled
                                     />
-                                    <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed</p>
                                 </div>
                                 <div>
-                                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         First Name
                                     </label>
                                     <input
@@ -598,7 +598,7 @@ const UserManagement = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Last Name
                                     </label>
                                     <input
@@ -614,7 +614,7 @@ const UserManagement = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Role
                                     </label>
                                     <select

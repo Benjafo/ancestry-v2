@@ -91,13 +91,13 @@ const Settings = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-900">Account Settings</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Account Settings</h1>
             </div>
 
             {/* Password Change Section */}
-            <div className="bg-white shadow-sm rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Change Password</h2>
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h2>
                     
                     {passwordError && (
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
@@ -131,7 +131,7 @@ const Settings = () => {
 
                     <form onSubmit={handlePasswordSubmit} className="space-y-4">
                         <div>
-                            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Current Password
                             </label>
                             <input
@@ -145,7 +145,7 @@ const Settings = () => {
                             />
                         </div>
                         <div>
-                            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 New Password
                             </label>
                             <input
@@ -157,10 +157,10 @@ const Settings = () => {
                                 onChange={handlePasswordChange}
                                 required
                             />
-                            <p className="mt-1 text-xs text-gray-500">Password must be at least 8 characters long</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Password must be at least 8 characters long</p>
                         </div>
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Confirm New Password
                             </label>
                             <input
@@ -187,9 +187,9 @@ const Settings = () => {
             </div>
 
             {/* Email Preferences Section */}
-            <div className="bg-white shadow-sm rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">Email Preferences</h2>
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Email Preferences</h2>
                     <div className="space-y-4">
                         <div className="flex items-start">
                             <div className="flex items-center h-5">
@@ -202,10 +202,10 @@ const Settings = () => {
                                 />
                             </div>
                             <div className="ml-3 text-sm">
-                                <label htmlFor="marketing" className="font-medium text-gray-700">
+                                <label htmlFor="marketing" className="font-medium text-gray-700 dark:text-gray-300">
                                     Marketing Emails
                                 </label>
-                                <p className="text-gray-500">Receive emails about new features, promotions, and updates.</p>
+                                <p className="text-gray-500 dark:text-gray-400">Receive emails about new features, promotions, and updates.</p>
                             </div>
                         </div>
                         <div className="flex items-start">
@@ -219,10 +219,10 @@ const Settings = () => {
                                 />
                             </div>
                             <div className="ml-3 text-sm">
-                                <label htmlFor="newsletter" className="font-medium text-gray-700">
+                                <label htmlFor="newsletter" className="font-medium text-gray-700 dark:text-gray-300">
                                     Newsletter
                                 </label>
-                                <p className="text-gray-500">Receive our monthly newsletter with genealogy tips and resources.</p>
+                                <p className="text-gray-500 dark:text-gray-400">Receive our monthly newsletter with genealogy tips and resources.</p>
                             </div>
                         </div>
                         <div className="flex justify-end">
@@ -238,10 +238,10 @@ const Settings = () => {
             </div>
 
             {/* Delete Account Section */}
-            <div className="bg-white shadow-sm rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
-                    <h2 className="text-lg font-medium text-red-600 mb-4">Delete Account</h2>
-                    <p className="text-gray-600 mb-4">
+                    <h2 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Delete Account</h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
                         Once you delete your account, all of your data will be permanently removed. This action cannot be undone.
                     </p>
                     
@@ -262,7 +262,7 @@ const Settings = () => {
 
                     <form onSubmit={handleDeleteAccount} className="space-y-4">
                         <div>
-                            <label htmlFor="deleteConfirmation" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="deleteConfirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Type "DELETE" to confirm
                             </label>
                             <input
@@ -278,7 +278,7 @@ const Settings = () => {
                         <div className="flex justify-end">
                             <button
                                 type="submit"
-                                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors"
                                 disabled={isDeleting}
                             >
                                 {isDeleting ? 'Deleting Account...' : 'Delete Account'}

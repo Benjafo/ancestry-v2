@@ -1,15 +1,39 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
+import EditProjectModal from '../components/projects/EditProjectModal';
+import { formatDate, formatDateTime } from '../utils/dateUtils';
 
 const ProjectDetail = () => {
-    const { projectId } = useParams({ from: '/projects/$projectId' });
+    const { projectId } = useParams({ from: '/auth/projects/$projectId' });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const handleOpenEditModal = () => {
+        if (project) {
+            setIsEditModalOpen(true);
+        }
+    };
+    
+    const handleProjectUpdated = (updatedProject: ProjectDetailType) => {
+        setProject(updatedProject);
+        setIsEditModalOpen(false);
+        
+        // Show success message
+        setSuccessMessage('Project updated successfully');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
 
     useEffect(() => {
+        console.log('Fetching project details for ID:', projectId);
         const fetchProjectDetails = async () => {
             try {
                 const projectData = await projectsApi.getProjectById(projectId);
@@ -112,52 +136,72 @@ const ProjectDetail = () => {
 
     return (
         <div className="space-y-6">
+            {successMessage && (
+                <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-green-700">{successMessage}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center">
                 <div>
-                    <Link to="/projects" className="text-sm text-gray-500 hover:text-gray-700 flex items-center">
+                    <Link to="/projects" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center">
                         <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Back to Projects
                     </Link>
-                    <h1 className="text-2xl font-semibold text-gray-900 mt-1">{project.title}</h1>
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="btn-secondary">Edit Project</button>
+                    <button 
+                        className="btn-secondary"
+                        onClick={handleOpenEditModal}
+                    >
+                        Edit Project
+                    </button>
                     <button className="btn-primary">Add Document</button>
                 </div>
             </div>
 
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
                 {/* Project Header */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between">
                         <div>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(project.status)}`}>
                                 {getStatusText(project.status)}
                             </span>
-                            <p className="text-sm text-gray-500 mt-2">
-                                Created on {new Date(project.created_at).toLocaleDateString()}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                Created on {formatDate(project.created_at)}
                                 {' • '}
-                                Last updated {new Date(project.updated_at).toLocaleDateString()}
+                                Last updated {formatDate(project.updated_at)}
                             </p>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">Researcher</p>
-                            <p className="text-sm text-gray-500">{project.researcher.name}</p>
-                            <p className="text-sm text-gray-500">{project.researcher.email}</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">Researcher</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{project.researcher.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{project.researcher.email}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b border-gray-200">
+                <div className="border-b border-gray-200 dark:border-gray-700">
                     <nav className="flex -mb-px">
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                                 activeTab === 'overview'
-                                    ? 'border-primary-500 text-primary-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                             }`}
                             onClick={() => setActiveTab('overview')}
                         >
@@ -166,28 +210,28 @@ const ProjectDetail = () => {
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                                 activeTab === 'documents'
-                                    ? 'border-primary-500 text-primary-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                             }`}
                             onClick={() => setActiveTab('documents')}
                         >
-                            Documents ({project.documents.length})
+                            Documents ({project.documents?.length || 0})
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                                 activeTab === 'timeline'
-                                    ? 'border-primary-500 text-primary-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                             }`}
                             onClick={() => setActiveTab('timeline')}
                         >
-                            Timeline ({project.timeline.length})
+                            Timeline ({project.timeline?.length || 0})
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                                 activeTab === 'family_members'
-                                    ? 'border-primary-500 text-primary-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                             }`}
                             onClick={() => setActiveTab('family_members')}
                         >
@@ -199,26 +243,34 @@ const ProjectDetail = () => {
                 {/* Tab Content */}
                 <div className="p-6">
                     {activeTab === 'overview' && (
-                        <div className="prose max-w-none">
-                            <h3 className="text-lg font-medium text-gray-900">Project Description</h3>
-                            <p className="mt-2 text-gray-600">{project.description}</p>
+                        <div className="prose max-w-none dark:prose-invert">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Project Description</h3>
+                            <p className="mt-2 text-gray-600 dark:text-gray-300">{project.description}</p>
                             
-                            <h3 className="text-lg font-medium text-gray-900 mt-6">Recent Activity</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mt-6">Recent Activity</h3>
                             <div className="mt-2 space-y-4">
-                                <div className="bg-gray-50 p-4 rounded-md">
-                                    <p className="text-sm text-gray-600">
-                                        <span className="font-medium">Document Added:</span> {project.documents[0].title}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {new Date(project.documents[0].uploaded_at).toLocaleString()}
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 p-4 rounded-md">
-                                    <p className="text-sm text-gray-600">
+                                {project.documents && project.documents.length > 0 ? (
+                                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <span className="font-medium">Document Added:</span> {project.documents[0].title}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            {formatDateTime(project.documents[0].uploaded_at)}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <span className="font-medium">No Documents:</span> No documents have been added to this project yet.
+                                        </p>
+                                    </div>
+                                )}
+                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
                                         <span className="font-medium">Research Note:</span> Found connection to Williams family through marriage records
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {new Date(project.updated_at).toLocaleString()}
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {formatDateTime(project.updated_at)}
                                     </p>
                                 </div>
                             </div>
@@ -228,7 +280,7 @@ const ProjectDetail = () => {
                     {activeTab === 'documents' && (
                         <div>
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-900">Documents</h3>
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -242,80 +294,92 @@ const ProjectDetail = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="overflow-hidden bg-white shadow sm:rounded-md">
-                                <ul className="divide-y divide-gray-200">
-                                    {project.documents.map((document) => (
-                                        <li key={document.id}>
-                                            <a href="#" className="block hover:bg-gray-50">
-                                                <div className="flex items-center px-4 py-4 sm:px-6">
-                                                    <div className="flex-shrink-0">
-                                                        {getDocumentTypeIcon(document.type)}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1 px-4">
+                            <div className="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
+                                {project.documents && project.documents.length > 0 ? (
+                                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                                        {project.documents.map((document) => (
+                                            <li key={document.id}>
+                                                <a href="#" className="block hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <div className="flex items-center px-4 py-4 sm:px-6">
+                                                        <div className="flex-shrink-0">
+                                                            {getDocumentTypeIcon(document.type)}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1 px-4">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
+                                                                <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                                    <span className="truncate">Type: {document.type}</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-primary-600 truncate">{document.title}</p>
-                                                            <p className="mt-1 flex items-center text-sm text-gray-500">
-                                                                <span className="truncate">Type: {document.type}</span>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                {formatDate(document.uploaded_at)}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm text-gray-500">
-                                                            {new Date(document.uploaded_at).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500 dark:text-gray-400">No documents have been added to this project yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'timeline' && (
                         <div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Timeline</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Timeline</h3>
                             <div className="flow-root">
-                                <ul className="-mb-8">
-                                    {project.timeline.map((event, eventIdx) => (
-                                        <li key={event.id}>
-                                            <div className="relative pb-8">
-                                                {eventIdx !== project.timeline.length - 1 ? (
-                                                    <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                                                ) : null}
-                                                <div className="relative flex space-x-3">
-                                                    <div>
-                                                        <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white">
-                                                            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                            </svg>
-                                                        </span>
-                                                    </div>
-                                                    <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                {project.timeline && project.timeline.length > 0 ? (
+                                    <ul className="-mb-8">
+                                        {project.timeline.map((event, eventIdx) => (
+                                            <li key={event.id}>
+                                                <div className="relative pb-8">
+                                                    {eventIdx !== project.timeline.length - 1 ? (
+                                                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+                                                    ) : null}
+                                                    <div className="relative flex space-x-3">
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">{event.event}</p>
-                                                            <p className="text-sm text-gray-500">{event.description}</p>
+                                                            <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                                                                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </span>
                                                         </div>
-                                                        <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                                                            <time dateTime={event.date}>{new Date(event.date).toLocaleDateString()}</time>
+                                                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{event.event}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
+                                                            </div>
+                                                            <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                                <time dateTime={event.date}>{formatDate(event.date)}</time>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500 dark:text-gray-400">No timeline events have been added to this project yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'family_members' && (
                         <div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Family Members</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Family Members</h3>
                             {!project.persons || project.persons.length === 0 ? (
                                 <div className="text-center py-8">
-                                    <p className="text-gray-500">No family members have been added to this project yet.</p>
+                                    <p className="text-gray-500 dark:text-gray-400">No family members have been added to this project yet.</p>
                                     {project.access_level === 'edit' && (
                                         <button className="btn-primary mt-4">Add First Person</button>
                                     )}
@@ -323,16 +387,16 @@ const ProjectDetail = () => {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {project.persons.map(person => (
-                                        <div key={person.person_id} className="border rounded-lg p-4">
-                                            <h3 className="font-medium text-gray-900">
+                                        <div key={person.person_id} className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700">
+                                            <h3 className="font-medium text-gray-900 dark:text-white">
                                                 {person.first_name} {person.last_name}
                                             </h3>
-                                            <div className="text-sm text-gray-500 mt-2">
+                                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                                 {person.birth_date && (
-                                                    <p>Born: {new Date(person.birth_date).toLocaleDateString()}</p>
+                                                    <p>Born: {formatDate(person.birth_date)}</p>
                                                 )}
                                                 {person.death_date && (
-                                                    <p>Died: {new Date(person.death_date).toLocaleDateString()}</p>
+                                                    <p>Died: {formatDate(person.death_date)}</p>
                                                 )}
                                             </div>
                                         </div>
@@ -343,6 +407,15 @@ const ProjectDetail = () => {
                     )}
                 </div>
             </div>
+            {/* Edit Project Modal */}
+            {project && isEditModalOpen && (
+                <EditProjectModal
+                    project={project}
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSuccess={handleProjectUpdated}
+                />
+            )}
         </div>
     );
 };
