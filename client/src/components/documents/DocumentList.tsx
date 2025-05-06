@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 
+// Helper function to extract error message safely
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
+    return String(error) || 'An unknown error occurred';
+};
+
 interface DocumentListProps {
     personId?: string;
     onEditDocument?: (documentId: string) => void;
@@ -48,8 +54,8 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                 
                 setDocuments(documentsData);
                 setFilteredDocuments(documentsData);
-            } catch (err: any) {
-                setError(err.message || 'Failed to load documents');
+            } catch (err: unknown) {
+                setError(getErrorMessage(err) || 'Failed to load documents');
                 console.error(err);
             } finally {
                 setIsLoading(false);
@@ -152,8 +158,8 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                 await documentsApi.deleteDocument(documentId);
                 setDocuments(documents.filter(document => document.document_id !== documentId));
                 onDeleteDocument(documentId);
-            } catch (err: any) {
-                setError(err.message || 'Failed to delete document');
+            } catch (err: unknown) {
+                setError(getErrorMessage(err) || 'Failed to delete document');
                 console.error(err);
             }
         }

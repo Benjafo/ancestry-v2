@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 
+// Helper function to extract error message safely
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
+    return String(error) || 'An unknown error occurred';
+};
+
 interface DocumentFormProps {
     documentId?: string;
     onSuccess: (document: Document) => void;
@@ -19,6 +25,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
         date_of_original: ''
     });
     // We need this state to hold the file, even though we don't directly use the variable
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_file, setFile] = useState<File | null>(null);
 
     const documentTypes = [
@@ -51,8 +58,8 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                     };
                     
                     setFormData(formattedDocument);
-                } catch (err: Error | unknown) {
-                    setError(err.message || 'Failed to load document data');
+                } catch (err: unknown) {
+                    setError(getErrorMessage(err) || 'Failed to load document data');
                     console.error(err);
                 } finally {
                     setIsLoading(false);
@@ -103,8 +110,8 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
             }
             
             onSuccess(result.document);
-        } catch (err: any) {
-            setError(err.message || 'An error occurred');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err) || 'An error occurred');
             console.error(err);
         } finally {
             setIsLoading(false);

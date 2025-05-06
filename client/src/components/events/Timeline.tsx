@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
 
+// Helper function to extract error message safely
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
+    return String(error) || 'An unknown error occurred';
+};
+
 interface TimelineProps {
     personId: string;
     onEditEvent?: (eventId: string) => void;
@@ -19,8 +25,8 @@ const Timeline = ({ personId, onEditEvent, onDeleteEvent, readOnly = false }: Ti
             try {
                 const timelineEvents = await eventsApi.getPersonTimeline(personId);
                 setEvents(timelineEvents);
-            } catch (err: any) {
-                setError(err.message || 'Failed to load timeline');
+            } catch (err: unknown) {
+                setError(getErrorMessage(err) || 'Failed to load timeline');
                 console.error(err);
             } finally {
                 setIsLoading(false);
@@ -99,8 +105,8 @@ const Timeline = ({ personId, onEditEvent, onDeleteEvent, readOnly = false }: Ti
                 await eventsApi.deleteEvent(eventId);
                 setEvents(events.filter(event => event.event_id !== eventId));
                 onDeleteEvent(eventId);
-            } catch (err: any) {
-                setError(err.message || 'Failed to delete event');
+            } catch (err: unknown) {
+                setError(getErrorMessage(err) || 'Failed to delete event');
                 console.error(err);
             }
         }

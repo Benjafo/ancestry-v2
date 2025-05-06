@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
 
+// Helper function to extract error message safely
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
+    return String(error) || 'An unknown error occurred';
+};
+
 interface EventFormProps {
     personId?: string;
     eventId?: string;
@@ -52,8 +58,8 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                     };
                     
                     setFormData(formattedEvent);
-                } catch (err: any) {
-                    setError(err.message || 'Failed to load event data');
+                } catch (err: unknown) {
+                    setError(getErrorMessage(err) || 'Failed to load event data');
                     console.error(err);
                 } finally {
                     setIsLoading(false);
@@ -86,8 +92,8 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
             }
             
             onSuccess(result.event);
-        } catch (err: any) {
-            setError(err.message || 'An error occurred');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err) || 'An error occurred');
             console.error(err);
         } finally {
             setIsLoading(false);
