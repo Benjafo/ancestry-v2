@@ -11,7 +11,9 @@ CREATE TABLE
         birth_location VARCHAR(255),
         death_date DATE,
         death_location VARCHAR(255),
-        notes TEXT
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Relationships table
@@ -24,7 +26,9 @@ CREATE TABLE
         relationship_qualifier VARCHAR(50), -- biological, adoptive, etc.
         start_date DATE, -- marriage date for spouses
         end_date DATE, -- divorce date for spouses
-        notes TEXT
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Events table
@@ -35,7 +39,9 @@ CREATE TABLE
         event_type VARCHAR(100), -- birth, death, immigration, etc.
         event_date DATE,
         event_location VARCHAR(255),
-        description TEXT
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Documents/Media table
@@ -45,7 +51,14 @@ CREATE TABLE
         title VARCHAR(255),
         document_type VARCHAR(100), -- photo, certificate, letter, etc.
         file_path VARCHAR(255),
-        upload_date TIMESTAMP
+        upload_date TIMESTAMP,
+        file_size INTEGER,
+        mime_type VARCHAR(100),
+        description TEXT,
+        source VARCHAR(255),
+        date_of_original DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Document-Person junction table
@@ -53,6 +66,10 @@ CREATE TABLE
     document_persons (
         document_id UUID REFERENCES documents (document_id),
         person_id UUID REFERENCES persons (person_id),
+        relevance VARCHAR(50),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (document_id, person_id)
     );
 
