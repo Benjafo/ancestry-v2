@@ -72,6 +72,15 @@ exports.createProject = async (req, res) => {
     try {
         const { title, description } = req.body;
         
+        // Check if user exists
+        const user = await User.findByPk(req.user.user_id);
+        
+        if (!user) {
+            return res.status(404).json({ 
+                message: 'User not found. Please log out and log in again.' 
+            });
+        }
+        
         const project = await Project.create({
             title,
             description,

@@ -29,8 +29,8 @@ router.post('/users/:userId/reset-password', validate(userIdValidation), manager
 
 // Client assignment routes
 router.get('/clients/:clientId/assignments', validate(clientIdValidation), managerController.getClientAssignments);
-router.post('/clients/:clientId/projects/:projectId', validate([clientIdValidation, projectIdValidation]), managerController.assignClientToProject);
-router.delete('/clients/:clientId/projects/:projectId', validate([clientIdValidation, projectIdValidation]), managerController.removeClientFromProject);
+router.post('/clients/:clientId/projects/:projectId', validate([...clientIdValidation, ...projectIdValidation]), managerController.assignClientToProject);
+router.delete('/clients/:clientId/projects/:projectId', validate([...clientIdValidation, ...projectIdValidation]), managerController.removeClientFromProject);
 router.get('/clients/:clientId/assignment-history', validate(clientIdValidation), managerController.getAssignmentHistory);
 
 module.exports = router;

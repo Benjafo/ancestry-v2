@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ManagerDashboardSummary, managerApi } from '../api/client';
+import { formatDate, formatDateTime } from '../utils/dateUtils';
 
 const ManagerDashboard = () => {
     // const user = getUser(); // Commented out due to linting error (unused variable)
@@ -167,7 +168,7 @@ const ManagerDashboard = () => {
                                     <div className="flex-1">
                                         <p className="text-sm text-gray-900 dark:text-white">{activity.description}</p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {new Date(activity.date).toLocaleString()}
+                                            {formatDateTime(activity.date)}
                                         </p>
                                     </div>
                                     {activity.type === 'project_update' && (
@@ -206,7 +207,7 @@ const ManagerDashboard = () => {
                                     <div className="flex-1">
                                         <p className="text-sm text-gray-900 dark:text-white">{task.description}</p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            Due: {new Date(task.dueDate).toLocaleDateString()}
+                                            Due: {formatDate(task.dueDate)}
                                         </p>
                                     </div>
                                     <button className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
@@ -235,7 +236,7 @@ const ManagerDashboard = () => {
                         </svg>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">Assign Clients</span>
                     </Link>
-                    <Link to="/projects/new" className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <Link to="/projects?create=true" className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
                         <svg className="h-8 w-8 text-primary-600 dark:text-primary-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>

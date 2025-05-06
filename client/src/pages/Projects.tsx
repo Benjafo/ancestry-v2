@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Project, projectsApi } from '../api/client';
+import CreateProjectModal from '../components/projects/CreateProjectModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectList from '../components/projects/ProjectList';
 import { hasRole } from '../utils/auth';
@@ -9,11 +10,29 @@ const Projects = () => {
     const [error, setError] = useState<string | null>(null);
     const [projects, setProjects] = useState<Project[]>([]);
     const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'on_hold'>('all');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     
     const isManager = hasRole('manager');
+    
+    const handleOpenCreateModal = () => {
+        setIsCreateModalOpen(true);
+    };
+    
+    const handleProjectCreated = (newProject: Project) => {
+        setProjects([...projects, newProject]);
+        setIsCreateModalOpen(false);
+        
+        // Show success message
+        setSuccessMessage('Project created successfully');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
     
     const handleEditProject = (project: Project) => {
         setSelectedProject(project);
@@ -38,6 +57,14 @@ const Projects = () => {
     };
 
     useEffect(() => {
+        // Check if we should open the create modal based on URL
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get('create') === 'true') {
+            setIsCreateModalOpen(true);
+            // Clear the parameter from the URL
+            window.history.replaceState({}, '', '/projects');
+        }
+        
         const fetchProjects = async () => {
             try {
                 const data = await projectsApi.getProjects();
@@ -112,7 +139,7 @@ const Projects = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Research Projects</h1>
-                <button className="btn-primary">New Project</button>
+                <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
             </div>
             
             {successMessage && (
@@ -174,6 +201,13 @@ const Projects = () => {
                     onEditProject={handleEditProject}
                 />
             )}
+            
+            {/* Create Project Modal */}
+            <CreateProjectModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={handleProjectCreated}
+            />
             
             {/* Edit Project Modal */}
             {selectedProject && (

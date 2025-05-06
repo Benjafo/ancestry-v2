@@ -60,7 +60,13 @@ const ProjectList = ({
                 <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                     <div className="p-5">
                         <div className="flex justify-between items-start">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                            <Link 
+                                to="/projects/$projectId"
+                                params={{ projectId: project.id }}
+                                className="text-lg font-medium text-gray-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-400"
+                            >
+                                {project.title}
+                            </Link>
                             {isManager && onEditProject && (
                                 <button 
                                     onClick={() => onEditProject(project)}
