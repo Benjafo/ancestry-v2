@@ -1,13 +1,22 @@
 import { Link } from '@tanstack/react-router';
 import { Project } from '../../api/client';
+import { formatDate } from '../../utils/dateUtils';
 
 interface ProjectListProps {
     projects: Project[];
     isLoading: boolean;
     error: string | null;
+    isManager?: boolean; // New prop to determine if edit icons should be shown
+    onEditProject?: (project: Project) => void; // New prop to handle edit clicks
 }
 
-const ProjectList = ({ projects, isLoading, error }: ProjectListProps) => {
+const ProjectList = ({ 
+    projects, 
+    isLoading, 
+    error, 
+    isManager = false, 
+    onEditProject 
+}: ProjectListProps) => {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-40">
@@ -50,11 +59,24 @@ const ProjectList = ({ projects, isLoading, error }: ProjectListProps) => {
             {projects.map((project) => (
                 <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                     <div className="p-5">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                            {isManager && onEditProject && (
+                                <button 
+                                    onClick={() => onEditProject(project)}
+                                    className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                                    aria-label="Edit project"
+                                >
+                                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{project.description}</p>
                         <div className="flex justify-between items-center">
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {new Date(project.created_at).toLocaleDateString()}
+                                {formatDate(project.created_at)}
                             </span>
                             <span className={`text-xs px-2 py-1 rounded-full ${
                                 project.status === 'active' 
@@ -73,7 +95,7 @@ const ProjectList = ({ projects, isLoading, error }: ProjectListProps) => {
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3">
                         <Link 
-                            to="/projects/:projectId"
+                            to="/projects/$projectId"
                             params={{ projectId: project.id }}
                             className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium text-sm"
                         >

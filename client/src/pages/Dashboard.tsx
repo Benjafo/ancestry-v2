@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { DashboardSummary, Notification, Project, dashboardApi, projectsApi } from '../api/client';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
+import { formatDate } from '../utils/dateUtils';
 
 const Dashboard = () => {
     const user = getUser();
@@ -113,7 +114,7 @@ const Dashboard = () => {
                                 <div className="flex justify-between">
                                     <span className="font-medium dark:text-white">{activity.description}</span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {new Date(activity.date).toLocaleDateString()}
+                                        {formatDate(activity.date)}
                                     </span>
                                 </div>
                                 <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -149,7 +150,7 @@ const Dashboard = () => {
                             <div className="flex justify-between">
                                 <span className="font-medium dark:text-white">{notification.title}</span>
                                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                                    {new Date(notification.date).toLocaleDateString()}
+                                    {formatDate(notification.date)}
                                 </span>
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>

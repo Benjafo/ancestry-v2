@@ -354,24 +354,24 @@ const UserManagement = () => {
                                     <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                                    <span className="text-primary-800 font-medium">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                                    <span className="text-primary-800 dark:text-primary-200 font-medium">
                                                         {user.first_name.charAt(0)}{user.last_name.charAt(0)}
                                                     </span>
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                         {user.first_name} {user.last_name}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{user.email}</div>
+                                            <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {user.roles.map(role => (
-                                                <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                     {role}
                                                 </span>
                                             ))}
@@ -379,13 +379,13 @@ const UserManagement = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                                 user.is_active 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                             }`}>
                                                 {user.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {user.last_login 
                                                 ? new Date(user.last_login).toLocaleString() 
                                                 : 'Never'
@@ -394,27 +394,27 @@ const UserManagement = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
                                                 <button 
-                                                    className="text-primary-600 hover:text-primary-900"
+                                                    className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
                                                     onClick={() => openEditModal(user)}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button 
-                                                    className="text-yellow-600 hover:text-yellow-900"
+                                                    className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                                                     onClick={() => handleResetPassword(user.user_id)}
                                                 >
                                                     Reset Password
                                                 </button>
                                                 {user.is_active ? (
                                                     <button 
-                                                        className="text-red-600 hover:text-red-900"
+                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                         onClick={() => handleDeactivateUser(user.user_id)}
                                                     >
                                                         Deactivate
                                                     </button>
                                                 ) : (
                                                     <button 
-                                                        className="text-green-600 hover:text-green-900"
+                                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                                                         onClick={() => handleReactivateUser(user.user_id)}
                                                     >
                                                         Reactivate

@@ -1,6 +1,8 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
+import EditProjectModal from '../components/projects/EditProjectModal';
+import { formatDate, formatDateTime } from '../utils/dateUtils';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -8,6 +10,27 @@ const ProjectDetail = () => {
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const handleOpenEditModal = () => {
+        if (project) {
+            setIsEditModalOpen(true);
+        }
+    };
+    
+    const handleProjectUpdated = (updatedProject: ProjectDetailType) => {
+        setProject(updatedProject);
+        setIsEditModalOpen(false);
+        
+        // Show success message
+        setSuccessMessage('Project updated successfully');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
 
     useEffect(() => {
         console.log('Fetching project details for ID:', projectId);
@@ -113,6 +136,21 @@ const ProjectDetail = () => {
 
     return (
         <div className="space-y-6">
+            {successMessage && (
+                <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm text-green-700">{successMessage}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center">
                 <div>
                     <Link to="/projects" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center">
@@ -124,7 +162,12 @@ const ProjectDetail = () => {
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="btn-secondary">Edit Project</button>
+                    <button 
+                        className="btn-secondary"
+                        onClick={handleOpenEditModal}
+                    >
+                        Edit Project
+                    </button>
                     <button className="btn-primary">Add Document</button>
                 </div>
             </div>
@@ -138,9 +181,9 @@ const ProjectDetail = () => {
                                 {getStatusText(project.status)}
                             </span>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                Created on {new Date(project.created_at).toLocaleDateString()}
+                                Created on {formatDate(project.created_at)}
                                 {' • '}
-                                Last updated {new Date(project.updated_at).toLocaleDateString()}
+                                Last updated {formatDate(project.updated_at)}
                             </p>
                         </div>
                         <div className="text-right">
@@ -212,7 +255,7 @@ const ProjectDetail = () => {
                                             <span className="font-medium">Document Added:</span> {project.documents[0].title}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {new Date(project.documents[0].uploaded_at).toLocaleString()}
+                                            {formatDateTime(project.documents[0].uploaded_at)}
                                         </p>
                                     </div>
                                 ) : (
@@ -227,7 +270,7 @@ const ProjectDetail = () => {
                                         <span className="font-medium">Research Note:</span> Found connection to Williams family through marriage records
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        {new Date(project.updated_at).toLocaleString()}
+                                        {formatDateTime(project.updated_at)}
                                     </p>
                                 </div>
                             </div>
@@ -271,7 +314,7 @@ const ProjectDetail = () => {
                                                         </div>
                                                         <div>
                                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {new Date(document.uploaded_at).toLocaleDateString()}
+                                                                {formatDate(document.uploaded_at)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -314,7 +357,7 @@ const ProjectDetail = () => {
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
                                                             </div>
                                                             <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                                <time dateTime={event.date}>{new Date(event.date).toLocaleDateString()}</time>
+                                                                <time dateTime={event.date}>{formatDate(event.date)}</time>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -350,10 +393,10 @@ const ProjectDetail = () => {
                                             </h3>
                                             <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                                 {person.birth_date && (
-                                                    <p>Born: {new Date(person.birth_date).toLocaleDateString()}</p>
+                                                    <p>Born: {formatDate(person.birth_date)}</p>
                                                 )}
                                                 {person.death_date && (
-                                                    <p>Died: {new Date(person.death_date).toLocaleDateString()}</p>
+                                                    <p>Died: {formatDate(person.death_date)}</p>
                                                 )}
                                             </div>
                                         </div>
@@ -364,6 +407,15 @@ const ProjectDetail = () => {
                     )}
                 </div>
             </div>
+            {/* Edit Project Modal */}
+            {project && isEditModalOpen && (
+                <EditProjectModal
+                    project={project}
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSuccess={handleProjectUpdated}
+                />
+            )}
         </div>
     );
 };
