@@ -6,10 +6,10 @@ const { Document, DocumentPerson } = require('../models');
  * @param {Object} params - Parameters containing persons, events, and project
  * @param {Object} params.persons - Object containing all person entities
  * @param {Object} params.events - Object containing all event entities
- * @param {Object} params.project1 - The main project
+ * @param {Object} params.project1 - The main project (not directly used but included for consistency)
  * @returns {Promise<Object>} Created documents
  */
-async function seedDocuments(transaction, { persons, events }) {
+async function seedDocuments(transaction, { persons, events, project1 }) {
     console.log('Creating documents...');
     
     // Destructure persons object for easier access

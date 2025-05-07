@@ -58,7 +58,7 @@ exports.getProjectById = async (req, res) => {
         // Check if user is a manager
         const isManager = req.user.roles.includes('manager');
         
-        // Find the project
+        // Find the project with basic information and researcher
         const project = await Project.findByPk(id, {
             attributes: { include: ['created_at', 'updated_at'] },
             include: [
@@ -115,13 +115,71 @@ exports.getProjectById = async (req, res) => {
             project.access_level = userProject.Users[0].project_users.access_level;
         }
         
-        // Ensure timestamps are included in the response
+        // Process the project data to match frontend expectations
         const projectJson = project.toJSON();
+        
+        // Collect all documents from all persons in the project
+        const documents = [];
+        if (projectJson.persons && projectJson.persons.length > 0) {
+            projectJson.persons.forEach(person => {
+                if (person.documents && person.documents.length > 0) {
+                    person.documents.forEach(doc => {
+                        // Add person information to the document
+                        documents.push({
+                            ...doc,
+                            person_name: `${person.first_name} ${person.last_name}`,
+                            person_id: person.person_id
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Collect all events (both from project and from persons)
+        const timeline = [];
+        
+        // Add events directly associated with the project
+        if (projectJson.events && projectJson.events.length > 0) {
+            projectJson.events.forEach(event => {
+                timeline.push({
+                    ...event,
+                    event: event.event_type,
+                    date: event.event_date,
+                    associated_with: 'project'
+                });
+            });
+        }
+        
+        // Add events from persons in the project
+        if (projectJson.persons && projectJson.persons.length > 0) {
+            projectJson.persons.forEach(person => {
+                if (person.events && person.events.length > 0) {
+                    person.events.forEach(event => {
+                        timeline.push({
+                            ...event,
+                            event: event.event_type,
+                            date: event.event_date,
+                            person_name: `${person.first_name} ${person.last_name}`,
+                            person_id: person.person_id,
+                            associated_with: 'person',
+                            role: event.person_events?.role || 'primary'
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Sort timeline by date
+        timeline.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Create the final project object
         const projectWithDates = {
             ...projectJson,
             created_at: projectJson.created_at,
             updated_at: projectJson.updated_at,
-            access_level: project.access_level || 'view'
+            access_level: project.access_level || 'view',
+            documents: documents,
+            timeline: timeline
         };
         
         res.json(projectWithDates);
