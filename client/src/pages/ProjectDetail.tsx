@@ -380,6 +380,7 @@ const ProjectDetail = () => {
                             project={project}
                             onAddPerson={handleAddPerson}
                             onEditPerson={handleEditPerson}
+                            onEditPersonDetails={handleEditPersonDetails}
                             onViewPerson={handleViewPerson}
                             onRemovePerson={handleRemovePerson}
                         />

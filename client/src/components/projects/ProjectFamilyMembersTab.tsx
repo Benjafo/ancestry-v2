@@ -6,6 +6,7 @@ interface ProjectFamilyMembersTabProps {
     project: ProjectDetail;
     onAddPerson: () => void;
     onEditPerson: (person: Person) => void;
+    onEditPersonDetails: (person: Person) => void; // New prop for editing person details
     onViewPerson: (personId: string) => void;
     onRemovePerson: (personId: string) => void;
 }
@@ -14,6 +15,7 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
     project, 
     onAddPerson, 
     onEditPerson, 
+    onEditPersonDetails,
     onViewPerson, 
     onRemovePerson 
 }) => {
@@ -62,9 +64,9 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                                             onClick={(e) => {
                                                 e.stopPropagation(); // Stop event from bubbling up
-                                                onEditPerson(person);
+                                                onEditPersonDetails(person);
                                             }}
-                                            title="Edit notes"
+                                            title="Edit person"
                                         >
                                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

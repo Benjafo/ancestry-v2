@@ -52,7 +52,10 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                     <div className="flex items-center space-x-2">
                         {!loading && person && onEdit && (
                             <button
-                                onClick={() => onEdit(person)}
+                                onClick={() => {
+                                    onEdit(person);
+                                    onClose(); // Close the view modal when edit is clicked
+                                }}
                                 className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                 title="Edit Person"
                             >
