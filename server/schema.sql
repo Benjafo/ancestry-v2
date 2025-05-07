@@ -1,102 +1,6 @@
 -- Enable UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- People table
-CREATE TABLE
-    persons (
-        person_id UUID PRIMARY KEY,
-        first_name VARCHAR(100),
-        middle_name VARCHAR(100),
-        last_name VARCHAR(100),
-        maiden_name VARCHAR(100),
-        gender VARCHAR(20),
-        birth_date DATE,
-        birth_location VARCHAR(255),
-        death_date DATE,
-        death_location VARCHAR(255),
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- Relationships table
-CREATE TABLE
-    relationships (
-        relationship_id UUID PRIMARY KEY,
-        person1_id UUID REFERENCES persons (person_id),
-        person2_id UUID REFERENCES persons (person_id),
-        relationship_type VARCHAR(50), -- parent, spouse, child, etc.
-        relationship_qualifier VARCHAR(50), -- biological, adoptive, etc.
-        start_date DATE, -- marriage date for spouses
-        end_date DATE, -- divorce date for spouses
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- Events table
-CREATE TABLE
-    events (
-        event_id UUID PRIMARY KEY,
-        event_type VARCHAR(100), -- birth, death, immigration, etc.
-        event_date DATE,
-        event_location VARCHAR(255),
-        description TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- Person-Event junction table
-CREATE TABLE
-    person_events (
-        person_id UUID REFERENCES persons(person_id),
-        event_id UUID REFERENCES events(event_id),
-        role VARCHAR(50), -- 'primary', 'witness', 'mentioned', etc.
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (person_id, event_id)
-    );
-
--- Project-Event junction table
-CREATE TABLE
-    project_events (
-        project_id UUID REFERENCES projects(id),
-        event_id UUID REFERENCES events(event_id),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (project_id, event_id)
-    );
-
--- Documents/Media table
-CREATE TABLE
-    documents (
-        document_id UUID PRIMARY KEY,
-        title VARCHAR(255),
-        document_type VARCHAR(100), -- photo, certificate, letter, etc.
-        file_path VARCHAR(255),
-        upload_date TIMESTAMP,
-        file_size INTEGER,
-        mime_type VARCHAR(100),
-        description TEXT,
-        source VARCHAR(255),
-        date_of_original DATE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- Document-Person junction table
-CREATE TABLE
-    document_persons (
-        document_id UUID REFERENCES documents (document_id),
-        person_id UUID REFERENCES persons (person_id),
-        relevance VARCHAR(50),
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (document_id, person_id)
-    );
-
 -- Users table
 CREATE TABLE
     users (
@@ -141,6 +45,102 @@ CREATE TABLE
         researcher_id UUID REFERENCES users(user_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- People table
+CREATE TABLE
+    persons (
+        person_id UUID PRIMARY KEY,
+        first_name VARCHAR(100),
+        middle_name VARCHAR(100),
+        last_name VARCHAR(100),
+        maiden_name VARCHAR(100),
+        gender VARCHAR(20),
+        birth_date DATE,
+        birth_location VARCHAR(255),
+        death_date DATE,
+        death_location VARCHAR(255),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Events table
+CREATE TABLE
+    events (
+        event_id UUID PRIMARY KEY,
+        event_type VARCHAR(100), -- birth, death, immigration, etc.
+        event_date DATE,
+        event_location VARCHAR(255),
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Documents/Media table
+CREATE TABLE
+    documents (
+        document_id UUID PRIMARY KEY,
+        title VARCHAR(255),
+        document_type VARCHAR(100), -- photo, certificate, letter, etc.
+        file_path VARCHAR(255),
+        upload_date TIMESTAMP,
+        file_size INTEGER,
+        mime_type VARCHAR(100),
+        description TEXT,
+        source VARCHAR(255),
+        date_of_original DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Relationships table
+CREATE TABLE
+    relationships (
+        relationship_id UUID PRIMARY KEY,
+        person1_id UUID REFERENCES persons (person_id),
+        person2_id UUID REFERENCES persons (person_id),
+        relationship_type VARCHAR(50), -- parent, spouse, child, etc.
+        relationship_qualifier VARCHAR(50), -- biological, adoptive, etc.
+        start_date DATE, -- marriage date for spouses
+        end_date DATE, -- divorce date for spouses
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Person-Event junction table
+CREATE TABLE
+    person_events (
+        person_id UUID REFERENCES persons(person_id),
+        event_id UUID REFERENCES events(event_id),
+        role VARCHAR(50), -- 'primary', 'witness', 'mentioned', etc.
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (person_id, event_id)
+    );
+
+-- Project-Event junction table
+CREATE TABLE
+    project_events (
+        project_id UUID REFERENCES projects(id),
+        event_id UUID REFERENCES events(event_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (project_id, event_id)
+    );
+
+-- Document-Person junction table
+CREATE TABLE
+    document_persons (
+        document_id UUID REFERENCES documents (document_id),
+        person_id UUID REFERENCES persons (person_id),
+        relevance VARCHAR(50),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (document_id, person_id)
     );
 
 -- Project-User junction table

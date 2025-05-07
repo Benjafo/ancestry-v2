@@ -15,6 +15,7 @@ const DocumentPerson = require('./documentPerson');
 const ProjectPerson = require('./projectPerson');
 const PersonEvent = require('./personEvent');
 const ProjectEvent = require('./projectEvent');
+const ProjectUser = require('./projectUser');
 
 // Define User-Role associations
 User.belongsToMany(Role, { 
@@ -36,13 +37,13 @@ Project.belongsTo(User, {
 });
 
 Project.belongsToMany(User, {
-    through: 'project_users',
+    through: ProjectUser,
     foreignKey: 'project_id',
     otherKey: 'user_id'
 });
 
 User.belongsToMany(Project, {
-    through: 'project_users',
+    through: ProjectUser,
     foreignKey: 'user_id',
     otherKey: 'project_id'
 });
@@ -180,5 +181,6 @@ module.exports = {
     DocumentPerson,
     ProjectPerson,
     PersonEvent,
-    ProjectEvent
+    ProjectEvent,
+    ProjectUser
 };
