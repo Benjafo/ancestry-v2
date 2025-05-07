@@ -155,6 +155,25 @@ export interface Project {
     updated_at: string;
 }
 
+export interface Person {
+    person_id: string;
+    first_name: string;
+    last_name: string;
+    middle_name?: string;
+    maiden_name?: string;
+    gender?: string;
+    birth_date?: string;
+    birth_location?: string;
+    death_date?: string;
+    death_location?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+    project_persons?: {
+        notes?: string;
+    };
+}
+
 export interface ProjectDetail extends Project {
     researcher: {
         name: string;
@@ -172,13 +191,7 @@ export interface ProjectDetail extends Project {
         event: string;
         description: string;
     }[];
-    persons?: {
-        person_id: string;
-        first_name: string;
-        last_name: string;
-        birth_date?: string;
-        death_date?: string;
-    }[];
+    persons?: Person[];
     access_level?: 'view' | 'edit';
     creator?: {
         first_name: string;
@@ -276,6 +289,40 @@ export const projectsApi = {
         const response = await apiClient.put(`projects/${id}`, { json: data });
         return response.json();
     },
+
+    // Project-Person Management
+    getProjectPersons: async (projectId: string): Promise<Person[]> => {
+        const response = await apiClient.get(`projects/${projectId}/persons`);
+        return response.json();
+    },
+
+    addPersonToProject: async (projectId: string, personId: string, notes?: string): Promise<{ message: string; association: any }> => {
+        const response = await apiClient.post(`projects/${projectId}/persons`, { 
+            json: { 
+                person_id: personId,
+                notes 
+            } 
+        });
+        return response.json();
+    },
+
+    updateProjectPerson: async (projectId: string, personId: string, notes: string): Promise<{ message: string; association: any }> => {
+        const response = await apiClient.put(`projects/${projectId}/persons/${personId}`, { 
+            json: { notes } 
+        });
+        return response.json();
+    },
+
+    removePersonFromProject: async (projectId: string, personId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`projects/${projectId}/persons/${personId}`);
+        return response.json();
+    },
+
+    // Search for persons to add to a project
+    searchPersons: async (query: string): Promise<Person[]> => {
+        const response = await apiClient.get(`persons/search?q=${encodeURIComponent(query)}`);
+        return response.json();
+    }
 };
 
 

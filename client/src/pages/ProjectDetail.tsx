@@ -1,6 +1,8 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
+import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
+import AddPersonModal from '../components/projects/AddPersonModal';
+import EditPersonNotesModal from '../components/projects/EditPersonNotesModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import { formatDate, formatDateTime } from '../utils/dateUtils';
 
@@ -11,6 +13,8 @@ const ProjectDetail = () => {
     const [project, setProject] = useState<ProjectDetailType | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+    const [editingPerson, setEditingPerson] = useState<Person | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const handleOpenEditModal = () => {
@@ -25,6 +29,72 @@ const ProjectDetail = () => {
         
         // Show success message
         setSuccessMessage('Project updated successfully');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
+
+    const handleAddPerson = () => {
+        setIsAddPersonModalOpen(true);
+    };
+
+    const handleEditPerson = (person: Person) => {
+        setEditingPerson(person);
+    };
+
+    const handleRemovePerson = async (personId: string) => {
+        if (!confirm('Are you sure you want to remove this person from the project?')) {
+            return;
+        }
+        
+        try {
+            await projectsApi.removePersonFromProject(projectId, personId);
+            
+            // Show success message
+            setSuccessMessage('Person removed from project successfully');
+            
+            // Refresh project data
+            const updatedProject = await projectsApi.getProjectById(projectId);
+            setProject(updatedProject);
+            
+            // Clear success message after 3 seconds
+            setTimeout(() => {
+                setSuccessMessage(null);
+            }, 3000);
+        } catch (err) {
+            console.error('Error removing person from project:', err);
+            setError('Failed to remove person from project');
+            
+            // Clear error message after 3 seconds
+            setTimeout(() => {
+                setError(null);
+            }, 3000);
+        }
+    };
+
+    const handlePersonAdded = async () => {
+        // Show success message
+        setSuccessMessage('Person added to project successfully');
+        
+        // Refresh project data
+        const updatedProject = await projectsApi.getProjectById(projectId);
+        setProject(updatedProject);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
+
+    const handleNotesUpdated = async () => {
+        // Show success message
+        setSuccessMessage('Person notes updated successfully');
+        
+        // Refresh project data
+        const updatedProject = await projectsApi.getProjectById(projectId);
+        setProject(updatedProject);
         
         // Clear success message after 3 seconds
         setTimeout(() => {
@@ -376,21 +446,63 @@ const ProjectDetail = () => {
 
                     {activeTab === 'family_members' && (
                         <div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Family Members</h3>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
+                                {project.access_level === 'edit' && (
+                                    <button 
+                                        className="btn-primary"
+                                        onClick={handleAddPerson}
+                                    >
+                                        Add Person
+                                    </button>
+                                )}
+                            </div>
+                            
                             {!project.persons || project.persons.length === 0 ? (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500 dark:text-gray-400">No family members have been added to this project yet.</p>
                                     {project.access_level === 'edit' && (
-                                        <button className="btn-primary mt-4">Add First Person</button>
+                                        <button 
+                                            className="btn-primary mt-4"
+                                            onClick={handleAddPerson}
+                                        >
+                                            Add First Person
+                                        </button>
                                     )}
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {project.persons.map(person => (
                                         <div key={person.person_id} className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700">
-                                            <h3 className="font-medium text-gray-900 dark:text-white">
-                                                {person.first_name} {person.last_name}
-                                            </h3>
+                                            <div className="flex justify-between">
+                                                <h3 className="font-medium text-gray-900 dark:text-white">
+                                                    {person.first_name} {person.last_name}
+                                                </h3>
+                                                
+                                                {project.access_level === 'edit' && (
+                                                    <div className="flex space-x-2">
+                                                        <button 
+                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                                            onClick={() => handleEditPerson(person)}
+                                                            title="Edit notes"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
+                                                        <button 
+                                                            className="text-red-500 hover:text-red-700"
+                                                            onClick={() => handleRemovePerson(person.person_id)}
+                                                            title="Remove from project"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
                                             <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                                 {person.birth_date && (
                                                     <p>Born: {formatDate(person.birth_date)}</p>
@@ -399,6 +511,13 @@ const ProjectDetail = () => {
                                                     <p>Died: {formatDate(person.death_date)}</p>
                                                 )}
                                             </div>
+                                            
+                                            {person.project_persons?.notes && (
+                                                <div className="mt-2 text-sm">
+                                                    <p className="font-medium">Notes:</p>
+                                                    <p className="text-gray-600 dark:text-gray-300">{person.project_persons.notes}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -407,6 +526,7 @@ const ProjectDetail = () => {
                     )}
                 </div>
             </div>
+            
             {/* Edit Project Modal */}
             {project && isEditModalOpen && (
                 <EditProjectModal
@@ -414,6 +534,27 @@ const ProjectDetail = () => {
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}
                     onSuccess={handleProjectUpdated}
+                />
+            )}
+            
+            {/* Add Person Modal */}
+            {isAddPersonModalOpen && (
+                <AddPersonModal
+                    projectId={projectId}
+                    isOpen={isAddPersonModalOpen}
+                    onClose={() => setIsAddPersonModalOpen(false)}
+                    onPersonAdded={handlePersonAdded}
+                />
+            )}
+            
+            {/* Edit Person Notes Modal */}
+            {editingPerson && (
+                <EditPersonNotesModal
+                    projectId={projectId}
+                    person={editingPerson}
+                    isOpen={!!editingPerson}
+                    onClose={() => setEditingPerson(null)}
+                    onNotesUpdated={handleNotesUpdated}
                 />
             )}
         </div>

@@ -39,8 +39,8 @@ exports.getProjects = async (req, res) => {
                 ...projectJson,
                 created_at: projectJson.created_at,
                 updated_at: projectJson.updated_at,
-                // Include access_level if available (for clients)
-                access_level: projectJson.project_users?.access_level || 'view'
+                // Set access_level based on user role
+                access_level: isManager ? 'edit' : (projectJson.project_users?.access_level || 'view')
             };
         });
         
@@ -97,8 +97,12 @@ exports.getProjectById = async (req, res) => {
             return res.status(404).json({ message: 'Project not found' });
         }
         
-        // If user is not a manager, check if they have access to this project
-        if (!isManager) {
+        // Set access level based on user role
+        if (isManager) {
+            // Managers always have edit access
+            project.access_level = 'edit';
+        } else {
+            // For regular users, check their specific access level
             const userProject = await Project.findOne({
                 where: { id },
                 include: [{
