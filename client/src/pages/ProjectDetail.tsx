@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
 import AddPersonModal from '../components/projects/AddPersonModal';
 import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
+import CreatePersonModal from '../components/projects/CreatePersonModal';
+import EditPersonModal from '../components/projects/EditPersonModal';
 import EditPersonNotesModal from '../components/projects/EditPersonNotesModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectDocumentsTab from '../components/projects/ProjectDocumentsTab';
@@ -20,7 +22,9 @@ const ProjectDetail = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+    const [isCreatePersonModalOpen, setIsCreatePersonModalOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+    const [editingPersonDetails, setEditingPersonDetails] = useState<Person | null>(null);
     const [viewingPersonId, setViewingPersonId] = useState<string | null>(null);
     const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -48,8 +52,16 @@ const ProjectDetail = () => {
         setIsAddPersonModalOpen(true);
     };
 
+    const handleCreatePerson = () => {
+        setIsCreatePersonModalOpen(true);
+    };
+
     const handleEditPerson = (person: Person) => {
         setEditingPerson(person);
+    };
+
+    const handleEditPersonDetails = (person: Person) => {
+        setEditingPersonDetails(person);
     };
 
     const handleViewPerson = (personId: string) => {
@@ -95,6 +107,34 @@ const ProjectDetail = () => {
     const handlePersonAdded = async () => {
         // Show success message
         setSuccessMessage('Person added to project successfully');
+        
+        // Refresh project data
+        const updatedProject = await projectsApi.getProjectById(projectId);
+        setProject(updatedProject);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
+
+    const handlePersonCreated = async (person: Person) => {
+        // Show success message
+        setSuccessMessage('Person created successfully');
+        
+        // Refresh project data
+        const updatedProject = await projectsApi.getProjectById(projectId);
+        setProject(updatedProject);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
+
+    const handlePersonUpdated = async (person: Person) => {
+        // Show success message
+        setSuccessMessage('Person updated successfully');
         
         // Refresh project data
         const updatedProject = await projectsApi.getProjectById(projectId);
@@ -314,6 +354,28 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'family_members' && (
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
+                            {project.access_level === 'edit' && (
+                                <div className="flex space-x-2">
+                                    <button 
+                                        className="btn-secondary"
+                                        onClick={handleCreatePerson}
+                                    >
+                                        Create New Person
+                                    </button>
+                                    <button 
+                                        className="btn-primary"
+                                        onClick={handleAddPerson}
+                                    >
+                                        Add Existing Person
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    
+                    {activeTab === 'family_members' && (
                         <ProjectFamilyMembersTab 
                             project={project}
                             onAddPerson={handleAddPerson}
@@ -345,6 +407,16 @@ const ProjectDetail = () => {
                 />
             )}
 
+            {/* Create Person Modal */}
+            {isCreatePersonModalOpen && (
+                <CreatePersonModal
+                    projectId={projectId}
+                    isOpen={isCreatePersonModalOpen}
+                    onClose={() => setIsCreatePersonModalOpen(false)}
+                    onPersonCreated={handlePersonCreated}
+                />
+            )}
+
             {/* Edit Person Notes Modal */}
             {editingPerson && (
                 <EditPersonNotesModal
@@ -356,12 +428,23 @@ const ProjectDetail = () => {
                 />
             )}
             
+            {/* Edit Person Details Modal */}
+            {editingPersonDetails && (
+                <EditPersonModal
+                    person={editingPersonDetails}
+                    isOpen={!!editingPersonDetails}
+                    onClose={() => setEditingPersonDetails(null)}
+                    onPersonUpdated={handlePersonUpdated}
+                />
+            )}
+            
             {/* View Person Modal */}
             {viewingPersonId && (
                 <ViewPersonModal
                     personId={viewingPersonId}
                     isOpen={!!viewingPersonId}
                     onClose={() => setViewingPersonId(null)}
+                    onEdit={handleEditPersonDetails}
                 />
             )}
 

@@ -381,6 +381,16 @@ export const projectsApi = {
         const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
         const response = await apiClient.get(`persons/${personId}${queryString}`);
         return response.json();
+    },
+    
+    createPerson: async (personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+        const response = await apiClient.post('persons', { json: personData });
+        return response.json();
+    },
+
+    updatePerson: async (personId: string, personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+        const response = await apiClient.put(`persons/${personId}`, { json: personData });
+        return response.json();
     }
 };
 
