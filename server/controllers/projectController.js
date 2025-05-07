@@ -1,5 +1,6 @@
 const { Project, User, Person, Event, Document } = require('../models');
 const { Sequelize } = require('sequelize');
+const projectService = require('../services/projectService');
 
 // Get all projects
 exports.getProjects = async (req, res) => {
@@ -289,3 +290,188 @@ exports.updateProject = async (req, res) => {
         res.status(500).json({ message: 'Server error updating project' });
     }
 };
+
+// Get all persons in a project
+exports.getProjectPersons = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Check if user has access to this project
+        await checkProjectAccess(req, id);
+        
+        const persons = await projectService.getProjectPersons(id);
+        
+        res.json(persons);
+    } catch (error) {
+        console.error('Get project persons error:', error);
+        
+        if (error.message.includes('not found')) {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+        
+        res.status(500).json({ 
+            message: 'Server error retrieving project persons',
+            error: error.message 
+        });
+    }
+};
+
+// Add a person to a project
+exports.addPersonToProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { person_id, notes } = req.body;
+        
+        // Check if user has edit access to this project
+        await checkProjectEditAccess(req, id);
+        
+        const association = await projectService.addPersonToProject(id, person_id, { notes });
+        
+        res.status(201).json({
+            message: 'Person added to project successfully',
+            association
+        });
+    } catch (error) {
+        console.error('Add person to project error:', error);
+        
+        if (error.message.includes('not found')) {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+        
+        if (error.message.includes('already in project')) {
+            return res.status(409).json({ message: error.message });
+        }
+        
+        res.status(500).json({ 
+            message: 'Server error adding person to project',
+            error: error.message 
+        });
+    }
+};
+
+// Update a person's association with a project
+exports.updateProjectPerson = async (req, res) => {
+    try {
+        const { id, personId } = req.params;
+        const { notes } = req.body;
+        
+        // Check if user has edit access to this project
+        await checkProjectEditAccess(req, id);
+        
+        const association = await projectService.updateProjectPerson(id, personId, { notes });
+        
+        res.json({
+            message: 'Project person updated successfully',
+            association
+        });
+    } catch (error) {
+        console.error('Update project person error:', error);
+        
+        if (error.message.includes('not found') || error.message.includes('not in project')) {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+        
+        res.status(500).json({ 
+            message: 'Server error updating project person',
+            error: error.message 
+        });
+    }
+};
+
+// Remove a person from a project
+exports.removePersonFromProject = async (req, res) => {
+    try {
+        const { id, personId } = req.params;
+        
+        // Check if user has edit access to this project
+        await checkProjectEditAccess(req, id);
+        
+        await projectService.removePersonFromProject(id, personId);
+        
+        res.json({
+            message: 'Person removed from project successfully'
+        });
+    } catch (error) {
+        console.error('Remove person from project error:', error);
+        
+        if (error.message.includes('not found') || error.message.includes('not in project')) {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+        
+        res.status(500).json({ 
+            message: 'Server error removing person from project',
+            error: error.message 
+        });
+    }
+};
+
+// Helper function to check if user has access to a project
+async function checkProjectAccess(req, projectId) {
+    // Check if user is a manager
+    const isManager = req.user.roles.includes('manager');
+    
+    if (isManager) {
+        return true;
+    }
+    
+    // Check if user has access to this project
+    const userProject = await Project.findOne({
+        where: { id: projectId },
+        include: [{
+            model: User,
+            where: { user_id: req.user.user_id },
+            through: { attributes: ['access_level'] }
+        }]
+    });
+    
+    if (!userProject) {
+        throw new Error('You do not have access to this project');
+    }
+    
+    return true;
+}
+
+// Helper function to check if user has edit access to a project
+async function checkProjectEditAccess(req, projectId) {
+    // Check if user is a manager
+    const isManager = req.user.roles.includes('manager');
+    
+    if (isManager) {
+        return true;
+    }
+    
+    // Check if user has edit access to this project
+    const userProject = await Project.findOne({
+        where: { id: projectId },
+        include: [{
+            model: User,
+            where: { user_id: req.user.user_id },
+            through: { 
+                where: { access_level: 'edit' },
+                attributes: ['access_level'] 
+            }
+        }]
+    });
+    
+    if (!userProject) {
+        throw new Error('You do not have edit access to this project');
+    }
+    
+    return true;
+}

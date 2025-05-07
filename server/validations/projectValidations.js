@@ -88,3 +88,45 @@ exports.addProjectTimelineValidation = [
         .optional()
         .isString().withMessage('Description must be a string')
 ];
+
+/**
+ * Validation rules for adding a person to a project
+ */
+exports.addProjectPersonValidation = [
+    param('id')
+        .isUUID().withMessage(errorMessages.uuid),
+    
+    body('person_id')
+        .notEmpty().withMessage(errorMessages.required('Person ID'))
+        .isUUID().withMessage('Person ID must be a valid UUID'),
+    
+    body('notes')
+        .optional()
+        .isString().withMessage('Notes must be a string')
+];
+
+/**
+ * Validation rules for updating a person's association with a project
+ */
+exports.updateProjectPersonValidation = [
+    param('id')
+        .isUUID().withMessage(errorMessages.uuid),
+    
+    param('personId')
+        .isUUID().withMessage('Person ID must be a valid UUID'),
+    
+    body('notes')
+        .optional()
+        .isString().withMessage('Notes must be a string')
+];
+
+/**
+ * Validation for project-person ID parameters
+ */
+exports.projectPersonIdValidation = [
+    param('id')
+        .isUUID().withMessage(errorMessages.uuid),
+    
+    param('personId')
+        .isUUID().withMessage('Person ID must be a valid UUID')
+];
