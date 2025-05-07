@@ -2,9 +2,15 @@ import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
 import AddPersonModal from '../components/projects/AddPersonModal';
+import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
 import EditPersonNotesModal from '../components/projects/EditPersonNotesModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
-import { formatDate, formatDateTime } from '../utils/dateUtils';
+import ProjectDocumentsTab from '../components/projects/ProjectDocumentsTab';
+import ProjectFamilyMembersTab from '../components/projects/ProjectFamilyMembersTab';
+import ProjectOverviewTab from '../components/projects/ProjectOverviewTab';
+import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
+import ViewPersonModal from '../components/projects/ViewPersonModal';
+import { formatDate } from '../utils/dateUtils';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -15,6 +21,8 @@ const ProjectDetail = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+    const [viewingPersonId, setViewingPersonId] = useState<string | null>(null);
+    const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const handleOpenEditModal = () => {
@@ -44,13 +52,20 @@ const ProjectDetail = () => {
         setEditingPerson(person);
     };
 
-    const handleRemovePerson = async (personId: string) => {
-        if (!confirm('Are you sure you want to remove this person from the project?')) {
-            return;
-        }
+    const handleViewPerson = (personId: string) => {
+        setViewingPersonId(personId);
+    };
+
+    const handleRemovePerson = (personId: string) => {
+        // Instead of showing browser confirm, set the deletingPersonId state
+        setDeletingPersonId(personId);
+    };
+
+    const confirmRemovePerson = async () => {
+        if (!deletingPersonId) return;
         
         try {
-            await projectsApi.removePersonFromProject(projectId, personId);
+            await projectsApi.removePersonFromProject(projectId, deletingPersonId);
             
             // Show success message
             setSuccessMessage('Person removed from project successfully');
@@ -71,6 +86,9 @@ const ProjectDetail = () => {
             setTimeout(() => {
                 setError(null);
             }, 3000);
+        } finally {
+            // Close the confirmation modal
+            setDeletingPersonId(null);
         }
     };
 
@@ -142,35 +160,6 @@ const ProjectDetail = () => {
                 return 'On Hold';
             default:
                 return status;
-        }
-    };
-
-    const getDocumentTypeIcon = (type: string) => {
-        switch (type) {
-            case 'certificate':
-                return (
-                    <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                );
-            case 'record':
-                return (
-                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                );
-            case 'photo':
-                return (
-                    <svg className="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                );
-            default:
-                return (
-                    <svg className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                );
         }
     };
 
@@ -313,216 +302,25 @@ const ProjectDetail = () => {
                 {/* Tab Content */}
                 <div className="p-6">
                     {activeTab === 'overview' && (
-                        <div className="prose max-w-none dark:prose-invert">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Project Description</h3>
-                            <p className="mt-2 text-gray-600 dark:text-gray-300">{project.description}</p>
-                            
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mt-6">Recent Activity</h3>
-                            <div className="mt-2 space-y-4">
-                                {project.documents && project.documents.length > 0 ? (
-                                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
-                                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                                            <span className="font-medium">Document Added:</span> {project.documents[0].title}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {formatDateTime(project.documents[0].uploaded_at)}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
-                                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                                            <span className="font-medium">No Documents:</span> No documents have been added to this project yet.
-                                        </p>
-                                    </div>
-                                )}
-                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                                        <span className="font-medium">Research Note:</span> Found connection to Williams family through marriage records
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        {formatDateTime(project.updated_at)}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                        <ProjectOverviewTab project={project} />
                     )}
 
                     {activeTab === 'documents' && (
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Search documents..."
-                                        className="form-input py-2 pl-10 pr-4 rounded-md"
-                                    />
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
-                                {project.documents && project.documents.length > 0 ? (
-                                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {project.documents.map((document) => (
-                                            <li key={document.id}>
-                                                <a href="#" className="block hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                    <div className="flex items-center px-4 py-4 sm:px-6">
-                                                        <div className="flex-shrink-0">
-                                                            {getDocumentTypeIcon(document.type)}
-                                                        </div>
-                                                        <div className="min-w-0 flex-1 px-4">
-                                                            <div>
-                                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
-                                                                <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                                    <span className="truncate">Type: {document.type}</span>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {formatDate(document.uploaded_at)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="text-center py-8">
-                                        <p className="text-gray-500 dark:text-gray-400">No documents have been added to this project yet.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <ProjectDocumentsTab project={project} />
                     )}
 
                     {activeTab === 'timeline' && (
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Timeline</h3>
-                            <div className="flow-root">
-                                {project.timeline && project.timeline.length > 0 ? (
-                                    <ul className="-mb-8">
-                                        {project.timeline.map((event, eventIdx) => (
-                                            <li key={event.id}>
-                                                <div className="relative pb-8">
-                                                    {eventIdx !== project.timeline.length - 1 ? (
-                                                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
-                                                    ) : null}
-                                                    <div className="relative flex space-x-3">
-                                                        <div>
-                                                            <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
-                                                                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                </svg>
-                                                            </span>
-                                                        </div>
-                                                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                            <div>
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{event.event}</p>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
-                                                            </div>
-                                                            <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                                <time dateTime={event.date}>{formatDate(event.date)}</time>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="text-center py-8">
-                                        <p className="text-gray-500 dark:text-gray-400">No timeline events have been added to this project yet.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <ProjectTimelineTab project={project} />
                     )}
 
                     {activeTab === 'family_members' && (
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
-                                {project.access_level === 'edit' && (
-                                    <button 
-                                        className="btn-primary"
-                                        onClick={handleAddPerson}
-                                    >
-                                        Add Person
-                                    </button>
-                                )}
-                            </div>
-                            
-                            {!project.persons || project.persons.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <p className="text-gray-500 dark:text-gray-400">No family members have been added to this project yet.</p>
-                                    {project.access_level === 'edit' && (
-                                        <button 
-                                            className="btn-primary mt-4"
-                                            onClick={handleAddPerson}
-                                        >
-                                            Add First Person
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {project.persons.map(person => (
-                                        <div key={person.person_id} className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700">
-                                            <div className="flex justify-between">
-                                                <h3 className="font-medium text-gray-900 dark:text-white">
-                                                    {person.first_name} {person.last_name}
-                                                </h3>
-                                                
-                                                {project.access_level === 'edit' && (
-                                                    <div className="flex space-x-2">
-                                                        <button 
-                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                                            onClick={() => handleEditPerson(person)}
-                                                            title="Edit notes"
-                                                        >
-                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                        </button>
-                                                        <button 
-                                                            className="text-red-500 hover:text-red-700"
-                                                            onClick={() => handleRemovePerson(person.person_id)}
-                                                            title="Remove from project"
-                                                        >
-                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            
-                                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                                {person.birth_date && (
-                                                    <p>Born: {formatDate(person.birth_date)}</p>
-                                                )}
-                                                {person.death_date && (
-                                                    <p>Died: {formatDate(person.death_date)}</p>
-                                                )}
-                                            </div>
-                                            
-                                            {person.project_persons?.notes && (
-                                                <div className="mt-2 text-sm">
-                                                    <p className="font-medium">Notes:</p>
-                                                    <p className="text-gray-600 dark:text-gray-300">{person.project_persons.notes}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <ProjectFamilyMembersTab 
+                            project={project}
+                            onAddPerson={handleAddPerson}
+                            onEditPerson={handleEditPerson}
+                            onViewPerson={handleViewPerson}
+                            onRemovePerson={handleRemovePerson}
+                        />
                     )}
                 </div>
             </div>
@@ -536,7 +334,7 @@ const ProjectDetail = () => {
                     onSuccess={handleProjectUpdated}
                 />
             )}
-            
+
             {/* Add Person Modal */}
             {isAddPersonModalOpen && (
                 <AddPersonModal
@@ -546,7 +344,7 @@ const ProjectDetail = () => {
                     onPersonAdded={handlePersonAdded}
                 />
             )}
-            
+
             {/* Edit Person Notes Modal */}
             {editingPerson && (
                 <EditPersonNotesModal
@@ -555,6 +353,26 @@ const ProjectDetail = () => {
                     isOpen={!!editingPerson}
                     onClose={() => setEditingPerson(null)}
                     onNotesUpdated={handleNotesUpdated}
+                />
+            )}
+            
+            {/* View Person Modal */}
+            {viewingPersonId && (
+                <ViewPersonModal
+                    personId={viewingPersonId}
+                    isOpen={!!viewingPersonId}
+                    onClose={() => setViewingPersonId(null)}
+                />
+            )}
+
+            {/* Confirm Delete Modal */}
+            {deletingPersonId && (
+                <ConfirmDeleteModal
+                    isOpen={!!deletingPersonId}
+                    onClose={() => setDeletingPersonId(null)}
+                    onConfirm={confirmRemovePerson}
+                    title="Remove Person"
+                    message="Are you sure you want to remove this person from the project? This action cannot be undone."
                 />
             )}
         </div>
