@@ -1,3 +1,6 @@
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- People table
 CREATE TABLE
     persons (
@@ -35,13 +38,34 @@ CREATE TABLE
 CREATE TABLE
     events (
         event_id UUID PRIMARY KEY,
-        person_id UUID REFERENCES persons (person_id),
         event_type VARCHAR(100), -- birth, death, immigration, etc.
         event_date DATE,
         event_location VARCHAR(255),
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Person-Event junction table
+CREATE TABLE
+    person_events (
+        person_id UUID REFERENCES persons(person_id),
+        event_id UUID REFERENCES events(event_id),
+        role VARCHAR(50), -- 'primary', 'witness', 'mentioned', etc.
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (person_id, event_id)
+    );
+
+-- Project-Event junction table
+CREATE TABLE
+    project_events (
+        project_id UUID REFERENCES projects(id),
+        event_id UUID REFERENCES events(event_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (project_id, event_id)
     );
 
 -- Documents/Media table
@@ -72,9 +96,6 @@ CREATE TABLE
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (document_id, person_id)
     );
-
--- Enable UUID generation
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users table
 CREATE TABLE
@@ -142,31 +163,6 @@ CREATE TABLE
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (project_id, person_id)
-    );
-
--- Project Documents table
-CREATE TABLE
-    project_documents (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        project_id UUID REFERENCES projects(id),
-        title VARCHAR(255) NOT NULL,
-        type VARCHAR(100),
-        file_path VARCHAR(255),
-        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- Project Timeline table
-CREATE TABLE
-    project_timelines (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        project_id UUID REFERENCES projects(id),
-        date DATE NOT NULL,
-        event VARCHAR(255) NOT NULL,
-        description TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Client Profiles table

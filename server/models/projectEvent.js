@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
-const ProjectDocument = sequelize.define('ProjectDocument', {
+const ProjectEvent = sequelize.define('ProjectEvent', {
     project_id: {
         type: DataTypes.UUID,
         primaryKey: true,
@@ -16,24 +16,30 @@ const ProjectDocument = sequelize.define('ProjectDocument', {
             }
         }
     },
-    document_id: {
+    event_id: {
         type: DataTypes.UUID,
         primaryKey: true,
         references: {
-            model: 'documents',
-            key: 'document_id'
+            model: 'events',
+            key: 'event_id'
         },
         validate: {
             isUUID: {
                 args: 4,
-                msg: 'Document ID must be a valid UUID'
+                msg: 'Event ID must be a valid UUID'
             }
         }
     }
 }, {
     timestamps: true,
     underscored: true,
-    tableName: 'project_documents'
+    tableName: 'project_events',
+    hooks: {
+        beforeCreate: async (projectEvent, options) => {
+            // Additional validation could be added here if needed
+            // For example, validating that the event is relevant to the project
+        }
+    }
 });
 
-module.exports = ProjectDocument;
+module.exports = ProjectEvent;

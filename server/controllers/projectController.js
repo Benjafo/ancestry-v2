@@ -1,4 +1,5 @@
-const { Project, ProjectDocument, ProjectTimeline, User, Person } = require('../models');
+const { Project, User, Person, Event, Document } = require('../models');
+const { Sequelize } = require('sequelize');
 
 // Get all projects
 exports.getProjects = async (req, res) => {
@@ -67,16 +68,25 @@ exports.getProjectById = async (req, res) => {
                     attributes: ['user_id', 'first_name', 'last_name', 'email']
                 },
                 {
-                    model: ProjectDocument,
-                    as: 'documents'
-                },
-                {
-                    model: ProjectTimeline,
-                    as: 'timeline'
-                },
-                {
                     model: Person,
                     as: 'persons',
+                    through: { attributes: [] }, // Exclude junction table attributes
+                    include: [
+                        {
+                            model: Document,
+                            as: 'documents',
+                            through: { attributes: [] } // Exclude junction table attributes
+                        },
+                        {
+                            model: Event,
+                            as: 'events',
+                            through: { attributes: ['role', 'notes'] } // Include role from junction table
+                        }
+                    ]
+                },
+                {
+                    model: Event,
+                    as: 'events',
                     through: { attributes: [] } // Exclude junction table attributes
                 }
             ]

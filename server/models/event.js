@@ -7,23 +7,6 @@ const Event = sequelize.define('Event', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-    person_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: 'persons',
-            key: 'person_id'
-        },
-        validate: {
-            notNull: {
-                msg: 'Person ID is required'
-            },
-            isUUID: {
-                args: 4,
-                msg: 'Person ID must be a valid UUID'
-            }
-        }
-    },
     event_type: {
         type: DataTypes.STRING(100),
         allowNull: false,
@@ -79,45 +62,7 @@ const Event = sequelize.define('Event', {
                 throw new Error(`Date is required for ${event.event_type} events`);
             }
             
-            // If transaction is provided in options, we can use it to fetch the person
-            // and validate event date against person's birth/death dates
-            if (options.transaction && event.person_id) {
-                try {
-                    const Person = require('./person');
-                    const person = await Person.findByPk(event.person_id, { 
-                        transaction: options.transaction 
-                    });
-                    
-                    if (person) {
-                        // Validate event date against person's birth date
-                        if (person.birth_date && event.event_date) {
-                            const birthDate = new Date(person.birth_date);
-                            const eventDate = new Date(event.event_date);
-                            
-                            // Events other than birth should be after birth date
-                            if (event.event_type !== 'birth' && eventDate < birthDate) {
-                                throw new Error(`Event date cannot be before person's birth date`);
-                            }
-                        }
-                        
-                        // Validate event date against person's death date
-                        if (person.death_date && event.event_date) {
-                            const deathDate = new Date(person.death_date);
-                            const eventDate = new Date(event.event_date);
-                            
-                            // Events other than death should be before death date
-                            if (event.event_type !== 'death' && eventDate > deathDate) {
-                                throw new Error(`Event date cannot be after person's death date`);
-                            }
-                        }
-                    }
-                } catch (error) {
-                    if (error.message.includes('Event date cannot be')) {
-                        throw error;
-                    }
-                    // Ignore other errors, as they might be related to the Person model not being loaded yet
-                }
-            }
+            // Note: Person validation is now handled through the person_events junction table
         }
     },
     validate: {
