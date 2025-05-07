@@ -155,6 +155,41 @@ export interface Project {
     updated_at: string;
 }
 
+export interface Event {
+    event_id: string;
+    person_id: string;
+    event_type: string;
+    event_date: string;
+    event_location?: string;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Document {
+    document_id: string;
+    title: string;
+    document_type: string;
+    file_path: string;
+    upload_date: string;
+    file_size?: number;
+    mime_type?: string;
+    description?: string;
+    source?: string;
+    date_of_original?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Relationship {
+    person_id: string;
+    first_name: string;
+    last_name: string;
+    relationship_qualifier?: string;
+    start_date?: string;
+    end_date?: string;
+}
+
 export interface Person {
     person_id: string;
     first_name: string;
@@ -171,6 +206,14 @@ export interface Person {
     updated_at: string;
     project_persons?: {
         notes?: string;
+    };
+    events?: Event[];
+    documents?: Document[];
+    relationships?: {
+        parents?: Relationship[];
+        children?: Relationship[];
+        spouses?: Relationship[];
+        siblings?: Relationship[];
     };
 }
 
@@ -321,6 +364,22 @@ export const projectsApi = {
     // Search for persons to add to a project
     searchPersons: async (query: string): Promise<Person[]> => {
         const response = await apiClient.get(`persons/search?q=${encodeURIComponent(query)}`);
+        return response.json();
+    },
+    
+    // Get person by ID with optional related data
+    getPersonById: async (personId: string, options: { 
+        includeEvents?: boolean, 
+        includeDocuments?: boolean, 
+        includeRelationships?: boolean 
+    } = {}): Promise<Person> => {
+        const queryParams = new URLSearchParams();
+        if (options.includeEvents) queryParams.append('includeEvents', 'true');
+        if (options.includeDocuments) queryParams.append('includeDocuments', 'true');
+        if (options.includeRelationships) queryParams.append('includeRelationships', 'true');
+        
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await apiClient.get(`persons/${personId}${queryString}`);
         return response.json();
     }
 };
