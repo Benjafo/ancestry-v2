@@ -14,6 +14,20 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
+    
+    // Function to format event type for display
+    const formatEventType = (eventType: string): string => {
+        if (!eventType) return '';
+        
+        // Convert snake_case or kebab-case to spaces
+        const formatted = eventType.replace(/[_-]/g, ' ');
+        
+        // Capitalize each word
+        return formatted
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
 
     useEffect(() => {
         if (isOpen && personId) {
@@ -234,13 +248,13 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                                 <div>
                                                                     <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
                                                                         <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                                         </svg>
                                                                     </span>
                                                                 </div>
                                                                 <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                                                                     <div>
-                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{event.event_type}</p>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
                                                                         {event.description && (
                                                                             <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
                                                                         )}
@@ -280,7 +294,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                         </div>
                                                         <div>
                                                             <h4 className="text-base font-medium text-gray-900 dark:text-white">{document.title}</h4>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Type: {document.document_type}</p>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Type: {formatEventType(document.document_type)}</p>
                                                             {document.date_of_original && (
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     Date: {formatDate(document.date_of_original)}

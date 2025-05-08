@@ -227,12 +227,28 @@ export interface ProjectDetail extends Project {
         title: string;
         type: string;
         uploaded_at: string;
+        person_name?: string;
+        person_id?: string;
     }[];
     timeline: {
         id: string;
         date: string;
         event: string;
         description: string;
+        event_id?: string;
+        event_type?: string;
+        event_date?: string;
+        event_location?: string;
+        createdAt?: string;
+        updatedAt?: string;
+        PersonEvent?: {
+            role?: string;
+            notes?: string;
+        };
+        person_name?: string;
+        person_id?: string;
+        associated_with?: 'person' | 'project';
+        role?: string;
     }[];
     persons?: Person[];
     access_level?: 'view' | 'edit';

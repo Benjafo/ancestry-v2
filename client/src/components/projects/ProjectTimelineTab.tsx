@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ProjectDetail } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 
 interface ProjectTimelineTabProps {
     project: ProjectDetail;
+    onViewPerson?: (personId: string) => void; // New prop to handle viewing a person
 }
 
-const ProjectTimelineTab: React.FC<ProjectTimelineTabProps> = ({ project }) => {
+const ProjectTimelineTab: React.FC<ProjectTimelineTabProps> = ({ project, onViewPerson }) => {
     // Function to capitalize event type
     const formatEventType = (eventType: string): string => {
         if (!eventType) return '';
@@ -20,7 +21,6 @@ const ProjectTimelineTab: React.FC<ProjectTimelineTabProps> = ({ project }) => {
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
     };
-    useEffect(() => console.log('Events:', project.timeline), [project.timeline]);
     return (
         <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Timeline</h3>
@@ -44,6 +44,22 @@ const ProjectTimelineTab: React.FC<ProjectTimelineTabProps> = ({ project }) => {
                                         <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                                             <div>
                                                 <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event)}</p>
+                                                {event.person_name && event.person_id && onViewPerson ? (
+                                                    <p 
+                                                        className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline cursor-pointer"
+                                                        onClick={() => event.person_id && onViewPerson(event.person_id)}
+                                                    >
+                                                        {event.person_name}
+                                                    </p>
+                                                ) : event.person_name ? (
+                                                    <p className="text-sm font-medium text-primary-600 dark:text-primary-400">
+                                                        {event.person_name}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        Family Event
+                                                    </p>
+                                                )}
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
                                             </div>
                                             <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">

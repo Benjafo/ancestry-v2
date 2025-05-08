@@ -350,7 +350,10 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'timeline' && (
-                        <ProjectTimelineTab project={project} />
+                        <ProjectTimelineTab 
+                            project={project} 
+                            onViewPerson={handleViewPerson}
+                        />
                     )}
 
                     {activeTab === 'family_members' && (
