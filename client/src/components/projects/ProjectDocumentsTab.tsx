@@ -7,24 +7,50 @@ interface ProjectDocumentsTabProps {
 }
 
 const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) => {
-    // State to store unique documents
+    // State to store unique documents and search term
     const [uniqueDocuments, setUniqueDocuments] = useState<ProjectDetail['documents']>([]);
+    const [filteredDocuments, setFilteredDocuments] = useState<ProjectDetail['documents']>([]);
+    const [searchTerm, setSearchTerm] = useState('');
     
     // Remove duplicate documents based on ID
     useEffect(() => {
         if (project.documents && project.documents.length > 0) {
-            const uniqueDocsMap = project.documents
-            // const uniqueDocsMap = new Map();
-            // project.documents.forEach(doc => {
-            //     if (!uniqueDocsMap.has(doc.id || doc.id)) {
-            //         uniqueDocsMap.set(doc.id || doc.id, doc);
-            //     }
-            // });
-            setUniqueDocuments(Array.from(uniqueDocsMap.values()));
+            // Use a Map to deduplicate documents by ID
+            const uniqueDocsMap = new Map();
+            project.documents.forEach(doc => {
+                if (!uniqueDocsMap.has(doc.id)) {
+                    uniqueDocsMap.set(doc.id, doc);
+                }
+            });
+            const uniqueDocs = Array.from(uniqueDocsMap.values());
+            setUniqueDocuments(uniqueDocs);
+            setFilteredDocuments(uniqueDocs);
         } else {
             setUniqueDocuments([]);
+            setFilteredDocuments([]);
         }
     }, [project.documents]);
+    
+    // Filter documents based on search term
+    useEffect(() => {
+        if (searchTerm.trim() === '') {
+            setFilteredDocuments(uniqueDocuments);
+        } else {
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const filtered = uniqueDocuments.filter(doc => 
+                doc.title.toLowerCase().includes(lowerSearchTerm) || 
+                (doc.type && doc.type.toLowerCase().includes(lowerSearchTerm)) 
+                // ||
+                // (doc.person_name && doc.person_name.toLowerCase().includes(lowerSearchTerm))
+            );
+            setFilteredDocuments(filtered);
+        }
+    }, [searchTerm, uniqueDocuments]);
+    
+    // Handle search input change
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
     
     // Format document type for display
     const formatDocumentType = (type: string): string => {
@@ -78,6 +104,8 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                         type="text"
                         placeholder="Search documents..."
                         className="form-input py-2 pl-10 pr-4 rounded-md"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,26 +115,26 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                 </div>
             </div>
             <div className="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
-                {uniqueDocuments.length > 0 ? (
+                {filteredDocuments.length > 0 ? (
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {uniqueDocuments.map((document) => (
+                        {filteredDocuments.map((document) => (
                             <li key={document.id || document.id}>
                                 <a href="#" className="block hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <div className="flex items-center px-4 py-4 sm:px-6">
                                         <div className="flex-shrink-0">
-                                            {getDocumentTypeIcon(document.document_type)}
+                                            {getDocumentTypeIcon(document.type)}
                                         </div>
                                         <div className="min-w-0 flex-1 px-4">
                                             <div>
                                                 <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
                                                 <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                    <span className="truncate">Type: {formatDocumentType(document.document_type || document.type)}</span>
+                                                    <span className="truncate">Type: {formatDocumentType(document.type || document.type)}</span>
                                                 </p>
                                             </div>
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {document.upload_date ? formatDate(document.upload_date) : document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
+                                                {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
                                             </p>
                                         </div>
                                     </div>

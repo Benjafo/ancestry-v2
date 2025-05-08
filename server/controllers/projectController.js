@@ -129,9 +129,12 @@ exports.getProjectById = async (req, res) => {
             projectJson.persons.forEach(person => {
                 if (person.documents && person.documents.length > 0) {
                     person.documents.forEach(doc => {
-                        // Add person information to the document
+                        // Transform document properties to match ProjectDetail interface
                         documents.push({
-                            ...doc,
+                            id: doc.document_id,
+                            title: doc.title,
+                            type: doc.document_type,
+                            uploaded_at: doc.upload_date,
                             person_name: `${person.first_name} ${person.last_name}`,
                             person_id: person.person_id
                         });
