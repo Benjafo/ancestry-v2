@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ProjectDetail } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 
@@ -7,7 +7,40 @@ interface ProjectDocumentsTabProps {
 }
 
 const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) => {
+    // State to store unique documents
+    const [uniqueDocuments, setUniqueDocuments] = useState<ProjectDetail['documents']>([]);
+    
+    // Remove duplicate documents based on ID
+    useEffect(() => {
+        if (project.documents && project.documents.length > 0) {
+            const uniqueDocsMap = project.documents
+            // const uniqueDocsMap = new Map();
+            // project.documents.forEach(doc => {
+            //     if (!uniqueDocsMap.has(doc.id || doc.id)) {
+            //         uniqueDocsMap.set(doc.id || doc.id, doc);
+            //     }
+            // });
+            setUniqueDocuments(Array.from(uniqueDocsMap.values()));
+        } else {
+            setUniqueDocuments([]);
+        }
+    }, [project.documents]);
+    
+    // Format document type for display
+    const formatDocumentType = (type: string): string => {
+        if (!type) return 'Unknown';
+        
+        // Convert snake_case or kebab-case to spaces
+        const formatted = type.replace(/[_-]/g, ' ');
+        
+        // Capitalize each word
+        return formatted
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
     const getDocumentTypeIcon = (type: string) => {
+        console.log('Document type:', type);
         switch (type) {
             case 'certificate':
                 return (
@@ -54,26 +87,26 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                 </div>
             </div>
             <div className="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
-                {project.documents && project.documents.length > 0 ? (
+                {uniqueDocuments.length > 0 ? (
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {project.documents.map((document) => (
-                            <li key={document.id}>
+                        {uniqueDocuments.map((document) => (
+                            <li key={document.id || document.id}>
                                 <a href="#" className="block hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <div className="flex items-center px-4 py-4 sm:px-6">
                                         <div className="flex-shrink-0">
-                                            {getDocumentTypeIcon(document.type)}
+                                            {getDocumentTypeIcon(document.document_type)}
                                         </div>
                                         <div className="min-w-0 flex-1 px-4">
                                             <div>
                                                 <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
                                                 <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                    <span className="truncate">Type: {document.type}</span>
+                                                    <span className="truncate">Type: {formatDocumentType(document.document_type || document.type)}</span>
                                                 </p>
                                             </div>
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {formatDate(document.uploaded_at)}
+                                                {document.upload_date ? formatDate(document.upload_date) : document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
                                             </p>
                                         </div>
                                     </div>

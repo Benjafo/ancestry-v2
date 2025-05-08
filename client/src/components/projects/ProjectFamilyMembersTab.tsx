@@ -21,29 +21,9 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
 }) => {
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
-                {project.access_level === 'edit' && (
-                    <button 
-                        className="btn-primary"
-                        onClick={onAddPerson}
-                    >
-                        Add Person
-                    </button>
-                )}
-            </div>
-            
             {!project.persons || project.persons.length === 0 ? (
                 <div className="text-center py-8">
                     <p className="text-gray-500 dark:text-gray-400">No family members have been added to this project yet.</p>
-                    {project.access_level === 'edit' && (
-                        <button 
-                            className="btn-primary mt-4"
-                            onClick={onAddPerson}
-                        >
-                            Add First Person
-                        </button>
-                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

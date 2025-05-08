@@ -57,8 +57,8 @@ const ProjectList = ({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
-                <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-                    <div className="p-5">
+                <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
+                    <div className="p-5 flex-grow">
                         <div className="flex justify-between items-start">
                             <Link 
                                 to="/projects/$projectId"
@@ -99,7 +99,7 @@ const ProjectList = ({
                             </span>
                         </div>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3">
+                    <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3 mt-auto">
                         <Link 
                             to="/projects/$projectId"
                             params={{ projectId: project.id }}

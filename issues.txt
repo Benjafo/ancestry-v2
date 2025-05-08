@@ -1,15 +1,18 @@
 
-
-1.0
-
-Projects: view project button is not aligned to bottom of card
-Project -> overview: recent activity should be accurate
-Project -> document: no date on documents
-Project -> document: type is blank
-Project -> document: duplicate documents are shown
-Project -> timeline: fix capitalization of event type
-Project -> timeline: related person should appear before event in timeline view
-Project -> family members: duplicate header with heading and "add person" button should be removed
-Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
-[FIXED] Project -> family members: edit button is obstructed by link to view person modal
+[FIXED] Projects: view project button is not aligned to bottom of card
+[FIXED] Project -> documents: no date on documents
+[FIXED] Project -> documents: type is blank
+[FIXED] Project -> timeline: fix capitalization of event type
 [FIXED] Project -> family members: after canceling delete, view person modal appear
+[FIXED] Project -> family members: duplicate header with heading and "add person" button should be removed
+[FIXED] Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
+[FIXED] Project -> family members: edit button is obstructed by link to view person modal
+Project -> overview: recent activity should be accurate
+Project -> documents: icons next to each document should reflect its type
+Project -> documents: search does not work
+Project -> documents: duplicate documents are shown
+Project -> timeline: related person should appear before event in timeline view
+Project -> family members: create and edit person modal should allow for creating and editing relationships
+Project -> family members: add and edit events in create and edit modal is broken
+Project -> family members: add and edit documents in create and edit modal is broken
+Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
