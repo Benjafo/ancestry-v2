@@ -9,6 +9,7 @@ Project -> document: type is blank
 Project -> document: duplicate documents are shown
 Project -> timeline: fix capitalization of event type
 Project -> timeline: related person should appear before event in timeline view
-Project -> family members: edit person modal should allow for editing of the same data as the view person modal
+Project -> family members: duplicate header with heading and "add person" button should be removed
+Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
 [FIXED] Project -> family members: edit button is obstructed by link to view person modal
 [FIXED] Project -> family members: after canceling delete, view person modal appear
