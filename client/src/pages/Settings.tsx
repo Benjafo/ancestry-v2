@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { logout, getUser, setUser } from '../utils/auth';
+import { useEffect, useState } from 'react';
 import { ClientProfile, clientApi } from '../api/client';
+import { getUser, logout } from '../utils/auth';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -10,7 +10,7 @@ interface ProfileFormData extends ClientProfile {
 
 const Settings = () => {
     const user = getUser();
-    
+
     // Password state
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [passwordData, setPasswordData] = useState({
@@ -20,12 +20,12 @@ const Settings = () => {
     });
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
-    
+
     // Account deletion state
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [deleteError, setDeleteError] = useState<string | null>(null);
-    
+
     // Profile state
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
     const [profileError, setProfileError] = useState<string | null>(null);
@@ -42,7 +42,7 @@ const Settings = () => {
         zip_code: '',
         country: ''
     });
-    
+
     // Fetch profile data on component mount
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -69,7 +69,7 @@ const Settings = () => {
             [name]: value
         }));
     };
-    
+
     // Handle profile form submission
     const handleProfileSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -79,7 +79,7 @@ const Settings = () => {
 
         try {
             // Extract only the client profile fields (not first_name, last_name, email)
-            const { first_name, last_name, email, ...profileDataToUpdate } = profileData;
+            const { first_name: _f, last_name: _l, email: _e, ...profileDataToUpdate } = profileData;
 
             // Update profile via API
             const response = await clientApi.updateProfile(profileDataToUpdate);
@@ -92,7 +92,7 @@ const Settings = () => {
             setIsUpdatingProfile(false);
         }
     };
-    
+
     // Handle password form changes
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -123,10 +123,10 @@ const Settings = () => {
         try {
             // In a real app, we would call an API
             // await authApi.changePassword(passwordData);
-            
+
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             setPasswordSuccess('Password changed successfully');
             setPasswordData({
                 currentPassword: '',
@@ -155,10 +155,10 @@ const Settings = () => {
         try {
             // In a real app, we would call an API
             // await authApi.deleteAccount();
-            
+
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Log the user out
             logout();
         } catch (err) {
@@ -173,12 +173,12 @@ const Settings = () => {
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Account Settings</h1>
             </div>
-            
+
             {/* Profile Information Section */}
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Profile Information</h2>
-                    
+
                     {profileError && (
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
                             <div className="flex">
@@ -360,7 +360,7 @@ const Settings = () => {
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h2>
-                    
+
                     {passwordError && (
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
                             <div className="flex">
@@ -506,7 +506,7 @@ const Settings = () => {
                     <p className="text-gray-600 dark:text-gray-300 mb-4">
                         Once you delete your account, all of your data will be permanently removed. This action cannot be undone.
                     </p>
-                    
+
                     {deleteError && (
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
                             <div className="flex">
