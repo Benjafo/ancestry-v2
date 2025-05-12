@@ -318,8 +318,8 @@ export const dashboardApi = {
         return response.json();
     },
 
-    getNotifications: async (): Promise<{ notifications: UserEvent[] }> => {
-        const response = await apiClient.get('dashboard/notifications');
+    getUserEvents: async (): Promise<{ userEvents: UserEvent[] }> => {
+        const response = await apiClient.get('dashboard/events');
         return response.json();
     }
 };

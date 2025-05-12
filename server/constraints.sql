@@ -98,7 +98,7 @@ DECLARE
     tables TEXT[] := ARRAY['users', 'roles', 'user_roles', 'projects', 'project_users', 
                           'persons', 'events', 'documents', 'relationships',
                           'person_events', 'project_events', 'document_persons', 'project_persons',
-                          'client_profiles', 'notifications', 'activities', 'password_reset_tokens'];
+                          'client_profiles', 'user_events', 'password_reset_tokens'];
     t TEXT;
 BEGIN
     FOREACH t IN ARRAY tables

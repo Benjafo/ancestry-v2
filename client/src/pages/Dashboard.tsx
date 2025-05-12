@@ -21,9 +21,9 @@ const Dashboard = () => {
                 const summaryData = await dashboardApi.getSummary();
                 setSummary(summaryData);
 
-                // Fetch notifications
-                const notificationsData = await dashboardApi.getNotifications();
-                setNotifications(notificationsData.notifications);
+                // Fetch user events
+                const userEventsData = await dashboardApi.getUserEvents();
+                setNotifications(userEventsData.userEvents);
 
                 setIsLoading(false);
             } catch (err) {

@@ -37,12 +37,12 @@ exports.getSummary = async (req, res) => {
     }
 };
 
-// Get user events (formerly notifications)
-exports.getNotifications = async (req, res) => {
+// Get user events
+exports.getUserEvents = async (req, res) => {
     try {
         const userId = req.user.user_id;
         
-        const notifications = await UserEvent.findAll({
+        const userEvents = await UserEvent.findAll({
             where: { user_id: userId },
             order: [['created_at', 'DESC']],
             include: [{
@@ -52,9 +52,9 @@ exports.getNotifications = async (req, res) => {
             }]
         });
         
-        res.json({ notifications });
+        res.json({ userEvents });
     } catch (error) {
-        console.error('Get notifications error:', error);
-        res.status(500).json({ message: 'Server error retrieving notifications' });
+        console.error('Get user events error:', error);
+        res.status(500).json({ message: 'Server error retrieving user events' });
     }
 };

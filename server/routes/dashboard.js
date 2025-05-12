@@ -14,12 +14,10 @@ router.use(verifyToken);
 router.get('/summary', dashboardController.getSummary);
 
 /**
- * @route   GET /api/dashboard/notifications
- * @desc    Get user notifications
+ * @route   GET /api/dashboard/events
+ * @desc    Get user events
  * @access  Private
  */
-router.get('/notifications', dashboardController.getNotifications);
-
-// Removed markNotificationAsRead endpoint since we no longer have is_read field
+router.get('/events', dashboardController.getUserEvents);
 
 module.exports = router;
