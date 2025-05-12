@@ -4,17 +4,13 @@ import { formatDate } from '../../utils/dateUtils';
 
 interface ProjectFamilyMembersTabProps {
     project: ProjectDetail;
-    onAddPerson: () => void;
-    onEditPerson: (person: Person) => void;
-    onEditPersonDetails: (person: Person) => void; // New prop for editing person details
+    onEditPersonDetails: (person: Person) => void;
     onViewPerson: (personId: string) => void;
     onRemovePerson: (personId: string) => void;
 }
 
 const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
     project,
-    onAddPerson,
-    onEditPerson,
     onEditPersonDetails,
     onViewPerson,
     onRemovePerson

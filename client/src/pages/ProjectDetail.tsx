@@ -377,8 +377,6 @@ const ProjectDetail = () => {
                     {activeTab === 'family_members' && (
                         <ProjectFamilyMembersTab
                             project={project}
-                            onAddPerson={handleAddPerson}
-                            onEditPerson={handleEditPerson}
                             onEditPersonDetails={handleEditPersonDetails}
                             onViewPerson={handleViewPerson}
                             onRemovePerson={handleRemovePerson}
