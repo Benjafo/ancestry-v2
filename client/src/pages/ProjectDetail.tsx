@@ -56,10 +56,6 @@ const ProjectDetail = () => {
         setIsCreatePersonModalOpen(true);
     };
 
-    const handleEditPerson = (person: Person) => {
-        setEditingPerson(person);
-    };
-
     const handleEditPersonDetails = (person: Person) => {
         setEditingPersonDetails(person);
     };
@@ -298,8 +294,8 @@ const ProjectDetail = () => {
                     <nav className="flex -mb-px">
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'overview'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('overview')}
                         >
@@ -307,8 +303,8 @@ const ProjectDetail = () => {
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('documents')}
                         >
@@ -316,8 +312,8 @@ const ProjectDetail = () => {
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'timeline'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('timeline')}
                         >
@@ -325,8 +321,8 @@ const ProjectDetail = () => {
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'family_members'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('family_members')}
                         >
