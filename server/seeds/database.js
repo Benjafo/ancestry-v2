@@ -37,7 +37,7 @@ async function seedDatabase(sequelize, transaction) {
     try {
         // Read schema.sql
         console.log('Reading schema file...');
-        const schemaPath = '/app/schema.sql';
+        const schemaPath = path.join(__dirname, '..', 'schema.sql');
         console.log(`Looking for schema file at: ${schemaPath}`);
         const schema = fs.readFileSync(schemaPath, 'utf8');
         console.log(`Schema file loaded, size: ${schema.length} bytes`);
@@ -49,7 +49,7 @@ async function seedDatabase(sequelize, transaction) {
         
         // Read constraints.sql
         console.log('Reading constraints file...');
-        const constraintsPath = '/app/constraints.sql';
+        const constraintsPath = path.join(__dirname, '..', 'constraints.sql');
         console.log(`Looking for constraints file at: ${constraintsPath}`);
         const constraints = fs.readFileSync(constraintsPath, 'utf8');
         console.log(`Constraints file loaded, size: ${constraints.length} bytes`);

@@ -4,20 +4,16 @@ import { formatDate } from '../../utils/dateUtils';
 
 interface ProjectFamilyMembersTabProps {
     project: ProjectDetail;
-    onAddPerson: () => void;
-    onEditPerson: (person: Person) => void;
-    onEditPersonDetails: (person: Person) => void; // New prop for editing person details
+    onEditPersonDetails: (person: Person) => void;
     onViewPerson: (personId: string) => void;
     onRemovePerson: (personId: string) => void;
 }
 
-const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({ 
-    project, 
-    onAddPerson, 
-    onEditPerson, 
+const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
+    project,
     onEditPersonDetails,
-    onViewPerson, 
-    onRemovePerson 
+    onViewPerson,
+    onRemovePerson
 }) => {
     return (
         <div>
@@ -28,8 +24,8 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {project.persons.map(person => (
-                        <div 
-                            key={person.person_id} 
+                        <div
+                            key={person.person_id}
                             className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                             onClick={() => onViewPerson(person.person_id)}
                         >
@@ -37,10 +33,10 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                 <h3 className="font-medium text-gray-900 dark:text-white">
                                     {person.first_name} {person.last_name}
                                 </h3>
-                                
+
                                 {project.access_level === 'edit' && (
                                     <div className="flex space-x-2">
-                                        <button 
+                                        <button
                                             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                                             onClick={(e) => {
                                                 e.stopPropagation(); // Stop event from bubbling up
@@ -52,7 +48,7 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
-                                        <button 
+                                        <button
                                             className="text-red-500 hover:text-red-700"
                                             onClick={(e) => {
                                                 e.stopPropagation(); // Stop event from bubbling up
@@ -67,7 +63,7 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                     </div>
                                 )}
                             </div>
-                            
+
                             <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                 {person.birth_date && (
                                     <p>Born: {formatDate(person.birth_date)}</p>
@@ -76,7 +72,7 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                     <p>Died: {formatDate(person.death_date)}</p>
                                 )}
                             </div>
-                            
+
                             {person.project_persons?.notes && (
                                 <div className="mt-2 text-sm">
                                     <p className="font-medium">Notes:</p>

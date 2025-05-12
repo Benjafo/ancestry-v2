@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Person, projectsApi } from '../../api/client';
+import { ApiError, Person, projectsApi } from '../../api/client';
 
 interface EditPersonNotesModalProps {
     projectId: string;
@@ -30,9 +30,10 @@ const EditPersonNotesModal: React.FC<EditPersonNotesModalProps> = ({
             await projectsApi.updateProjectPerson(projectId, person.person_id, notes);
             onNotesUpdated();
             onClose();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating person notes:', err);
-            setError(err.message || 'Failed to update person notes');
+            const error = err as ApiError;
+            setError(error.message || 'Failed to update person notes');
         } finally {
             setLoading(false);
         }

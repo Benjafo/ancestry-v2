@@ -34,14 +34,14 @@ const ProjectDetail = () => {
             setIsEditModalOpen(true);
         }
     };
-    
+
     const handleProjectUpdated = (updatedProject: ProjectDetailType) => {
         setProject(updatedProject);
         setIsEditModalOpen(false);
-        
+
         // Show success message
         setSuccessMessage('Project updated successfully');
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
@@ -54,10 +54,6 @@ const ProjectDetail = () => {
 
     const handleCreatePerson = () => {
         setIsCreatePersonModalOpen(true);
-    };
-
-    const handleEditPerson = (person: Person) => {
-        setEditingPerson(person);
     };
 
     const handleEditPersonDetails = (person: Person) => {
@@ -75,17 +71,17 @@ const ProjectDetail = () => {
 
     const confirmRemovePerson = async () => {
         if (!deletingPersonId) return;
-        
+
         try {
             await projectsApi.removePersonFromProject(projectId, deletingPersonId);
-            
+
             // Show success message
             setSuccessMessage('Person removed from project successfully');
-            
+
             // Refresh project data
             const updatedProject = await projectsApi.getProjectById(projectId);
             setProject(updatedProject);
-            
+
             // Clear success message after 3 seconds
             setTimeout(() => {
                 setSuccessMessage(null);
@@ -93,7 +89,7 @@ const ProjectDetail = () => {
         } catch (err) {
             console.error('Error removing person from project:', err);
             setError('Failed to remove person from project');
-            
+
             // Clear error message after 3 seconds
             setTimeout(() => {
                 setError(null);
@@ -107,39 +103,39 @@ const ProjectDetail = () => {
     const handlePersonAdded = async () => {
         // Show success message
         setSuccessMessage('Person added to project successfully');
-        
+
         // Refresh project data
         const updatedProject = await projectsApi.getProjectById(projectId);
         setProject(updatedProject);
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
         }, 3000);
     };
 
-    const handlePersonCreated = async (person: Person) => {
+    const handlePersonCreated = async () => {
         // Show success message
         setSuccessMessage('Person created successfully');
-        
+
         // Refresh project data
         const updatedProject = await projectsApi.getProjectById(projectId);
         setProject(updatedProject);
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
         }, 3000);
     };
 
-    const handlePersonUpdated = async (person: Person) => {
+    const handlePersonUpdated = async () => {
         // Show success message
         setSuccessMessage('Person updated successfully');
-        
+
         // Refresh project data
         const updatedProject = await projectsApi.getProjectById(projectId);
         setProject(updatedProject);
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
@@ -149,11 +145,11 @@ const ProjectDetail = () => {
     const handleNotesUpdated = async () => {
         // Show success message
         setSuccessMessage('Person notes updated successfully');
-        
+
         // Refresh project data
         const updatedProject = await projectsApi.getProjectById(projectId);
         setProject(updatedProject);
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
@@ -261,7 +257,7 @@ const ProjectDetail = () => {
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
                 </div>
                 <div className="flex space-x-2">
-                    <button 
+                    <button
                         className="btn-secondary"
                         onClick={handleOpenEditModal}
                     >
@@ -297,41 +293,37 @@ const ProjectDetail = () => {
                 <div className="border-b border-gray-200 dark:border-gray-700">
                     <nav className="flex -mb-px">
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'overview'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'overview'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
                             onClick={() => setActiveTab('overview')}
                         >
                             Overview
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'documents'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
                             onClick={() => setActiveTab('documents')}
                         >
                             Documents ({project.documents?.length || 0})
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'timeline'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'timeline'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
                             onClick={() => setActiveTab('timeline')}
                         >
                             Timeline ({project.timeline?.length || 0})
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'family_members'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'family_members'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
                             onClick={() => setActiveTab('family_members')}
                         >
                             Family Members {project.persons && `(${project.persons.length})`}
@@ -350,8 +342,8 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'timeline' && (
-                        <ProjectTimelineTab 
-                            project={project} 
+                        <ProjectTimelineTab
+                            project={project}
                             onViewPerson={handleViewPerson}
                         />
                     )}
@@ -361,13 +353,13 @@ const ProjectDetail = () => {
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
                             {project.access_level === 'edit' && (
                                 <div className="flex space-x-2">
-                                    <button 
+                                    <button
                                         className="btn-secondary"
                                         onClick={handleCreatePerson}
                                     >
                                         Create New Person
                                     </button>
-                                    <button 
+                                    <button
                                         className="btn-primary"
                                         onClick={handleAddPerson}
                                     >
@@ -377,12 +369,10 @@ const ProjectDetail = () => {
                             )}
                         </div>
                     )}
-                    
+
                     {activeTab === 'family_members' && (
-                        <ProjectFamilyMembersTab 
+                        <ProjectFamilyMembersTab
                             project={project}
-                            onAddPerson={handleAddPerson}
-                            onEditPerson={handleEditPerson}
                             onEditPersonDetails={handleEditPersonDetails}
                             onViewPerson={handleViewPerson}
                             onRemovePerson={handleRemovePerson}
@@ -390,7 +380,7 @@ const ProjectDetail = () => {
                     )}
                 </div>
             </div>
-            
+
             {/* Edit Project Modal */}
             {project && isEditModalOpen && (
                 <EditProjectModal
@@ -431,7 +421,7 @@ const ProjectDetail = () => {
                     onNotesUpdated={handleNotesUpdated}
                 />
             )}
-            
+
             {/* Edit Person Details Modal */}
             {editingPersonDetails && (
                 <EditPersonModal
@@ -441,7 +431,7 @@ const ProjectDetail = () => {
                     onPersonUpdated={handlePersonUpdated}
                 />
             )}
-            
+
             {/* View Person Modal */}
             {viewingPersonId && (
                 <ViewPersonModal
