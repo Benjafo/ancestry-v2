@@ -79,7 +79,9 @@ const Settings = () => {
 
         try {
             // Extract only the client profile fields (not first_name, last_name, email)
-            const { first_name: _f, last_name: _l, email: _e, ...profileDataToUpdate } = profileData;
+            const profileDataToUpdate = Object.fromEntries(
+                Object.entries(profileData).filter(([key]) => !['first_name', 'last_name', 'email'].includes(key))
+            );
 
             // Update profile via API
             const response = await clientApi.updateProfile(profileDataToUpdate);
