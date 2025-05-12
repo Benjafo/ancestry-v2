@@ -12,6 +12,7 @@ const seedPersons = require('./seeds/persons');
 const seedRelationships = require('./seeds/relationships');
 const seedEvents = require('./seeds/events');
 const seedDocuments = require('./seeds/documents');
+const seedNotificationsActivities = require('./seeds/notificationsActivities');
 
 /**
  * Main function to seed the database
@@ -71,9 +72,17 @@ async function seedDatabase() {
                 );
             
             // Seed documents
+            const documents = 
+                await runSeed(
+                    (t) => seedDocuments(t, { persons, events, project1 }), 
+                    'Documents', 
+                    transaction
+                );
+            
+            // Seed notifications and activities
             await runSeed(
-                (t) => seedDocuments(t, { persons, events, project1 }), 
-                'Documents', 
+                (t) => seedNotificationsActivities(t, { adminUser, clientUser, project1, persons, events, documents }), 
+                'Notifications and Activities', 
                 transaction
             );
             
