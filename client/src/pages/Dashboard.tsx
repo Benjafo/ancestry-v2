@@ -20,11 +20,11 @@ const Dashboard = () => {
                 // Fetch dashboard summary
                 const summaryData = await dashboardApi.getSummary();
                 setSummary(summaryData);
-                
+
                 // Fetch notifications
                 const notificationsData = await dashboardApi.getNotifications();
                 setNotifications(notificationsData.notifications);
-                
+
                 setIsLoading(false);
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
@@ -109,19 +109,24 @@ const Dashboard = () => {
                 <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 md:col-span-2">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
                     <div className="space-y-4">
-                        {summary?.recentActivity.map(activity => (
-                            <div key={activity.id} className="border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
-                                <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{activity.description}</span>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {formatDate(activity.date)}
-                                    </span>
-                                </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    {activity.type === 'update' ? 'Update' : 'Discovery'}
-                                </div>
+                        {summary?.recentActivity.length === 0 ? (
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
+                                <p className="text-gray-500 dark:text-gray-400">No recent activity.</p>
                             </div>
-                        ))}
+                        ) : (
+                            summary?.recentActivity.map(activity => (
+                                <div key={activity.id} className="border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
+                                    <div className="flex justify-between">
+                                        <span className="font-medium dark:text-white">{activity.description}</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            {formatDate(activity.date)}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        {activity.type === 'update' ? 'Update' : 'Discovery'}
+                                    </div>
+                                </div>
+                            )))}
                     </div>
                 </div>
             </div>
@@ -131,31 +136,37 @@ const Dashboard = () => {
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white">Your Projects</h2>
                 </div>
-                <ProjectList 
-                    projects={projects} 
-                    isLoading={projectsLoading} 
-                    error={projectsError} 
+                <ProjectList
+                    projects={projects}
+                    isLoading={projectsLoading}
+                    error={projectsError}
                 />
             </div>
+
 
             {/* Notifications */}
             <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Notifications</h2>
                 <div className="space-y-4">
-                    {notifications.map(notification => (
-                        <div 
-                            key={notification.id} 
-                            className={`border-l-4 ${notification.isRead ? 'border-gray-300 dark:border-gray-600' : 'border-primary-500'} pl-4 py-2`}
-                        >
-                            <div className="flex justify-between">
-                                <span className="font-medium dark:text-white">{notification.title}</span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                    {formatDate(notification.date)}
-                                </span>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                    {notifications.length === 0 ? (
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
+                            <p className="text-gray-500 dark:text-gray-400">No notifications.</p>
                         </div>
-                    ))}
+                    ) : (
+                        notifications.map(notification => (
+                            <div
+                                key={notification.id}
+                                className={`border-l-4 ${notification.isRead ? 'border-gray-300 dark:border-gray-600' : 'border-primary-500'} pl-4 py-2`}
+                            >
+                                <div className="flex justify-between">
+                                    <span className="font-medium dark:text-white">{notification.title}</span>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                        {formatDate(notification.date)}
+                                    </span>
+                                </div>
+                                <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                            </div>
+                        )))}
                 </div>
             </div>
         </div>
