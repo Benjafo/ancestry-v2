@@ -10,12 +10,12 @@ interface ProjectListProps {
     onEditProject?: (project: Project) => void; // New prop to handle edit clicks
 }
 
-const ProjectList = ({ 
-    projects, 
-    isLoading, 
-    error, 
-    isManager = false, 
-    onEditProject 
+const ProjectList = ({
+    projects,
+    isLoading,
+    error,
+    isManager = false,
+    onEditProject
 }: ProjectListProps) => {
     if (isLoading) {
         return (
@@ -60,7 +60,7 @@ const ProjectList = ({
                 <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
                     <div className="p-5 flex-grow">
                         <div className="flex justify-between items-start">
-                            <Link 
+                            <Link
                                 to="/projects/$projectId"
                                 params={{ projectId: project.id }}
                                 className="text-lg font-medium text-gray-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-400"
@@ -68,7 +68,7 @@ const ProjectList = ({
                                 {project.title}
                             </Link>
                             {isManager && onEditProject && (
-                                <button 
+                                <button
                                     onClick={() => onEditProject(project)}
                                     className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                                     aria-label="Edit project"
@@ -84,23 +84,22 @@ const ProjectList = ({
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {formatDate(project.created_at)}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                                project.status === 'active' 
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                    : project.status === 'completed' 
-                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
-                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            }`}>
-                                {project.status === 'active' 
-                                    ? 'Active' 
-                                    : project.status === 'completed' 
-                                        ? 'Completed' 
+                            <span className={`text-xs px-2 py-1 rounded-full ${project.status === 'active'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : project.status === 'completed'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                }`}>
+                                {project.status === 'active'
+                                    ? 'Active'
+                                    : project.status === 'completed'
+                                        ? 'Completed'
                                         : 'On Hold'}
                             </span>
                         </div>
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3 mt-auto">
-                        <Link 
+                        <Link
                             to="/projects/$projectId"
                             params={{ projectId: project.id }}
                             className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium text-sm"
