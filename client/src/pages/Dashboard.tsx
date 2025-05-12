@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DashboardSummary, Notification, Project, dashboardApi, projectsApi } from '../api/client';
+import { DashboardSummary, UserEvent, Project, dashboardApi, projectsApi } from '../api/client';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
@@ -9,7 +9,7 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<UserEvent[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [projectsLoading, setProjectsLoading] = useState(true);
     const [projectsError, setProjectsError] = useState<string | null>(null);
@@ -91,9 +91,9 @@ const Dashboard = () => {
                             <span className="text-xl font-semibold dark:text-white">{summary?.projectCount}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Unread Notifications</span>
+                            <span className="text-gray-500 dark:text-gray-400">Notifications</span>
                             <span className="text-xl font-semibold dark:text-white">
-                                {notifications.filter(n => !n.isRead).length}
+                                {notifications.length}
                             </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -117,13 +117,13 @@ const Dashboard = () => {
                             summary?.recentActivity.map(activity => (
                                 <div key={activity.id} className="border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
                                     <div className="flex justify-between">
-                                        <span className="font-medium dark:text-white">{activity.description}</span>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            {formatDate(activity.date)}
-                                        </span>
-                                    </div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        {activity.type === 'update' ? 'Update' : 'Discovery'}
+                                    <span className="font-medium dark:text-white">{activity.message}</span>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                        {formatDate(activity.created_at)}
+                                    </span>
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    {activity.event_type}
                                     </div>
                                 </div>
                             )))}
@@ -156,15 +156,20 @@ const Dashboard = () => {
                         notifications.map(notification => (
                             <div
                                 key={notification.id}
-                                className={`border-l-4 ${notification.isRead ? 'border-gray-300 dark:border-gray-600' : 'border-primary-500'} pl-4 py-2`}
+                                className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2"
                             >
                                 <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{notification.title}</span>
+                                    <span className="font-medium dark:text-white">{notification.event_type}</span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {formatDate(notification.date)}
+                                        {formatDate(notification.created_at)}
                                     </span>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                                {notification.actor && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        By {notification.actor.first_name} {notification.actor.last_name}
+                                    </p>
+                                )}
                             </div>
                         )))}
                 </div>

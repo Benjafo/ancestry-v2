@@ -1,4 +1,4 @@
-const { Project, Notification, Activity, User } = require('../models');
+const { Project, UserEvent, User } = require('../models');
 const { Op } = require('sequelize');
 
 // Get dashboard summary
@@ -16,10 +16,15 @@ exports.getSummary = async (req, res) => {
         });
         
         // Get recent activity
-        const recentActivity = await Activity.findAll({
+        const recentActivity = await UserEvent.findAll({
             where: { user_id: userId },
             order: [['created_at', 'DESC']],
-            limit: 10
+            limit: 10,
+            include: [{
+                model: User,
+                as: 'actor',
+                attributes: ['first_name', 'last_name']
+            }]
         });
         
         res.json({
@@ -32,49 +37,24 @@ exports.getSummary = async (req, res) => {
     }
 };
 
-// Get notifications
+// Get user events (formerly notifications)
 exports.getNotifications = async (req, res) => {
     try {
         const userId = req.user.user_id;
         
-        const notifications = await Notification.findAll({
+        const notifications = await UserEvent.findAll({
             where: { user_id: userId },
-            order: [['created_at', 'DESC']]
+            order: [['created_at', 'DESC']],
+            include: [{
+                model: User,
+                as: 'actor',
+                attributes: ['first_name', 'last_name']
+            }]
         });
         
         res.json({ notifications });
     } catch (error) {
         console.error('Get notifications error:', error);
         res.status(500).json({ message: 'Server error retrieving notifications' });
-    }
-};
-
-// Mark notification as read
-exports.markNotificationAsRead = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.user_id;
-        
-        const notification = await Notification.findOne({
-            where: {
-                id,
-                user_id: userId
-            }
-        });
-        
-        if (!notification) {
-            return res.status(404).json({ message: 'Notification not found' });
-        }
-        
-        notification.is_read = true;
-        await notification.save();
-        
-        res.json({
-            message: 'Notification marked as read',
-            notification
-        });
-    } catch (error) {
-        console.error('Mark notification as read error:', error);
-        res.status(500).json({ message: 'Server error updating notification' });
     }
 };

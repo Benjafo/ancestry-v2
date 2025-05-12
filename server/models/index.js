@@ -2,8 +2,7 @@ const User = require('./user');
 const Role = require('./role');
 const Project = require('./project');
 const ClientProfile = require('./clientProfile');
-const Notification = require('./notification');
-const Activity = require('./activity');
+const UserEvent = require('./userEvent');
 const PasswordResetToken = require('./passwordResetToken');
 
 // Genealogical data models
@@ -72,22 +71,19 @@ ClientProfile.belongsTo(User, {
     foreignKey: 'user_id'
 });
 
-// Define Notification associations
-User.hasMany(Notification, {
+// Define UserEvent associations
+User.hasMany(UserEvent, {
     foreignKey: 'user_id'
 });
 
-Notification.belongsTo(User, {
+UserEvent.belongsTo(User, {
     foreignKey: 'user_id'
 });
 
-// Define Activity associations
-User.hasMany(Activity, {
-    foreignKey: 'user_id'
-});
-
-Activity.belongsTo(User, {
-    foreignKey: 'user_id'
+// Define UserEvent actor associations
+UserEvent.belongsTo(User, {
+    foreignKey: 'actor_id',
+    as: 'actor'
 });
 
 // Define PasswordResetToken associations
@@ -170,8 +166,7 @@ module.exports = {
     Role,
     Project,
     ClientProfile,
-    Notification,
-    Activity,
+    UserEvent,
     PasswordResetToken,
     // Genealogical data models
     Person,

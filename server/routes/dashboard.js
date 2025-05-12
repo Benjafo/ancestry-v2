@@ -20,11 +20,6 @@ router.get('/summary', dashboardController.getSummary);
  */
 router.get('/notifications', dashboardController.getNotifications);
 
-/**
- * @route   PUT /api/dashboard/notifications/:id/read
- * @desc    Mark notification as read
- * @access  Private
- */
-router.put('/notifications/:id/read', dashboardController.markNotificationAsRead);
+// Removed markNotificationAsRead endpoint since we no longer have is_read field
 
 module.exports = router;
