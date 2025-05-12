@@ -122,10 +122,8 @@ export interface ClientProfile {
     state?: string;
     zip_code?: string;
     country?: string;
-    preferences?: {
-        emailNotifications: boolean;
-        researchUpdates: boolean;
-    };
+    email_notifications?: boolean;
+    research_updates?: boolean;
 }
 
 export interface DashboardSummary {

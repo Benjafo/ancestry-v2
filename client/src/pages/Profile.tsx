@@ -24,11 +24,7 @@ const Profile = () => {
         city: '',
         state: '',
         zip_code: '',
-        country: '',
-        preferences: {
-            emailNotifications: true,
-            researchUpdates: true
-        }
+        country: ''
     });
 
     useEffect(() => {
@@ -36,13 +32,13 @@ const Profile = () => {
             try {
                 // Fetch profile data from API
                 const data = await clientApi.getProfile();
-                
+
                 // Merge with user data
                 setFormData({
                     ...formData,
                     ...data.profile,
                 });
-                
+
                 setIsLoading(false);
             } catch (err) {
                 console.error('Error fetching profile data:', err);
@@ -62,16 +58,6 @@ const Profile = () => {
         }));
     };
 
-    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            preferences: {
-                ...prev.preferences!,
-                [name]: checked
-            }
-        }));
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -81,12 +67,12 @@ const Profile = () => {
 
         try {
             // Extract only the client profile fields (not first_name, last_name, email)
-            const { /* first_name, last_name, email, */ ...profileData } = formData;
-            
+            const { first_name, last_name, email, ...profileData } = formData;
+
             // Update profile via API
-            /* const response = */ await clientApi.updateProfile(profileData);
-            
-            setSuccess('Profile updated successfully');
+            const response = await clientApi.updateProfile(profileData);
+
+            setSuccess(response.message || 'Profile updated successfully');
             setIsSaving(false);
         } catch (err) {
             console.error('Error updating profile:', err);
@@ -277,47 +263,6 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Preferences</h3>
-                        <div className="space-y-4">
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                    <input
-                                        id="emailNotifications"
-                                        name="emailNotifications"
-                                        type="checkbox"
-                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                        checked={formData.preferences?.emailNotifications}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                    <label htmlFor="emailNotifications" className="font-medium text-gray-700 dark:text-gray-300">
-                                        Email Notifications
-                                    </label>
-                                    <p className="text-gray-500 dark:text-gray-400">Receive email notifications about your account and research updates.</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                    <input
-                                        id="researchUpdates"
-                                        name="researchUpdates"
-                                        type="checkbox"
-                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                        checked={formData.preferences?.researchUpdates}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                    <label htmlFor="researchUpdates" className="font-medium text-gray-700 dark:text-gray-300">
-                                        Research Updates
-                                    </label>
-                                    <p className="text-gray-500 dark:text-gray-400">Receive notifications when there are updates to your research projects.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <div className="flex justify-end">
                         <button

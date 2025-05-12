@@ -27,19 +27,26 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const userId = req.user.user_id;
+        console.log('Update profile request body:', req.body); // Log the request body
+        
         const { 
             phone, address, city, state, zip_code, country, 
             email_notifications, research_updates 
         } = req.body;
         
         let profile = await ClientProfile.findByPk(userId);
+        console.log('Found profile:', profile ? 'Yes' : 'No'); // Log if profile was found
         
         if (!profile) {
             // Create profile if it doesn't exist
             profile = await ClientProfile.create({
                 user_id: userId
             });
+            console.log('Created new profile');
         }
+        
+        // Log before update
+        console.log('Profile before update:', JSON.stringify(profile));
         
         // Update fields
         if (phone !== undefined) profile.phone = phone;
@@ -51,7 +58,12 @@ exports.updateProfile = async (req, res) => {
         if (email_notifications !== undefined) profile.email_notifications = email_notifications;
         if (research_updates !== undefined) profile.research_updates = research_updates;
         
-        await profile.save();
+        // Log after update
+        console.log('Profile after update:', JSON.stringify(profile));
+        
+        // Save with force option
+        await profile.save({ force: true });
+        console.log('Profile saved');
         
         res.json({
             message: 'Profile updated successfully',
