@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Document, Event, Person, documentsApi, eventsApi, projectsApi } from '../../api/client';
+import { ApiError, Document, Event, Person, documentsApi, eventsApi, projectsApi } from '../../api/client';
 import DocumentForm from '../documents/DocumentForm';
 import EventForm from '../events/EventForm';
 
@@ -125,9 +125,10 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
             
             onPersonCreated(refreshedPerson);
             onClose();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error creating person:', err);
-            setError(err.message || 'Failed to create person');
+            const error = err as ApiError;
+            setError(error.message || 'Failed to create person');
         } finally {
             setLoading(false);
         }

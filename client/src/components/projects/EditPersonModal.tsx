@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Document, Event, Person, documentsApi, eventsApi, projectsApi } from '../../api/client';
+import { ApiError, Document, Event, Person, documentsApi, eventsApi, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import DocumentForm from '../documents/DocumentForm';
 import DocumentList from '../documents/DocumentList';
@@ -190,9 +190,10 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             
             onPersonUpdated(refreshedPerson);
             onClose();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating person:', err);
-            setError(err.message || 'Failed to update person');
+            const error = err as ApiError;
+            setError(error.message || 'Failed to update person');
         } finally {
             setLoading(false);
         }
