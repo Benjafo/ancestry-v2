@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export const Sidebar = () => {
     const isManager = hasRole('manager');
-    
+
     return (
         <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -22,11 +22,6 @@ export const Sidebar = () => {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/profile" className="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
-                            Profile
-                        </Link>
-                    </li>
-                    <li>
                         <Link to="/settings" className="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
                             Settings
                         </Link>
@@ -36,7 +31,7 @@ export const Sidebar = () => {
                             Projects
                         </Link>
                     </li>
-                    
+
                     {isManager && (
                         <>
                             <li className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
@@ -67,7 +62,7 @@ export const Sidebar = () => {
 
 export const Header = () => {
     const isManager = hasRole('manager');
-    
+
     return (
         <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
             <div className="flex justify-between items-center">
@@ -76,7 +71,7 @@ export const Header = () => {
                 </h1>
                 <div className="flex items-center space-x-2">
                     <DarkModeToggle />
-                    <button 
+                    <button
                         className="btn-secondary dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
                         onClick={() => logout()}
                     >

@@ -14,42 +14,42 @@ const Projects = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    
+
     const isManager = hasRole('manager');
-    
+
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
     };
-    
+
     const handleProjectCreated = (newProject: Project) => {
         setProjects([...projects, newProject]);
         setIsCreateModalOpen(false);
-        
+
         // Show success message
         setSuccessMessage('Project created successfully');
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
         }, 3000);
     };
-    
+
     const handleEditProject = (project: Project) => {
         setSelectedProject(project);
         setIsEditModalOpen(true);
     };
-    
+
     const handleProjectUpdated = (updatedProject: Project) => {
         // Update the projects list with the updated project
-        setProjects(projects.map(p => 
+        setProjects(projects.map(p =>
             p.id === updatedProject.id ? updatedProject : p
         ));
         setIsEditModalOpen(false);
         setSelectedProject(null);
-        
+
         // Show success message
         setSuccessMessage('Project updated successfully');
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
@@ -64,7 +64,7 @@ const Projects = () => {
             // Clear the parameter from the URL
             window.history.replaceState({}, '', '/projects');
         }
-        
+
         const fetchProjects = async () => {
             try {
                 const data = await projectsApi.getProjects();
@@ -80,8 +80,8 @@ const Projects = () => {
         fetchProjects();
     }, []);
 
-    const filteredProjects = filter === 'all' 
-        ? projects 
+    const filteredProjects = filter === 'all'
+        ? projects
         : projects.filter(project => project.status === filter);
 
     // const getStatusBadgeClass = (status: Project['status']) => {
@@ -141,7 +141,7 @@ const Projects = () => {
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Research Projects</h1>
                 <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
             </div>
-            
+
             {successMessage && (
                 <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
                     <div className="flex">
@@ -160,25 +160,25 @@ const Projects = () => {
             {/* Filters */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <div className="flex space-x-2">
-                    <button 
+                    <button
                         className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                         onClick={() => setFilter('all')}
                     >
                         All
                     </button>
-                    <button 
+                    <button
                         className={`px-4 py-2 rounded-md ${filter === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                         onClick={() => setFilter('active')}
                     >
                         Active
                     </button>
-                    <button 
+                    <button
                         className={`px-4 py-2 rounded-md ${filter === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                         onClick={() => setFilter('completed')}
                     >
                         Completed
                     </button>
-                    <button 
+                    <button
                         className={`px-4 py-2 rounded-md ${filter === 'on_hold' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                         onClick={() => setFilter('on_hold')}
                     >
@@ -193,7 +193,7 @@ const Projects = () => {
                     <p className="text-gray-500 dark:text-gray-400">No projects found matching the selected filter.</p>
                 </div>
             ) : (
-                <ProjectList 
+                <ProjectList
                     projects={filteredProjects}
                     isLoading={isLoading}
                     error={error}
@@ -201,14 +201,14 @@ const Projects = () => {
                     onEditProject={handleEditProject}
                 />
             )}
-            
+
             {/* Create Project Modal */}
             <CreateProjectModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSuccess={handleProjectCreated}
             />
-            
+
             {/* Edit Project Modal */}
             {selectedProject && (
                 <EditProjectModal

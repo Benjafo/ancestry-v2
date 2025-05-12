@@ -13,7 +13,6 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import ManagerDashboard from './pages/ManagerDashboard';
 import NotFound from './pages/NotFound';
-import Profile from './pages/Profile';
 import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
@@ -94,12 +93,6 @@ const dashboardRoute = new Route({
     component: Dashboard,
 });
 
-const profileRoute = new Route({
-    getParentRoute: () => authLayoutRoute,
-    path: '/profile',
-    component: Profile,
-});
-
 const settingsRoute = new Route({
     getParentRoute: () => authLayoutRoute,
     path: '/settings',
@@ -114,7 +107,7 @@ const projectsRoute = new Route({
 
 const projectDetailRoute = new Route({
     getParentRoute: () => authLayoutRoute,
-    path: '/projects/$projectId', 
+    path: '/projects/$projectId',
     component: ProjectDetail
 });
 
@@ -174,7 +167,6 @@ const routeTree = rootRoute.addChildren([
     registerRoute,
     authLayoutRoute.addChildren([
         dashboardRoute,
-        profileRoute,
         settingsRoute,
         projectsRoute,
         projectDetailRoute,
@@ -186,7 +178,7 @@ const routeTree = rootRoute.addChildren([
     notFoundRoute,
 ]);
 
-export const router = new Router({ routeTree});
+export const router = new Router({ routeTree });
 
 // Register router types
 declare module '@tanstack/react-router' {

@@ -10,6 +10,7 @@
 [FIXED] Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
 [FIXED] Project -> family members: edit button is obstructed by link to view person modal
 
+Project: tree view
 Project -> overview: recent activity should be accurate
 Project -> documents: there should be some sort of view functionality for records
 Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
@@ -20,12 +21,16 @@ Project -> family members: add and edit events in create and edit modal is broke
 Project -> family members: add and edit documents in create and edit modal is broken
 Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
 
+
+
+[FIXED?] Settings: form submission
+[FIXED?] Settings: delete account form submission
+[FIXED?] Profile: form submission
+[INFO] Consolidated settings and profile pages
+
 Dashboard: notifications
 Dashboard: recent activity
 Dashboard: research summary
-Profile: form submission
-Settings: form submission
-Settings: delete account (?)
+Settings: validation for fields
 Manager dashboard: pending tasks
-
-Project: tree view
+User management -> create user: role form does not match dark mode
