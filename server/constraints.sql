@@ -67,13 +67,21 @@ CREATE INDEX IF NOT EXISTS idx_relationships_person1 ON relationships(person1_id
 CREATE INDEX IF NOT EXISTS idx_relationships_person2 ON relationships(person2_id);
 CREATE INDEX IF NOT EXISTS idx_relationships_type ON relationships(relationship_type);
 
-CREATE INDEX IF NOT EXISTS idx_events_person ON events(person_id);
+-- Removed invalid index: idx_events_person ON events(person_id)
 CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);
 
 CREATE INDEX IF NOT EXISTS idx_documents_type ON documents(document_type);
 CREATE INDEX IF NOT EXISTS idx_document_persons_document ON document_persons(document_id);
 CREATE INDEX IF NOT EXISTS idx_document_persons_person ON document_persons(person_id);
+
+-- Add indexes for junction tables
+CREATE INDEX IF NOT EXISTS idx_person_events_person ON person_events(person_id);
+CREATE INDEX IF NOT EXISTS idx_person_events_event ON person_events(event_id);
+CREATE INDEX IF NOT EXISTS idx_project_events_project ON project_events(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_events_event ON project_events(event_id);
+CREATE INDEX IF NOT EXISTS idx_project_persons_project ON project_persons(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_persons_person ON project_persons(person_id);
 
 -- Add triggers for data consistency
 CREATE OR REPLACE FUNCTION update_timestamp()
@@ -88,8 +96,9 @@ $$ LANGUAGE plpgsql;
 DO $$
 DECLARE
     tables TEXT[] := ARRAY['users', 'roles', 'user_roles', 'projects', 'project_users', 
-                          'project_documents', 'project_timelines', 'client_profiles', 
-                          'notifications', 'activities', 'password_reset_tokens'];
+                          'persons', 'events', 'documents', 'relationships',
+                          'person_events', 'project_events', 'document_persons', 'project_persons',
+                          'client_profiles', 'notifications', 'activities', 'password_reset_tokens'];
     t TEXT;
 BEGIN
     FOREACH t IN ARRAY tables
@@ -104,24 +113,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger for birth/death consistency
+-- Modified trigger for birth/death consistency to use person_events junction table
 CREATE OR REPLACE FUNCTION check_birth_death_consistency()
 RETURNS TRIGGER AS $$
+DECLARE
+    person_id_val UUID;
 BEGIN
-    -- If this is a birth event, update the person's birth_date
-    IF NEW.event_type = 'birth' THEN
-        UPDATE persons
-        SET birth_date = NEW.event_date
-        WHERE person_id = NEW.person_id
-        AND (birth_date IS NULL OR birth_date != NEW.event_date);
-    END IF;
+    -- Get the person_id from the person_events table
+    SELECT person_id INTO person_id_val
+    FROM person_events
+    WHERE event_id = NEW.event_id AND role = 'primary';
     
-    -- If this is a death event, update the person's death_date
-    IF NEW.event_type = 'death' THEN
-        UPDATE persons
-        SET death_date = NEW.event_date
-        WHERE person_id = NEW.person_id
-        AND (death_date IS NULL OR death_date != NEW.event_date);
+    -- If we found a primary person for this event
+    IF person_id_val IS NOT NULL THEN
+        -- If this is a birth event, update the person's birth_date
+        IF NEW.event_type = 'birth' THEN
+            UPDATE persons
+            SET birth_date = NEW.event_date
+            WHERE person_id = person_id_val
+            AND (birth_date IS NULL OR birth_date != NEW.event_date);
+        END IF;
+        
+        -- If this is a death event, update the person's death_date
+        IF NEW.event_type = 'death' THEN
+            UPDATE persons
+            SET death_date = NEW.event_date
+            WHERE person_id = person_id_val
+            AND (death_date IS NULL OR death_date != NEW.event_date);
+        END IF;
     END IF;
     
     RETURN NEW;

@@ -7,8 +7,9 @@ const {
     createProjectValidation,
     updateProjectValidation,
     projectIdValidation,
-    addProjectDocumentValidation,
-    addProjectTimelineValidation
+    addProjectPersonValidation,
+    updateProjectPersonValidation,
+    projectPersonIdValidation
 } = require('../validations/projectValidations');
 
 // All routes require authentication
@@ -41,5 +42,33 @@ router.post('/', validate(createProjectValidation), projectController.createProj
  * @access  Private
  */
 router.put('/:id', validate(updateProjectValidation), projectController.updateProject);
+
+/**
+ * @route   GET /api/projects/:id/persons
+ * @desc    Get all persons in a project
+ * @access  Private
+ */
+router.get('/:id/persons', validate(projectIdValidation), projectController.getProjectPersons);
+
+/**
+ * @route   POST /api/projects/:id/persons
+ * @desc    Add a person to a project
+ * @access  Private
+ */
+router.post('/:id/persons', validate(addProjectPersonValidation), projectController.addPersonToProject);
+
+/**
+ * @route   PUT /api/projects/:id/persons/:personId
+ * @desc    Update a person's association with a project
+ * @access  Private
+ */
+router.put('/:id/persons/:personId', validate(updateProjectPersonValidation), projectController.updateProjectPerson);
+
+/**
+ * @route   DELETE /api/projects/:id/persons/:personId
+ * @desc    Remove a person from a project
+ * @access  Private
+ */
+router.delete('/:id/persons/:personId', validate(projectPersonIdValidation), projectController.removePersonFromProject);
 
 module.exports = router;

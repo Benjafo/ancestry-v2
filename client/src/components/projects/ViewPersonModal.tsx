@@ -1,0 +1,409 @@
+import React, { useEffect, useState } from 'react';
+import { Person, projectsApi } from '../../api/client';
+import { formatDate } from '../../utils/dateUtils';
+
+interface ViewPersonModalProps {
+    personId: string;
+    isOpen: boolean;
+    onClose: () => void;
+    onEdit?: (person: Person) => void; // Optional callback for edit button
+}
+
+const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit }) => {
+    const [person, setPerson] = useState<Person | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
+    
+    // Function to format event type for display
+    const formatEventType = (eventType: string): string => {
+        if (!eventType) return '';
+        
+        // Convert snake_case or kebab-case to spaces
+        const formatted = eventType.replace(/[_-]/g, ' ');
+        
+        // Capitalize each word
+        return formatted
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
+    useEffect(() => {
+        if (isOpen && personId) {
+            fetchPersonDetails();
+        }
+    }, [personId, isOpen]);
+
+    const fetchPersonDetails = async () => {
+        setLoading(true);
+        try {
+            // Fetch person with all related data
+            const personData = await projectsApi.getPersonById(personId, {
+                includeEvents: true,
+                includeDocuments: true,
+                includeRelationships: true
+            });
+            setPerson(personData);
+        } catch (err) {
+            console.error('Error fetching person details:', err);
+            setError('Failed to load person details');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                {/* Modal header with close button */}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {loading ? 'Loading...' : person ? `${person.first_name} ${person.last_name}` : 'Person Details'}
+                    </h2>
+                    <div className="flex items-center space-x-2">
+                        {!loading && person && onEdit && (
+                            <button
+                                onClick={() => {
+                                    onEdit(person);
+                                    onClose(); // Close the view modal when edit is clicked
+                                }}
+                                className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                title="Edit Person"
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        >
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Loading state */}
+                {loading && (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+                    </div>
+                )}
+
+                {/* Error state */}
+                {error && !loading && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Person data */}
+                {!loading && person && (
+                    <>
+                        {/* Tabs */}
+                        <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+                            <nav className="flex -mb-px">
+                                <button
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                                        activeTab === 'info'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                    onClick={() => setActiveTab('info')}
+                                >
+                                    Biographical Info
+                                </button>
+                                <button
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                                        activeTab === 'events'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                    onClick={() => setActiveTab('events')}
+                                >
+                                    Events
+                                </button>
+                                <button
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                                        activeTab === 'documents'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                    onClick={() => setActiveTab('documents')}
+                                >
+                                    Documents
+                                </button>
+                                <button
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+                                        activeTab === 'relationships'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                    onClick={() => setActiveTab('relationships')}
+                                >
+                                    Relationships
+                                </button>
+                            </nav>
+                        </div>
+
+                        {/* Tab content */}
+                        <div>
+                            {/* Biographical Info Tab */}
+                            {activeTab === 'info' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</p>
+                                                <p className="text-gray-900 dark:text-white">
+                                                    {person.first_name} {person.middle_name ? `${person.middle_name} ` : ''}{person.last_name}
+                                                </p>
+                                            </div>
+                                            {person.maiden_name && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Maiden Name</p>
+                                                    <p className="text-gray-900 dark:text-white">{person.maiden_name}</p>
+                                                </div>
+                                            )}
+                                            {person.gender && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Gender</p>
+                                                    <p className="text-gray-900 dark:text-white capitalize">{person.gender}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Life Events</h3>
+                                        <div className="space-y-3">
+                                            {person.birth_date && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Birth Date</p>
+                                                    <p className="text-gray-900 dark:text-white">{formatDate(person.birth_date)}</p>
+                                                </div>
+                                            )}
+                                            {person.birth_location && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Birth Location</p>
+                                                    <p className="text-gray-900 dark:text-white">{person.birth_location}</p>
+                                                </div>
+                                            )}
+                                            {person.death_date && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Death Date</p>
+                                                    <p className="text-gray-900 dark:text-white">{formatDate(person.death_date)}</p>
+                                                </div>
+                                            )}
+                                            {person.death_location && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Death Location</p>
+                                                    <p className="text-gray-900 dark:text-white">{person.death_location}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    {person.notes && (
+                                        <div className="col-span-1 md:col-span-2">
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Notes</h3>
+                                            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                                                <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{person.notes}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Events Tab */}
+                            {activeTab === 'events' && (
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Events</h3>
+                                    {person.events && person.events.length > 0 ? (
+                                        <div className="flow-root">
+                                            <ul className="-mb-8">
+                                                {person.events.map((event, eventIdx) => (
+                                                    <li key={event.event_id}>
+                                                        <div className="relative pb-8">
+                                                            {eventIdx !== (person.events?.length || 0) - 1 ? (
+                                                                <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+                                                            ) : null}
+                                                            <div className="relative flex space-x-3">
+                                                                <div>
+                                                                    <span className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
+                                                                        <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                        </svg>
+                                                                    </span>
+                                                                </div>
+                                                                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
+                                                                        {event.description && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
+                                                                        )}
+                                                                        {event.event_location && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">{event.event_location}</p>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                                        <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500 dark:text-gray-400">No events found for this person.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Documents Tab */}
+                            {activeTab === 'documents' && (
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Documents</h3>
+                                    {person.documents && person.documents.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {person.documents.map(document => (
+                                                <div key={document.document_id} className="border dark:border-gray-700 rounded-lg p-4">
+                                                    <div className="flex items-start">
+                                                        <div className="flex-shrink-0 mr-4">
+                                                            {/* Document type icon would go here */}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-base font-medium text-gray-900 dark:text-white">{document.title}</h4>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Type: {formatEventType(document.document_type)}</p>
+                                                            {document.date_of_original && (
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    Date: {formatDate(document.date_of_original)}
+                                                                </p>
+                                                            )}
+                                                            {document.source && (
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    Source: {document.source}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500 dark:text-gray-400">No documents found for this person.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Relationships Tab */}
+                            {activeTab === 'relationships' && (
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
+                                    {person.relationships && Object.keys(person.relationships).length > 0 ? (
+                                        <div className="space-y-6">
+                                            {person.relationships.parents && person.relationships.parents.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Parents</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {person.relationships.parents.map(parent => (
+                                                            <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium">{parent.first_name} {parent.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {person.relationships.children && person.relationships.children.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Children</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {person.relationships.children.map(child => (
+                                                            <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium">{child.first_name} {child.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {child.relationship_qualifier && `${child.relationship_qualifier} child`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {person.relationships.spouses && person.relationships.spouses.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Spouses</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {person.relationships.spouses.map(spouse => (
+                                                            <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium">{spouse.first_name} {spouse.last_name}</p>
+                                                                {spouse.start_date && (
+                                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                        Married: {formatDate(spouse.start_date)}
+                                                                        {spouse.end_date && ` - ${formatDate(spouse.end_date)}`}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {person.relationships.siblings && person.relationships.siblings.length > 0 && (
+                                                <div>
+                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Siblings</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {person.relationships.siblings.map(sibling => (
+                                                            <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium">{sibling.first_name} {sibling.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500 dark:text-gray-400">No relationships found for this person.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default ViewPersonModal;

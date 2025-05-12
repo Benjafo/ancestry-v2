@@ -27,7 +27,7 @@ export const apiClient = ky.create({
                 // Only attempt refresh if status is 401 (Unauthorized)
                 if (response.status === 401) {
                     const refreshToken = getRefreshToken();
-                    
+
                     // If we have a refresh token, try to get a new access token
                     if (refreshToken) {
                         try {
@@ -36,18 +36,18 @@ export const apiClient = ky.create({
                                 prefixUrl: API_URL,
                                 retry: 0
                             });
-                            
+
                             // Request new access token
                             const refreshResponse = await refreshClient.post('auth/refresh-token', {
                                 json: { refreshToken }
                             });
-                            
+
                             if (refreshResponse.ok) {
                                 const { accessToken } = await refreshResponse.json<{ accessToken: string }>();
-                                
+
                                 // Update the token in storage
                                 setToken(accessToken);
-                                
+
                                 // Retry the original request with the new token
                                 request.headers.set('Authorization', `Bearer ${accessToken}`);
                                 return ky(request);
@@ -56,12 +56,12 @@ export const apiClient = ky.create({
                             console.error('Token refresh failed:', error);
                         }
                     }
-                    
+
                     // If refresh failed or no refresh token, clear tokens and redirect to login
                     clearTokens();
                     window.location.href = '/login';
                 }
-                
+
                 return response;
             }
         ]
@@ -76,39 +76,39 @@ export const authApi = {
         const response = await apiClient.post('auth/login', { json: credentials });
         return response.json<AuthResponse>();
     },
-    
-    register: async (userData: { 
-        email: string; 
-        password: string; 
-        first_name: string; 
-        last_name: string 
+
+    register: async (userData: {
+        email: string;
+        password: string;
+        first_name: string;
+        last_name: string
     }): Promise<AuthResponse> => {
         const response = await apiClient.post('auth/register', { json: userData });
         return response.json<AuthResponse>();
     },
-    
+
     getProfile: async (): Promise<{ user: User }> => {
         const response = await apiClient.get('auth/profile');
         return response.json<{ user: User }>();
     },
-    
+
     refreshToken: async (refreshToken: string): Promise<{ accessToken: string }> => {
-        const response = await apiClient.post('auth/refresh-token', { 
-            json: { refreshToken } 
+        const response = await apiClient.post('auth/refresh-token', {
+            json: { refreshToken }
         });
         return response.json<{ accessToken: string }>();
     },
-    
+
     requestPasswordReset: async (email: string): Promise<{ message: string; resetToken?: string; resetUrl?: string }> => {
-        const response = await apiClient.post('auth/request-password-reset', { 
-            json: { email } 
+        const response = await apiClient.post('auth/request-password-reset', {
+            json: { email }
         });
         return response.json<{ message: string; resetToken?: string; resetUrl?: string }>();
     },
-    
+
     resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
-        const response = await apiClient.post('auth/reset-password', { 
-            json: { token, password } 
+        const response = await apiClient.post('auth/reset-password', {
+            json: { token, password }
         });
         return response.json<{ message: string }>();
     },
@@ -155,6 +155,68 @@ export interface Project {
     updated_at: string;
 }
 
+export interface Event {
+    event_id: string;
+    person_id: string;
+    event_type: string;
+    event_date: string;
+    event_location?: string;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Document {
+    document_id: string;
+    title: string;
+    document_type: string;
+    file_path: string;
+    upload_date: string;
+    file_size?: number;
+    mime_type?: string;
+    description?: string;
+    source?: string;
+    date_of_original?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Relationship {
+    person_id: string;
+    first_name: string;
+    last_name: string;
+    relationship_qualifier?: string;
+    start_date?: string;
+    end_date?: string;
+}
+
+export interface Person {
+    person_id: string;
+    first_name: string;
+    last_name: string;
+    middle_name?: string;
+    maiden_name?: string;
+    gender?: string;
+    birth_date?: string;
+    birth_location?: string;
+    death_date?: string;
+    death_location?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+    project_persons?: {
+        notes?: string;
+    };
+    events?: Event[];
+    documents?: Document[];
+    relationships?: {
+        parents?: Relationship[];
+        children?: Relationship[];
+        spouses?: Relationship[];
+        siblings?: Relationship[];
+    };
+}
+
 export interface ProjectDetail extends Project {
     researcher: {
         name: string;
@@ -165,20 +227,30 @@ export interface ProjectDetail extends Project {
         title: string;
         type: string;
         uploaded_at: string;
+        person_name?: string;
+        person_id?: string;
     }[];
     timeline: {
         id: string;
         date: string;
         event: string;
         description: string;
+        event_id?: string;
+        event_type?: string;
+        event_date?: string;
+        event_location?: string;
+        createdAt?: string;
+        updatedAt?: string;
+        PersonEvent?: {
+            role?: string;
+            notes?: string;
+        };
+        person_name?: string;
+        person_id?: string;
+        associated_with?: 'person' | 'project';
+        role?: string;
     }[];
-    persons?: {
-        person_id: string;
-        first_name: string;
-        last_name: string;
-        birth_date?: string;
-        death_date?: string;
-    }[];
+    persons?: Person[];
     access_level?: 'view' | 'edit';
     creator?: {
         first_name: string;
@@ -232,7 +304,7 @@ export const clientApi = {
         const response = await apiClient.get('client/profile');
         return response.json();
     },
-    
+
     updateProfile: async (data: Partial<ClientProfile>): Promise<{ message: string; profile: ClientProfile }> => {
         const response = await apiClient.put('client/profile', { json: data });
         return response.json();
@@ -244,12 +316,12 @@ export const dashboardApi = {
         const response = await apiClient.get('dashboard/summary');
         return response.json();
     },
-    
+
     getNotifications: async (): Promise<{ notifications: Notification[] }> => {
         const response = await apiClient.get('dashboard/notifications');
         return response.json();
     },
-    
+
     markNotificationAsRead: async (id: string): Promise<{ message: string; notification: Notification }> => {
         const response = await apiClient.put(`dashboard/notifications/${id}/read`);
         return response.json();
@@ -261,21 +333,81 @@ export const projectsApi = {
         const response = await apiClient.get('projects');
         return response.json();
     },
-    
+
     getProjectById: async (id: string): Promise<ProjectDetail> => {
         const response = await apiClient.get(`projects/${id}`);
         return response.json();
     },
-    
+
     createProject: async (data: { title: string; description: string }): Promise<{ message: string; project: Project }> => {
         const response = await apiClient.post('projects', { json: data });
         return response.json();
     },
-    
+
     updateProject: async (id: string, data: Partial<Project>): Promise<{ message: string; project: Project }> => {
         const response = await apiClient.put(`projects/${id}`, { json: data });
         return response.json();
     },
+
+    // Project-Person Management
+    getProjectPersons: async (projectId: string): Promise<Person[]> => {
+        const response = await apiClient.get(`projects/${projectId}/persons`);
+        return response.json();
+    },
+
+    addPersonToProject: async (projectId: string, personId: string, notes?: string): Promise<{ message: string; association: ProjectPersonAssociation }> => {
+        const response = await apiClient.post(`projects/${projectId}/persons`, {
+            json: {
+                person_id: personId,
+                notes
+            }
+        });
+        return response.json();
+    },
+
+    updateProjectPerson: async (projectId: string, personId: string, notes: string): Promise<{ message: string; association: ProjectPersonAssociation }> => {
+        const response = await apiClient.put(`projects/${projectId}/persons/${personId}`, {
+            json: { notes }
+        });
+        return response.json();
+    },
+
+    removePersonFromProject: async (projectId: string, personId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`projects/${projectId}/persons/${personId}`);
+        return response.json();
+    },
+
+    // Search for persons to add to a project
+    searchPersons: async (query: string): Promise<Person[]> => {
+        const response = await apiClient.get(`persons/search?q=${encodeURIComponent(query)}`);
+        return response.json();
+    },
+
+    // Get person by ID with optional related data
+    getPersonById: async (personId: string, options: {
+        includeEvents?: boolean,
+        includeDocuments?: boolean,
+        includeRelationships?: boolean
+    } = {}): Promise<Person> => {
+        const queryParams = new URLSearchParams();
+        if (options.includeEvents) queryParams.append('includeEvents', 'true');
+        if (options.includeDocuments) queryParams.append('includeDocuments', 'true');
+        if (options.includeRelationships) queryParams.append('includeRelationships', 'true');
+
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await apiClient.get(`persons/${personId}${queryString}`);
+        return response.json();
+    },
+
+    createPerson: async (personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+        const response = await apiClient.post('persons', { json: personData });
+        return response.json();
+    },
+
+    updatePerson: async (personId: string, personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+        const response = await apiClient.put(`persons/${personId}`, { json: personData });
+        return response.json();
+    }
 };
 
 
@@ -314,6 +446,22 @@ export interface DocumentPersonAssociation {
     notes?: string;
 }
 
+export interface ProjectPersonAssociation {
+    project_id: string;
+    person_id: string;
+    notes?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface ApiError extends Error {
+    status?: number;
+    response?: {
+        message?: string;
+        error?: string;
+    };
+}
+
 // API metadata interface
 export interface ApiMetadata {
     total: number;
@@ -328,47 +476,47 @@ export const eventsApi = {
         const response = await apiClient.get('events', { searchParams: params });
         return response.json();
     },
-    
+
     getEventById: async (eventId: string): Promise<Event> => {
         const response = await apiClient.get(`events/${eventId}`);
         return response.json();
     },
-    
+
     createEvent: async (eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
         const response = await apiClient.post('events', { json: eventData });
         return response.json();
     },
-    
+
     updateEvent: async (eventId: string, eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
         const response = await apiClient.put(`events/${eventId}`, { json: eventData });
         return response.json();
     },
-    
+
     deleteEvent: async (eventId: string): Promise<{ message: string }> => {
         const response = await apiClient.delete(`events/${eventId}`);
         return response.json();
     },
-    
+
     getEventsByPersonId: async (personId: string): Promise<Event[]> => {
         const response = await apiClient.get(`events/person/${personId}`);
         return response.json();
     },
-    
+
     getEventsByType: async (type: string): Promise<Event[]> => {
         const response = await apiClient.get(`events/type/${type}`);
         return response.json();
     },
-    
+
     getEventsByDateRange: async (startDate: string, endDate: string): Promise<Event[]> => {
         const response = await apiClient.get(`events/date-range?startDate=${startDate}&endDate=${endDate}`);
         return response.json();
     },
-    
+
     getEventsByLocation: async (location: string): Promise<Event[]> => {
         const response = await apiClient.get(`events/location/${location}`);
         return response.json();
     },
-    
+
     getPersonTimeline: async (personId: string): Promise<Event[]> => {
         const response = await apiClient.get(`events/timeline/${personId}`);
         return response.json();
@@ -381,74 +529,74 @@ export const documentsApi = {
         const response = await apiClient.get('documents', { searchParams: params });
         return response.json();
     },
-    
+
     getDocumentById: async (documentId: string): Promise<Document> => {
         const response = await apiClient.get(`documents/${documentId}`);
         return response.json();
     },
-    
+
     createDocument: async (documentData: Partial<Document>): Promise<{ message: string; document: Document }> => {
         const response = await apiClient.post('documents', { json: documentData });
         return response.json();
     },
-    
+
     updateDocument: async (documentId: string, documentData: Partial<Document>): Promise<{ message: string; document: Document }> => {
         const response = await apiClient.put(`documents/${documentId}`, { json: documentData });
         return response.json();
     },
-    
+
     deleteDocument: async (documentId: string): Promise<{ message: string }> => {
         const response = await apiClient.delete(`documents/${documentId}`);
         return response.json();
     },
-    
+
     getDocumentsByPersonId: async (personId: string): Promise<Document[]> => {
         const response = await apiClient.get(`documents/person/${personId}`);
         return response.json();
     },
-    
+
     getDocumentsByType: async (type: string): Promise<Document[]> => {
         const response = await apiClient.get(`documents/type/${type}`);
         return response.json();
     },
-    
+
     getDocumentsByDateRange: async (startDate: string, endDate: string, dateField?: string): Promise<Document[]> => {
         const params = new URLSearchParams({
             startDate,
             endDate
         });
-        
+
         if (dateField) {
             params.append('dateField', dateField);
         }
-        
+
         const response = await apiClient.get(`documents/date-range?${params.toString()}`);
         return response.json();
     },
-    
+
     associateDocumentWithPerson: async (documentId: string, personId: string, data?: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
-        const response = await apiClient.post('documents/associate', { 
-            json: { 
-                documentId, 
+        const response = await apiClient.post('documents/associate', {
+            json: {
+                documentId,
                 personId,
                 ...data
-            } 
+            }
         });
         return response.json();
     },
-    
+
     updateDocumentPersonAssociation: async (documentId: string, personId: string, data: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
-        const response = await apiClient.put(`documents/association/${documentId}/${personId}`, { 
-            json: data 
+        const response = await apiClient.put(`documents/association/${documentId}/${personId}`, {
+            json: data
         });
         return response.json();
     },
-    
+
     removeDocumentPersonAssociation: async (documentId: string, personId: string): Promise<{ message: string }> => {
         const response = await apiClient.delete(`documents/association/${documentId}/${personId}`);
         return response.json();
     },
-    
+
     getDocumentPersonAssociation: async (documentId: string, personId: string): Promise<DocumentPersonAssociation> => {
         const response = await apiClient.get(`documents/association/${documentId}/${personId}`);
         return response.json();
@@ -461,18 +609,18 @@ export const managerApi = {
         const response = await apiClient.get('manager/dashboard');
         return response.json();
     },
-    
+
     // User Management
     getUsers: async (filter: 'all' | 'clients' | 'managers' = 'all'): Promise<{ users: UserDetails[] }> => {
         const response = await apiClient.get(`manager/users?filter=${filter}`);
         return response.json();
     },
-    
+
     getUserById: async (userId: string): Promise<{ user: UserDetails }> => {
         const response = await apiClient.get(`manager/users/${userId}`);
         return response.json();
     },
-    
+
     createUser: async (userData: {
         email: string;
         password: string;
@@ -483,42 +631,42 @@ export const managerApi = {
         const response = await apiClient.post('manager/users', { json: userData });
         return response.json();
     },
-    
+
     updateUser: async (userId: string, userData: Partial<UserDetails>): Promise<{ message: string; user: UserDetails }> => {
         const response = await apiClient.put(`manager/users/${userId}`, { json: userData });
         return response.json();
     },
-    
+
     deactivateUser: async (userId: string): Promise<{ message: string }> => {
         const response = await apiClient.put(`manager/users/${userId}/deactivate`);
         return response.json();
     },
-    
+
     reactivateUser: async (userId: string): Promise<{ message: string }> => {
         const response = await apiClient.put(`manager/users/${userId}/reactivate`);
         return response.json();
     },
-    
+
     resetUserPassword: async (userId: string): Promise<{ message: string; temporaryPassword: string }> => {
         const response = await apiClient.post(`manager/users/${userId}/reset-password`);
         return response.json();
     },
-    
+
     // Client Assignment
-    getClientAssignments: async (clientId: string): Promise<{ 
-        projects: Project[] 
+    getClientAssignments: async (clientId: string): Promise<{
+        projects: Project[]
     }> => {
         const response = await apiClient.get(`manager/clients/${clientId}/assignments`);
         return response.json();
     },
-    
+
     assignClientToProject: async (clientId: string, projectId: string, accessLevel: 'view' | 'edit' = 'view'): Promise<{ message: string }> => {
         const response = await apiClient.post(`manager/clients/${clientId}/projects/${projectId}`, {
             json: { accessLevel }
         });
         return response.json();
     },
-    
+
     removeClientFromProject: async (clientId: string, projectId: string): Promise<{ message: string }> => {
         const response = await apiClient.delete(`manager/clients/${clientId}/projects/${projectId}`);
         return response.json();

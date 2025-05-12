@@ -1,8 +1,6 @@
 const User = require('./user');
 const Role = require('./role');
 const Project = require('./project');
-const ProjectDocument = require('./projectDocument');
-const ProjectTimeline = require('./projectTimeline');
 const ClientProfile = require('./clientProfile');
 const Notification = require('./notification');
 const Activity = require('./activity');
@@ -15,6 +13,9 @@ const Event = require('./event');
 const Document = require('./document');
 const DocumentPerson = require('./documentPerson');
 const ProjectPerson = require('./projectPerson');
+const PersonEvent = require('./personEvent');
+const ProjectEvent = require('./projectEvent');
+const ProjectUser = require('./projectUser');
 
 // Define User-Role associations
 User.belongsToMany(Role, { 
@@ -36,25 +37,30 @@ Project.belongsTo(User, {
 });
 
 Project.belongsToMany(User, {
-    through: 'project_users',
+    through: ProjectUser,
     foreignKey: 'project_id',
     otherKey: 'user_id'
 });
 
 User.belongsToMany(Project, {
-    through: 'project_users',
+    through: ProjectUser,
     foreignKey: 'user_id',
     otherKey: 'project_id'
 });
 
-Project.hasMany(ProjectDocument, {
+// Define Project-Event associations
+Project.belongsToMany(Event, {
+    through: ProjectEvent,
     foreignKey: 'project_id',
-    as: 'documents'
+    otherKey: 'event_id',
+    as: 'events'
 });
 
-Project.hasMany(ProjectTimeline, {
-    foreignKey: 'project_id',
-    as: 'timeline'
+Event.belongsToMany(Project, {
+    through: ProjectEvent,
+    foreignKey: 'event_id',
+    otherKey: 'project_id',
+    as: 'projects'
 });
 
 // Define ClientProfile associations
@@ -94,13 +100,18 @@ PasswordResetToken.belongsTo(User, {
 });
 
 // Define genealogical data associations
-Person.hasMany(Event, {
+Person.belongsToMany(Event, {
+    through: PersonEvent,
     foreignKey: 'person_id',
+    otherKey: 'event_id',
     as: 'events'
 });
 
-Event.belongsTo(Person, {
-    foreignKey: 'person_id'
+Event.belongsToMany(Person, {
+    through: PersonEvent,
+    foreignKey: 'event_id',
+    otherKey: 'person_id',
+    as: 'persons'
 });
 
 Person.belongsToMany(Document, {
@@ -158,8 +169,6 @@ module.exports = {
     User,
     Role,
     Project,
-    ProjectDocument,
-    ProjectTimeline,
     ClientProfile,
     Notification,
     Activity,
@@ -170,5 +179,8 @@ module.exports = {
     Event,
     Document,
     DocumentPerson,
-    ProjectPerson
+    ProjectPerson,
+    PersonEvent,
+    ProjectEvent,
+    ProjectUser
 };
