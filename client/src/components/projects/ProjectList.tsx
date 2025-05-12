@@ -57,7 +57,7 @@ const ProjectList = ({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
-                <div key={project.id} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
+                <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
                     <div className="p-5 flex-grow">
                         <div className="flex justify-between items-start">
                             <Link
