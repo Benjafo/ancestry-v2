@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DashboardSummary, UserEvent, Project, dashboardApi, projectsApi } from '../api/client';
+import { DashboardSummary, Project, UserEvent, dashboardApi, projectsApi } from '../api/client';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
@@ -20,10 +20,13 @@ const Dashboard = () => {
                 // Fetch dashboard summary
                 const summaryData = await dashboardApi.getSummary();
                 setSummary(summaryData);
+                console.log('Dashboard Summary:', summaryData);
 
                 // Fetch user events
                 const userEventsData = await dashboardApi.getUserEvents();
                 setNotifications(userEventsData.userEvents);
+                console.log('User Events:', userEventsData);
+                console.log('Created Projects:', userEventsData.userEvents.filter(event => event.event_type === 'project_created'));
 
                 setIsLoading(false);
             } catch (err) {
@@ -96,39 +99,9 @@ const Dashboard = () => {
                                 {notifications.length}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Recent Updates</span>
-                            <span className="text-xl font-semibold dark:text-white">
-                                {summary?.recentActivity.length}
-                            </span>
-                        </div>
                     </div>
                 </div>
 
-                {/* Recent Activity Card */}
-                <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 md:col-span-2">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-                    <div className="space-y-4">
-                        {summary?.recentActivity.length === 0 ? (
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
-                                <p className="text-gray-500 dark:text-gray-400">No recent activity.</p>
-                            </div>
-                        ) : (
-                            summary?.recentActivity.map(activity => (
-                                <div key={activity.id} className="border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
-                                    <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{activity.message}</span>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {formatDate(activity.created_at)}
-                                    </span>
-                                </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    {activity.event_type}
-                                    </div>
-                                </div>
-                            )))}
-                    </div>
-                </div>
             </div>
 
             {/* Projects */}

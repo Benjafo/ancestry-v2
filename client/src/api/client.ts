@@ -144,7 +144,6 @@ export interface UserEvent {
 
 export interface DashboardSummary {
     projectCount: number;
-    recentActivity: UserEvent[];
 }
 
 export interface Project {

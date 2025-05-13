@@ -15,21 +15,8 @@ exports.getSummary = async (req, res) => {
             }]
         });
         
-        // Get recent activity
-        const recentActivity = await UserEvent.findAll({
-            where: { user_id: userId },
-            order: [['created_at', 'DESC']],
-            limit: 10,
-            include: [{
-                model: User,
-                as: 'actor',
-                attributes: ['first_name', 'last_name']
-            }]
-        });
-        
         res.json({
-            projectCount,
-            recentActivity
+            projectCount
         });
     } catch (error) {
         console.error('Get dashboard summary error:', error);

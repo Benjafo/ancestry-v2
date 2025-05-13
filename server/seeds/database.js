@@ -10,7 +10,7 @@ const { Sequelize } = require('sequelize');
  */
 async function seedDatabase(sequelize, transaction) {
     console.log('Setting up database schema...');
-    
+
     // Drop all existing tables (optional if using CASCADE in schema.sql)
     console.log('Dropping existing tables...');
     await sequelize.query(`
@@ -28,8 +28,7 @@ async function seedDatabase(sequelize, transaction) {
         DROP TABLE IF EXISTS project_persons CASCADE;
         DROP TABLE IF EXISTS project_users CASCADE;
         DROP TABLE IF EXISTS client_profiles CASCADE;
-        DROP TABLE IF EXISTS notifications CASCADE;
-        DROP TABLE IF EXISTS activities CASCADE;
+        DROP TABLE IF EXISTS user_events CASCADE;
         DROP TABLE IF EXISTS password_reset_tokens CASCADE;
     `, { transaction });
     console.log('Tables dropped successfully');
@@ -46,7 +45,7 @@ async function seedDatabase(sequelize, transaction) {
         console.log('Recreating database tables...');
         await sequelize.query(schema, { transaction });
         console.log('Database schema recreated successfully');
-        
+
         // Read constraints.sql
         console.log('Reading constraints file...');
         const constraintsPath = path.join(__dirname, '..', 'constraints.sql');

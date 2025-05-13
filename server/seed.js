@@ -1,7 +1,7 @@
-const { 
-    connectToDatabase, 
-    createDatabaseIfNotExists, 
-    runSeed 
+const {
+    connectToDatabase,
+    createDatabaseIfNotExists,
+    runSeed
 } = require('./seed_utils');
 
 // Import seed modules
@@ -21,13 +21,13 @@ async function seedDatabase() {
     try {
         // Create database if it doesn't exist
         await createDatabaseIfNotExists();
-        
+
         // Connect to the database
         const sequelize = await connectToDatabase();
-        
+
         // Start a transaction to ensure data consistency
         const transaction = await sequelize.transaction();
-        
+
         try {
             // Set up database schema
             await runSeed(
@@ -35,61 +35,61 @@ async function seedDatabase() {
                 'Database Schema',
                 transaction
             );
-            
+
             // Seed users and roles
-            const { adminUser, clientUser, managerRole, clientRole } = 
+            const { adminUser, clientUser, managerRole, clientRole } =
                 await runSeed(seedUsers, 'Users and Roles', transaction);
-            
+
             // Seed projects
-            const { project1 } = 
+            const { project1, project2, project3 } =
                 await runSeed(
-                    (t) => seedProjects(t, { adminUser, clientUser }), 
-                    'Projects', 
+                    (t) => seedProjects(t, { adminUser, clientUser }),
+                    'Projects',
                     transaction
                 );
-            
+
             // Seed persons and link to projects
-            const persons = 
+            const persons =
                 await runSeed(
                     (t) => seedPersons(t, { project1 }),
                     'Persons and Project Associations',
                     transaction
                 );
-            
+
             // Seed relationships
             await runSeed(
-                (t) => seedRelationships(t, persons), 
-                'Relationships', 
+                (t) => seedRelationships(t, persons),
+                'Relationships',
                 transaction
             );
-            
+
             // Seed events
-            const events = 
+            const events =
                 await runSeed(
-                    (t) => seedEvents(t, { persons, project1 }), 
-                    'Events', 
+                    (t) => seedEvents(t, { persons, project1 }),
+                    'Events',
                     transaction
                 );
-            
+
             // Seed documents
-            const documents = 
+            const documents =
                 await runSeed(
-                    (t) => seedDocuments(t, { persons, events, project1 }), 
-                    'Documents', 
+                    (t) => seedDocuments(t, { persons, events, project1 }),
+                    'Documents',
                     transaction
                 );
-            
+
             // Seed user events
             await runSeed(
-                (t) => seedUserEvents(t, { adminUser, clientUser, project1, persons, events, documents }), 
-                'User Events', 
+                (t) => seedUserEvents(t, { adminUser, clientUser, project1, project2, project3, persons, events, documents }),
+                'User Events',
                 transaction
             );
-            
+
             // Commit the transaction
             await transaction.commit();
             console.log('Database seeding completed successfully!');
-            
+
         } catch (error) {
             // Rollback the transaction on error
             await transaction.rollback();
@@ -99,7 +99,7 @@ async function seedDatabase() {
             // Close the database connection
             await sequelize.close();
         }
-        
+
     } catch (error) {
         console.error('Fatal error during database seeding:', error);
         process.exit(1);

@@ -12,262 +12,260 @@ const { UserEvent } = require('../models');
  * @param {Object} params.documents - Object containing all document entities
  * @returns {Promise<Object>} Created user events
  */
-async function seedUserEvents(transaction, { adminUser, clientUser, project1, persons, events, documents }) {
+async function seedUserEvents(transaction, { adminUser, clientUser, project1, project2, project3, persons, events, documents }) {
     console.log('Creating user events...');
     
-    // Destructure persons, events, and documents for easier access
-    const {
-        johnSmithSr,
-        marySmith,
-        johnSmithJr,
-        margaretSmith,
-        thomasSmith,
-        michaelSmith,
-        jenniferDavis,
-        davidSmith
-    } = persons;
-    
-    const {
-        johnImmigrationEvent,
-        maryImmigrationEvent,
-        johnMaryMarriageEvent,
-        johnSrMilitaryEvent,
-        census1930Event
-    } = events;
-    
-    const {
-        immigrationDoc,
-        johnSrBirthCert,
-        johnJrBirthCert,
-        johnMaryMarriageCert,
-        census1930Doc,
-        militaryRecordDoc,
-        familyPhotoDoc
-    } = documents;
-    
-    // Create base date for sequential timestamps
-    const baseDate = new Date('2025-01-01T10:00:00');
-    
-    // ===== USER EVENTS FOR CLIENT =====
-    console.log('Creating user events for client...');
-    
     const clientEvents = [];
-    
-    // Project assignment event
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'project_assigned',
-        message: `You've been assigned to a new project: ${project1.title}`,
-        entity_id: project1.id,
-        entity_type: 'project'
-    }, { transaction }));
-    
-    // Document addition events
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'document_added',
-        message: `A new document has been added to your project: ${immigrationDoc.title}`,
-        entity_id: immigrationDoc.document_id,
-        entity_type: 'document'
-    }, { transaction }));
-    
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'document_added',
-        message: `A new document has been added to your project: ${johnSrBirthCert.title}`,
-        entity_id: johnSrBirthCert.document_id,
-        entity_type: 'document'
-    }, { transaction }));
-    
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'document_added',
-        message: `A new document has been added to your project: ${johnMaryMarriageCert.title}`,
-        entity_id: johnMaryMarriageCert.document_id,
-        entity_type: 'document'
-    }, { transaction }));
-    
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'document_added',
-        message: `A new document has been added to your project: ${familyPhotoDoc.title}`,
-        entity_id: familyPhotoDoc.document_id,
-        entity_type: 'document'
-    }, { transaction }));
-    
-    // Research update events
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'person_discovered',
-        message: `New family member discovered: ${marySmith.first_name} ${marySmith.last_name}`,
-        entity_id: marySmith.person_id,
-        entity_type: 'person'
-    }, { transaction }));
-    
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'event_recorded',
-        message: `New event recorded: Immigration to ${johnImmigrationEvent.event_location}`,
-        entity_id: johnImmigrationEvent.event_id,
-        entity_type: 'event'
-    }, { transaction }));
-    
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'relationship_established',
-        message: `New relationship established: ${johnSmithSr.first_name} and ${marySmith.first_name} ${marySmith.last_name} (Marriage)`,
-        entity_type: 'relationship'
-    }, { transaction }));
-    
-    // Research milestone events
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'research_milestone',
-        message: 'First generation of Smith family documented',
-        entity_id: project1.id,
-        entity_type: 'project'
-    }, { transaction }));
-    
-    clientEvents.push(await UserEvent.create({
-        user_id: clientUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'research_milestone',
-        message: 'Immigration records verified',
-        entity_id: project1.id,
-        entity_type: 'project'
-    }, { transaction }));
-    
-    // ===== USER EVENTS FOR ADMIN =====
-    console.log('Creating user events for admin...');
-    
     const adminEvents = [];
     
-    // Project management events
-    adminEvents.push(await UserEvent.create({
-        user_id: adminUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'project_created',
-        message: `Created project: ${project1.title}`,
-        entity_id: project1.id,
-        entity_type: 'project'
-    }, { transaction }));
-    
-    adminEvents.push(await UserEvent.create({
-        user_id: adminUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'project_assigned',
-        message: `Assigned client to project: ${project1.title}`,
-        entity_id: project1.id,
-        entity_type: 'project'
-    }, { transaction }));
-    
-    // Person management events
-    const personList = [
-        { person: johnSmithSr, message: `Added person: ${johnSmithSr.first_name} ${johnSmithSr.middle_name} ${johnSmithSr.last_name}` },
-        { person: marySmith, message: `Added person: ${marySmith.first_name} ${marySmith.last_name}` },
-        { person: johnSmithJr, message: `Added person: ${johnSmithJr.first_name} ${johnSmithJr.middle_name} ${johnSmithJr.last_name}` },
-        { person: margaretSmith, message: `Added person: ${margaretSmith.first_name} ${margaretSmith.last_name}` },
-        { person: thomasSmith, message: `Added person: ${thomasSmith.first_name} ${thomasSmith.middle_name} ${thomasSmith.last_name}` },
-        { person: michaelSmith, message: `Added person: ${michaelSmith.first_name} ${michaelSmith.middle_name} ${michaelSmith.last_name}` },
-        { person: jenniferDavis, message: `Added person: ${jenniferDavis.first_name} ${jenniferDavis.last_name}` },
-        { person: davidSmith, message: `Added person: ${davidSmith.first_name} ${davidSmith.middle_name} ${davidSmith.last_name}` }
-    ];
-    
-    for (const { person, message } of personList) {
-        adminEvents.push(await UserEvent.create({
-            user_id: adminUser.user_id,
+    // Helper functions to create events
+    async function createClientEvent(type, message, entityId = null, entityType = null) {
+        return await UserEvent.create({
+            user_id: clientUser.user_id,
             actor_id: adminUser.user_id,
-            event_type: 'person_created',
+            event_type: type,
             message,
-            entity_id: person.person_id,
-            entity_type: 'person'
-        }, { transaction }));
+            entity_id: entityId,
+            entity_type: entityType
+        }, { transaction });
     }
     
-    // Document management events
-    const documentList = [
-        { document: immigrationDoc, message: `Uploaded document: ${immigrationDoc.title}` },
-        { document: johnSrBirthCert, message: `Uploaded document: ${johnSrBirthCert.title}` },
-        { document: johnJrBirthCert, message: `Uploaded document: ${johnJrBirthCert.title}` },
-        { document: johnMaryMarriageCert, message: `Uploaded document: ${johnMaryMarriageCert.title}` },
-        { document: census1930Doc, message: `Uploaded document: ${census1930Doc.title}` },
-        { document: militaryRecordDoc, message: `Uploaded document: ${militaryRecordDoc.title}` },
-        { document: familyPhotoDoc, message: `Uploaded document: ${familyPhotoDoc.title}` }
-    ];
-    
-    for (const { document, message } of documentList) {
-        adminEvents.push(await UserEvent.create({
+    async function createAdminEvent(type, message, entityId = null, entityType = null) {
+        return await UserEvent.create({
             user_id: adminUser.user_id,
             actor_id: adminUser.user_id,
-            event_type: 'document_uploaded',
+            event_type: type,
             message,
-            entity_id: document.document_id,
-            entity_type: 'document'
-        }, { transaction }));
+            entity_id: entityId,
+            entity_type: entityType
+        }, { transaction });
+    }
+    
+    // ===== CLIENT USER EVENTS =====
+    console.log('Creating user events for client...');
+    
+    // Project assignment event
+    clientEvents.push(await createClientEvent(
+        'project_assigned',
+        `You've been assigned to a new project: ${project1.title}`,
+        project1.id,
+        'project'
+    ));
+    
+    // Document addition events
+    const documentAdditions = [
+        { doc: documents.immigrationDoc, message: `A new document has been added to your project: ${documents.immigrationDoc.title}` },
+        { doc: documents.johnSrBirthCert, message: `A new document has been added to your project: ${documents.johnSrBirthCert.title}` },
+        { doc: documents.johnJrBirthCert, message: `A new document has been added to your project: ${documents.johnJrBirthCert.title}` },
+        { doc: documents.johnMaryMarriageCert, message: `A new document has been added to your project: ${documents.johnMaryMarriageCert.title}` },
+        { doc: documents.census1930Doc, message: `A new document has been added to your project: ${documents.census1930Doc.title}` },
+        { doc: documents.militaryRecordDoc, message: `A new document has been added to your project: ${documents.militaryRecordDoc.title}` },
+        { doc: documents.familyPhotoDoc, message: `A new document has been added to your project: ${documents.familyPhotoDoc.title}` }
+    ];
+    
+    for (const { doc, message } of documentAdditions) {
+        clientEvents.push(await createClientEvent(
+            'document_added',
+            message,
+            doc.document_id,
+            'document'
+        ));
+    }
+    
+    // Person discovery events
+    const personDiscoveries = Object.entries(persons).map(([key, person]) => ({
+        person,
+        message: `New family member discovered: ${person.first_name} ${person.last_name}`
+    }));
+    
+    for (const { person, message } of personDiscoveries) {
+        clientEvents.push(await createClientEvent(
+            'person_discovered',
+            message,
+            person.person_id,
+            'person'
+        ));
     }
     
     // Event recording events
-    const eventList = [
-        { event: johnImmigrationEvent, message: `Recorded event: Immigration (1925) for ${johnSmithSr.first_name} ${johnSmithSr.last_name}` },
-        { event: maryImmigrationEvent, message: `Recorded event: Immigration (1925) for ${marySmith.first_name} ${marySmith.last_name}` },
-        { event: johnMaryMarriageEvent, message: `Recorded event: Marriage (1925) for ${johnSmithSr.first_name} and ${marySmith.first_name} ${marySmith.last_name}` },
-        { event: johnSrMilitaryEvent, message: `Recorded event: Military Service (1942) for ${johnSmithSr.first_name} ${johnSmithSr.last_name}` },
-        { event: census1930Event, message: `Recorded event: Census Record (1930) for Smith Family` }
+    const eventRecordings = [
+        { event: events.johnImmigrationEvent, message: `New event recorded: Immigration to ${events.johnImmigrationEvent.event_location}` },
+        { event: events.maryImmigrationEvent, message: `New event recorded: Immigration to ${events.maryImmigrationEvent.event_location}` },
+        { event: events.johnMaryMarriageEvent, message: `New event recorded: Marriage at ${events.johnMaryMarriageEvent.event_location}` },
+        { event: events.johnSrMilitaryEvent, message: `New event recorded: Military Service in ${events.johnSrMilitaryEvent.event_location}` },
+        { event: events.census1930Event, message: `New event recorded: Census Record in ${events.census1930Event.event_location}` },
+        { event: events.arrivalEvent, message: `New event recorded: Family Arrival at ${events.arrivalEvent.event_location}` },
+        { event: events.settlementEvent, message: `New event recorded: Settlement in ${events.settlementEvent.event_location}` },
+        { event: events.robertElizabethMarriageEvent, message: `New event recorded: Marriage at ${events.robertElizabethMarriageEvent.event_location}` },
+        { event: events.johnJrMargaretMarriageEvent, message: `New event recorded: Marriage at ${events.johnJrMargaretMarriageEvent.event_location}` },
+        { event: events.johnJrMilitaryEvent, message: `New event recorded: Military Service in ${events.johnJrMilitaryEvent.event_location}` }
     ];
     
-    for (const { event, message } of eventList) {
-        adminEvents.push(await UserEvent.create({
-            user_id: adminUser.user_id,
-            actor_id: adminUser.user_id,
-            event_type: 'event_recorded',
+    for (const { event, message } of eventRecordings) {
+        clientEvents.push(await createClientEvent(
+            'event_recorded',
             message,
-            entity_id: event.event_id,
-            entity_type: 'event'
-        }, { transaction }));
+            event.event_id,
+            'event'
+        ));
     }
     
-    // Relationship management events
-    adminEvents.push(await UserEvent.create({
-        user_id: adminUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'relationship_created',
-        message: `Established relationship: ${johnSmithSr.first_name} ${johnSmithSr.last_name} and ${marySmith.first_name} ${marySmith.last_name} (Spouse)`,
-        entity_type: 'relationship'
-    }, { transaction }));
+    // Relationship events
+    const relationshipEstablishments = [
+        { p1: persons.johnSmithSr, p2: persons.marySmith, type: 'Marriage', message: `New relationship established: ${persons.johnSmithSr.first_name} and ${persons.marySmith.first_name} ${persons.marySmith.last_name} (Marriage)` },
+        { p1: persons.johnSmithSr, p2: persons.johnSmithJr, type: 'Parent-Child', message: `New relationship established: ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.last_name} and ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.last_name} (Parent-Child)` },
+        { p1: persons.marySmith, p2: persons.johnSmithJr, type: 'Parent-Child', message: `New relationship established: ${persons.marySmith.first_name} ${persons.marySmith.last_name} and ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.last_name} (Parent-Child)` },
+        { p1: persons.johnSmithSr, p2: persons.thomasSmith, type: 'Parent-Child', message: `New relationship established: ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.last_name} and ${persons.thomasSmith.first_name} ${persons.thomasSmith.last_name} (Parent-Child)` },
+        { p1: persons.marySmith, p2: persons.thomasSmith, type: 'Parent-Child', message: `New relationship established: ${persons.marySmith.first_name} ${persons.marySmith.last_name} and ${persons.thomasSmith.first_name} ${persons.thomasSmith.last_name} (Parent-Child)` },
+        { p1: persons.johnSmithJr, p2: persons.margaretSmith, type: 'Marriage', message: `New relationship established: ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.last_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name} (Marriage)` },
+        { p1: persons.johnSmithJr, p2: persons.michaelSmith, type: 'Parent-Child', message: `New relationship established: ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.last_name} and ${persons.michaelSmith.first_name} ${persons.michaelSmith.last_name} (Parent-Child)` },
+        { p1: persons.margaretSmith, p2: persons.michaelSmith, type: 'Parent-Child', message: `New relationship established: ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name} and ${persons.michaelSmith.first_name} ${persons.michaelSmith.last_name} (Parent-Child)` },
+        { p1: persons.robertJohnson, p2: persons.elizabethJohnson, type: 'Marriage', message: `New relationship established: ${persons.robertJohnson.first_name} ${persons.robertJohnson.last_name} and ${persons.elizabethJohnson.first_name} ${persons.elizabethJohnson.last_name} (Marriage)` },
+        { p1: persons.robertJohnson, p2: persons.margaretSmith, type: 'Parent-Child', message: `New relationship established: ${persons.robertJohnson.first_name} ${persons.robertJohnson.last_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name} (Parent-Child)` },
+        { p1: persons.elizabethJohnson, p2: persons.margaretSmith, type: 'Parent-Child', message: `New relationship established: ${persons.elizabethJohnson.first_name} ${persons.elizabethJohnson.last_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name} (Parent-Child)` }
+    ];
     
-    adminEvents.push(await UserEvent.create({
-        user_id: adminUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'relationship_created',
-        message: `Established relationship: ${johnSmithSr.first_name} ${johnSmithSr.last_name} and ${johnSmithJr.first_name} ${johnSmithJr.last_name} (Parent)`,
-        entity_type: 'relationship'
-    }, { transaction }));
-    
-    adminEvents.push(await UserEvent.create({
-        user_id: adminUser.user_id,
-        actor_id: adminUser.user_id,
-        event_type: 'relationship_created',
-        message: `Established relationship: ${marySmith.first_name} ${marySmith.last_name} and ${johnSmithJr.first_name} ${johnSmithJr.last_name} (Parent)`,
-        entity_type: 'relationship'
-    }, { transaction }));
-    
-    // Set sequential timestamps for all events
-    const allEvents = [...clientEvents, ...adminEvents];
-    for (let i = 0; i < allEvents.length; i++) {
-        allEvents[i].created_at = new Date(baseDate.getTime() + i * 60 * 60 * 1000); // +1 hour increments
-        await allEvents[i].save({ transaction });
+    for (const { message } of relationshipEstablishments) {
+        clientEvents.push(await createClientEvent(
+            'relationship_established',
+            message,
+            null,
+            'relationship'
+        ));
     }
     
-    console.log('User events created successfully');
+    // Research milestone events
+    const researchMilestones = [
+        'First generation of Smith family documented',
+        'Immigration records verified',
+        'Second generation of Smith family documented',
+        'Third generation of Smith family documented',
+        'Military service records verified'
+    ];
+    
+    for (const message of researchMilestones) {
+        clientEvents.push(await createClientEvent(
+            'research_milestone',
+            message,
+            project1.id,
+            'project'
+        ));
+    }
+    
+    // Project updates
+    const projectUpdates = [
+        'New research findings added to your project',
+        'Timeline updated with new events'
+    ];
+    
+    for (const message of projectUpdates) {
+        clientEvents.push(await createClientEvent(
+            'project_update',
+            message,
+            project1.id,
+            'project'
+        ));
+    }
+    
+    // ===== ADMIN USER EVENTS =====
+    console.log('Creating user events for admin...');
+    
+    // Project management events
+    const projectManagement = [
+        { project: project1, type: 'project_created', message: `Created project: ${project1.title}` },
+        { project: project2, type: 'project_created', message: `Created project: ${project2.title}` },
+        { project: project3, type: 'project_created', message: `Created project: ${project3.title}` },
+        { project: project1, type: 'project_assigned', message: `Assigned client to project: ${project1.title}` },
+        { project: project3, type: 'project_updated', message: `Updated project status: ${project3.title} set to on_hold` }
+    ];
+    
+    for (const { project, type, message } of projectManagement) {
+        adminEvents.push(await createAdminEvent(
+            type,
+            message,
+            project.id,
+            'project'
+        ));
+    }
+    
+    // Person management events
+    const personManagement = [
+        { person: persons.johnSmithSr, message: `Added person: ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.middle_name} ${persons.johnSmithSr.last_name}` },
+        { person: persons.marySmith, message: `Added person: ${persons.marySmith.first_name} ${persons.marySmith.last_name}` },
+        { person: persons.johnSmithJr, message: `Added person: ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.middle_name} ${persons.johnSmithJr.last_name}` },
+        { person: persons.margaretSmith, message: `Added person: ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name}` },
+        { person: persons.thomasSmith, message: `Added person: ${persons.thomasSmith.first_name} ${persons.thomasSmith.middle_name} ${persons.thomasSmith.last_name}` },
+        { person: persons.michaelSmith, message: `Added person: ${persons.michaelSmith.first_name} ${persons.michaelSmith.middle_name} ${persons.michaelSmith.last_name}` },
+        { person: persons.jenniferDavis, message: `Added person: ${persons.jenniferDavis.first_name} ${persons.jenniferDavis.last_name}` },
+        { person: persons.davidSmith, message: `Added person: ${persons.davidSmith.first_name} ${persons.davidSmith.middle_name} ${persons.davidSmith.last_name}` },
+        { person: persons.robertJohnson, message: `Added person: ${persons.robertJohnson.first_name} ${persons.robertJohnson.middle_name} ${persons.robertJohnson.last_name}` },
+        { person: persons.elizabethJohnson, message: `Added person: ${persons.elizabethJohnson.first_name} ${persons.elizabethJohnson.last_name}` },
+        { person: persons.sarahMiller, message: `Added person: ${persons.sarahMiller.first_name} ${persons.sarahMiller.last_name}` }
+    ];
+    
+    for (const { person, message } of personManagement) {
+        adminEvents.push(await createAdminEvent(
+            'person_created',
+            message,
+            person.person_id,
+            'person'
+        ));
+    }
+    
+    // Document management events
+    const documentManagement = [
+        { doc: documents.immigrationDoc, message: `Uploaded document: ${documents.immigrationDoc.title}` },
+        { doc: documents.johnSrBirthCert, message: `Uploaded document: ${documents.johnSrBirthCert.title}` },
+        { doc: documents.johnJrBirthCert, message: `Uploaded document: ${documents.johnJrBirthCert.title}` },
+        { doc: documents.johnMaryMarriageCert, message: `Uploaded document: ${documents.johnMaryMarriageCert.title}` },
+        { doc: documents.census1930Doc, message: `Uploaded document: ${documents.census1930Doc.title}` },
+        { doc: documents.militaryRecordDoc, message: `Uploaded document: ${documents.militaryRecordDoc.title}` },
+        { doc: documents.familyPhotoDoc, message: `Uploaded document: ${documents.familyPhotoDoc.title}` }
+    ];
+    
+    for (const { doc, message } of documentManagement) {
+        adminEvents.push(await createAdminEvent(
+            'document_uploaded',
+            message,
+            doc.document_id,
+            'document'
+        ));
+    }
+    
+    // Event recording events for admin
+    const adminEventRecordings = [
+        { event: events.johnImmigrationEvent, message: `Recorded event: Immigration (1925) for ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.last_name}` },
+        { event: events.maryImmigrationEvent, message: `Recorded event: Immigration (1925) for ${persons.marySmith.first_name} ${persons.marySmith.last_name}` },
+        { event: events.johnMaryMarriageEvent, message: `Recorded event: Marriage (1925) for ${persons.johnSmithSr.first_name} and ${persons.marySmith.first_name} ${persons.marySmith.last_name}` },
+        { event: events.johnSrMilitaryEvent, message: `Recorded event: Military Service (1942) for ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.last_name}` },
+        { event: events.census1930Event, message: `Recorded event: Census Record (1930) for Smith Family` },
+        { event: events.arrivalEvent, message: `Recorded event: Family Arrival (1892) at ${events.arrivalEvent.event_location}` },
+        { event: events.settlementEvent, message: `Recorded event: Settlement (1895) in ${events.settlementEvent.event_location}` },
+        { event: events.robertElizabethMarriageEvent, message: `Recorded event: Marriage (1932) for ${persons.robertJohnson.first_name} and ${persons.elizabethJohnson.first_name} ${persons.elizabethJohnson.last_name}` },
+        { event: events.johnJrMargaretMarriageEvent, message: `Recorded event: Marriage (1960) for ${persons.johnSmithJr.first_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name}` },
+        { event: events.johnJrMilitaryEvent, message: `Recorded event: Military Service (1955) for ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.last_name}` }
+    ];
+    
+    for (const { event, message } of adminEventRecordings) {
+        adminEvents.push(await createAdminEvent(
+            'event_recorded',
+            message,
+            event.event_id,
+            'event'
+        ));
+    }
+    
+    // Relationship management events for admin
+    for (const { message } of relationshipEstablishments) {
+        adminEvents.push(await createAdminEvent(
+            'relationship_created',
+            message.replace('New relationship established', 'Established relationship'),
+            null,
+            'relationship'
+        ));
+    }
+    
+    console.log(`Created ${clientEvents.length} client events and ${adminEvents.length} admin events`);
     
     return {
         clientEvents,
