@@ -27,6 +27,13 @@ const Dashboard = () => {
                 setNotifications(userEventsData.userEvents);
                 console.log('User Events:', userEventsData);
                 console.log('Created Projects:', userEventsData.userEvents.filter(event => event.event_type === 'project_created'));
+                
+                // Debug notification structure
+                if (userEventsData.userEvents.length > 0) {
+                    console.log('First notification:', userEventsData.userEvents[0]);
+                    console.log('createdAt type:', typeof userEventsData.userEvents[0].createdAt);
+                    console.log('createdAt value:', userEventsData.userEvents[0].createdAt);
+                }
 
                 setIsLoading(false);
             } catch (err) {
@@ -51,6 +58,12 @@ const Dashboard = () => {
         fetchDashboardData();
         fetchProjects();
     }, []);
+
+    const formatEventType = (eventType: string): string => {
+        return eventType.split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
 
     if (isLoading) {
         return (
@@ -87,7 +100,14 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Summary Card */}
                 <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 md:col-span-3">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Research Summary</h2>
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Research Summary</h2>
+                        {user?.roles?.includes('manager') && (
+                            <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded">
+                                Showing system-wide statistics
+                            </span>
+                        )}
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
                             <div className="text-gray-500 dark:text-gray-400 mb-1">Active Projects</div>
@@ -137,9 +157,9 @@ const Dashboard = () => {
                                 className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2"
                             >
                                 <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{notification.event_type}</span>
+                                    <span className="font-medium dark:text-white">{formatEventType(notification.event_type)}</span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {formatDate(notification.created_at)}
+                                        {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
                                     </span>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>

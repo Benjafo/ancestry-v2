@@ -1,4 +1,4 @@
-const { Project, UserEvent, User, Document, Person } = require('../models');
+const { Project, UserEvent, User, Document, Person, Role, ProjectPerson, DocumentPerson } = require('../models');
 const { Op } = require('sequelize');
 
 // Get dashboard summary
@@ -6,44 +6,74 @@ exports.getSummary = async (req, res) => {
     try {
         const userId = req.user.user_id;
         
-        // Get project count for the user
-        const projectCount = await Project.count({
-            include: [{
-                model: User,
-                where: { user_id: userId },
-                attributes: []
-            }]
-        });
-        
-        // Get document count from user's projects
-        const userProjects = await Project.findAll({
+        // Check if user is a manager
+        const userRoles = await Role.findAll({
             include: [{
                 model: User,
                 where: { user_id: userId },
                 attributes: []
             }],
-            attributes: ['id']
+            attributes: ['name']
         });
         
-        const projectIds = userProjects.map(project => project.id);
+        const isManager = userRoles.some(role => role.name === 'manager');
         
-        // Count documents associated with the user's projects
-        const documentCount = projectIds.length > 0 ? await Document.count({
-            include: [{
-                model: Project,
-                where: { id: projectIds },
-                attributes: []
-            }]
-        }) : 0;
+        let projectCount, documentCount, personCount;
         
-        // Count persons associated with the user's projects
-        const personCount = projectIds.length > 0 ? await Person.count({
-            include: [{
-                model: Project,
-                where: { id: projectIds },
-                attributes: []
-            }]
-        }) : 0;
+        if (isManager) {
+            // For managers, count all projects, documents, and persons
+            projectCount = await Project.count();
+            documentCount = await Document.count();
+            personCount = await Person.count();
+        } else {
+            // For regular clients, only count associated items
+            projectCount = await Project.count({
+                include: [{
+                    model: User,
+                    where: { user_id: userId },
+                    attributes: []
+                }]
+            });
+            
+            // Get user's projects
+            const userProjects = await Project.findAll({
+                include: [{
+                    model: User,
+                    where: { user_id: userId },
+                    attributes: []
+                }],
+                attributes: ['id']
+            });
+            
+            const projectIds = userProjects.map(project => project.id);
+            
+            // Count documents and persons associated with user's projects
+            if (projectIds.length > 0) {
+                // Get persons associated with these projects
+                const projectPersons = await ProjectPerson.findAll({
+                    where: { project_id: projectIds },
+                    attributes: ['person_id']
+                });
+                
+                const personIds = projectPersons.map(pp => pp.person_id);
+                personCount = new Set(personIds).size;
+                
+                // Count documents associated with these persons
+                if (personIds.length > 0) {
+                    const documentPersons = await DocumentPerson.findAll({
+                        where: { person_id: personIds },
+                        attributes: ['document_id']
+                    });
+                    
+                    documentCount = new Set(documentPersons.map(dp => dp.document_id)).size;
+                } else {
+                    documentCount = 0;
+                }
+            } else {
+                documentCount = 0;
+                personCount = 0;
+            }
+        }
         
         res.json({
             projectCount,

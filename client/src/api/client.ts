@@ -134,8 +134,8 @@ export interface UserEvent {
     message: string;
     entity_id?: string;
     entity_type?: string;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
     actor?: {
         first_name: string;
         last_name: string;
