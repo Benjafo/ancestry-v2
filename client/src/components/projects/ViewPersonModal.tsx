@@ -14,14 +14,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
-    
+
     // Function to format event type for display
     const formatEventType = (eventType: string): string => {
         if (!eventType) return '';
-        
+
         // Convert snake_case or kebab-case to spaces
         const formatted = eventType.replace(/[_-]/g, ' ');
-        
+
         // Capitalize each word
         return formatted
             .split(' ')
@@ -119,41 +119,37 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                         <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
                             <nav className="flex -mb-px">
                                 <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                        activeTab === 'info'
-                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                    }`}
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
+                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                        }`}
                                     onClick={() => setActiveTab('info')}
                                 >
                                     Biographical Info
                                 </button>
                                 <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                        activeTab === 'events'
-                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                    }`}
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
+                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                        }`}
                                     onClick={() => setActiveTab('events')}
                                 >
                                     Events
                                 </button>
                                 <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                        activeTab === 'documents'
-                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                    }`}
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
+                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                        }`}
                                     onClick={() => setActiveTab('documents')}
                                 >
                                     Documents
                                 </button>
                                 <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                        activeTab === 'relationships'
-                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                    }`}
+                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
+                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                        }`}
                                     onClick={() => setActiveTab('relationships')}
                                 >
                                     Relationships
@@ -189,7 +185,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div>
                                         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Life Events</h3>
                                         <div className="space-y-3">
@@ -219,7 +215,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     {person.notes && (
                                         <div className="col-span-1 md:col-span-2">
                                             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Notes</h3>
@@ -339,7 +335,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     </div>
                                                 </div>
                                             )}
-                                            
+
                                             {person.relationships.children && person.relationships.children.length > 0 && (
                                                 <div>
                                                     <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Children</h4>
@@ -355,7 +351,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     </div>
                                                 </div>
                                             )}
-                                            
+
                                             {person.relationships.spouses && person.relationships.spouses.length > 0 && (
                                                 <div>
                                                     <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Spouses</h4>
@@ -374,7 +370,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     </div>
                                                 </div>
                                             )}
-                                            
+
                                             {person.relationships.siblings && person.relationships.siblings.length > 0 && (
                                                 <div>
                                                     <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Siblings</h4>
