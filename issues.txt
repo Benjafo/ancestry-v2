@@ -33,3 +33,5 @@ Project -> family members: adding birth date and death date in the biographical 
 
 Settings: validation for fields
 Manager dashboard: pending tasks
+User management: bundle reset password and delete into the edit modal
+Client assignment: replace back to dashboard with add user button

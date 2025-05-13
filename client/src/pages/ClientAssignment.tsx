@@ -1,6 +1,6 @@
-import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Project, UserDetails, managerApi, projectsApi } from '../api/client';
+import CreateUserModal from '../components/CreateUserModal';
 
 const ClientAssignment = () => {
     const [clients, setClients] = useState<UserDetails[]>([]);
@@ -13,6 +13,7 @@ const ClientAssignment = () => {
     const [isLoadingAssignments, setIsLoadingAssignments] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
 
     useEffect(() => {
         fetchInitialData();
@@ -129,9 +130,12 @@ const ClientAssignment = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Client Assignment</h1>
-                <Link to="/manager/dashboard" className="btn-secondary">
-                    Back to Dashboard
-                </Link>
+                <button
+                    className="btn-primary"
+                    onClick={() => setIsCreateUserModalOpen(true)}
+                >
+                    Create User
+                </button>
             </div>
 
             {successMessage && (
@@ -180,8 +184,8 @@ const ClientAssignment = () => {
                             <div
                                 key={client.user_id}
                                 className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedClient === client.user_id
-                                        ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
+                                    ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
                                     }`}
                                 onClick={() => setSelectedClient(client.user_id)}
                             >
@@ -276,6 +280,22 @@ const ClientAssignment = () => {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Assignment History</h2>
                     <p className="text-gray-500 dark:text-gray-400 text-center py-4">Assignment history will be available in a future update.</p>
                 </div>
+            )}
+
+            {/* Create User Modal */}
+            {isCreateUserModalOpen && (
+                <CreateUserModal
+                    isOpen={isCreateUserModalOpen}
+                    onClose={() => setIsCreateUserModalOpen(false)}
+                    onSuccess={() => {
+                        setSuccessMessage('User created successfully');
+                        fetchInitialData(); // Refresh the client list
+                        setTimeout(() => {
+                            setSuccessMessage(null);
+                        }, 3000);
+                    }}
+                    defaultRole="client" // Always create clients from this page
+                />
             )}
         </div>
     );
