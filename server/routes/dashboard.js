@@ -14,17 +14,10 @@ router.use(verifyToken);
 router.get('/summary', dashboardController.getSummary);
 
 /**
- * @route   GET /api/dashboard/notifications
- * @desc    Get user notifications
+ * @route   GET /api/dashboard/events
+ * @desc    Get user events
  * @access  Private
  */
-router.get('/notifications', dashboardController.getNotifications);
-
-/**
- * @route   PUT /api/dashboard/notifications/:id/read
- * @desc    Mark notification as read
- * @access  Private
- */
-router.put('/notifications/:id/read', dashboardController.markNotificationAsRead);
+router.get('/events', dashboardController.getUserEvents);
 
 module.exports = router;

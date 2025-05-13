@@ -181,25 +181,14 @@ CREATE TABLE
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
--- Notifications table
+-- User Events table (replacing notifications and activities)
 CREATE TABLE
-    notifications (
+    user_events (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id UUID REFERENCES users(user_id),
-        title VARCHAR(255) NOT NULL,
+        actor_id UUID REFERENCES users(user_id),
+        event_type VARCHAR(100) NOT NULL,
         message TEXT NOT NULL,
-        is_read BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
--- Activities table
-CREATE TABLE
-    activities (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id UUID REFERENCES users(user_id),
-        type VARCHAR(100) NOT NULL,
-        description TEXT NOT NULL,
         entity_id UUID,
         entity_type VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

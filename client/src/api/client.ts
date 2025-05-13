@@ -126,22 +126,26 @@ export interface ClientProfile {
     research_updates?: boolean;
 }
 
-export interface DashboardSummary {
-    projectCount: number;
-    recentActivity: {
-        id: string;
-        type: string;
-        description: string;
-        date: string;
-    }[];
+export interface UserEvent {
+    id: string;
+    user_id: string;
+    actor_id?: string;
+    event_type: string;
+    message: string;
+    entity_id?: string;
+    entity_type?: string;
+    createdAt: string;
+    updatedAt: string;
+    actor?: {
+        first_name: string;
+        last_name: string;
+    };
 }
 
-export interface Notification {
-    id: string;
-    title: string;
-    message: string;
-    isRead: boolean;
-    date: string;
+export interface DashboardSummary {
+    projectCount: number;
+    documentCount?: number;
+    personCount?: number;
 }
 
 export interface Project {
@@ -315,15 +319,10 @@ export const dashboardApi = {
         return response.json();
     },
 
-    getNotifications: async (): Promise<{ notifications: Notification[] }> => {
-        const response = await apiClient.get('dashboard/notifications');
+    getUserEvents: async (): Promise<{ userEvents: UserEvent[] }> => {
+        const response = await apiClient.get('dashboard/events');
         return response.json();
-    },
-
-    markNotificationAsRead: async (id: string): Promise<{ message: string; notification: Notification }> => {
-        const response = await apiClient.put(`dashboard/notifications/${id}/read`);
-        return response.json();
-    },
+    }
 };
 
 export const projectsApi = {

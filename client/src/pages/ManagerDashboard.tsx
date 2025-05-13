@@ -130,7 +130,7 @@ const ManagerDashboard = () => {
                             </svg>
                         </div>
                         <div className="ml-4">
-                            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Projects by Status</h2>
+                            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</h2>
                             <p className="text-2xl font-semibold text-gray-900 dark:text-white">{dashboardData.projectsByStatus.active}</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {dashboardData.projectsByStatus.completed} completed, {dashboardData.projectsByStatus.on_hold} on hold
@@ -172,7 +172,7 @@ const ManagerDashboard = () => {
                                         </p>
                                     </div>
                                     {activity.type === 'project_update' && (
-                                        <Link 
+                                        <Link
                                             to="/projects/:projectId"
                                             params={{ projectId: activity.projectId }}
                                             className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
@@ -196,13 +196,12 @@ const ManagerDashboard = () => {
                             {dashboardData.pendingTasks.map((task) => (
                                 <div key={task.id} className="flex items-start border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
                                     <div className="flex-shrink-0 mr-3">
-                                        <div className={`h-3 w-3 rounded-full mt-1 ${
-                                            task.priority === 'high' 
-                                                ? 'bg-red-500' 
-                                                : task.priority === 'medium' 
-                                                    ? 'bg-yellow-500' 
+                                        <div className={`h-3 w-3 rounded-full mt-1 ${task.priority === 'high'
+                                                ? 'bg-red-500'
+                                                : task.priority === 'medium'
+                                                    ? 'bg-yellow-500'
                                                     : 'bg-green-500'
-                                        }`}></div>
+                                            }`}></div>
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm text-gray-900 dark:text-white">{task.description}</p>

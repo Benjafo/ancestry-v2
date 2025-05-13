@@ -25,12 +25,11 @@ Project -> family members: adding birth date and death date in the biographical 
 
 [FIXED?] Settings: form submission
 [FIXED?] Settings: delete account form submission
-[FIXED?] Profile: form submission
-[INFO] Consolidated settings and profile pages
+[FIXED] Profile: form submission (NOTE: Consolidated with settings page)
 [FIXED] User management -> create user: role form does not match dark mode
+[FIXED] Dashboard: research summary
+[FIXED] Dashboard: recent activity (NOTE: Consolidated with notifications)
+[FIXED] Dashboard: notifications
 
-Dashboard: notifications
-Dashboard: recent activity
-Dashboard: research summary
 Settings: validation for fields
 Manager dashboard: pending tasks

@@ -58,6 +58,15 @@ ALTER TABLE projects
 ADD CONSTRAINT check_project_status
 CHECK (status IN ('active', 'completed', 'on_hold'));
 
+-- Add check constraints to user_events table
+ALTER TABLE user_events
+ADD CONSTRAINT check_user_event_type
+CHECK (event_type IN ('project_created', 'project_assigned', 'project_updated', 
+                      'document_added', 'document_uploaded', 
+                      'person_created', 'person_discovered',
+                      'event_recorded', 'relationship_created', 'relationship_established',
+                      'research_milestone', 'project_update'));
+
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_persons_names ON persons(last_name, first_name);
 CREATE INDEX IF NOT EXISTS idx_persons_birth ON persons(birth_date);
@@ -83,6 +92,13 @@ CREATE INDEX IF NOT EXISTS idx_project_events_event ON project_events(event_id);
 CREATE INDEX IF NOT EXISTS idx_project_persons_project ON project_persons(project_id);
 CREATE INDEX IF NOT EXISTS idx_project_persons_person ON project_persons(person_id);
 
+-- Add indexes for user_events table
+CREATE INDEX IF NOT EXISTS idx_user_events_user ON user_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_actor ON user_events(actor_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_type ON user_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_user_events_entity ON user_events(entity_id, entity_type);
+CREATE INDEX IF NOT EXISTS idx_user_events_created ON user_events(created_at);
+
 -- Add triggers for data consistency
 CREATE OR REPLACE FUNCTION update_timestamp()
 RETURNS TRIGGER AS $$
@@ -98,7 +114,7 @@ DECLARE
     tables TEXT[] := ARRAY['users', 'roles', 'user_roles', 'projects', 'project_users', 
                           'persons', 'events', 'documents', 'relationships',
                           'person_events', 'project_events', 'document_persons', 'project_persons',
-                          'client_profiles', 'notifications', 'activities', 'password_reset_tokens'];
+                          'client_profiles', 'user_events', 'password_reset_tokens'];
     t TEXT;
 BEGIN
     FOREACH t IN ARRAY tables

@@ -13,6 +13,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import ManagerDashboard from './pages/ManagerDashboard';
 import NotFound from './pages/NotFound';
+import Notifications from './pages/Notifications';
 import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
@@ -111,6 +112,11 @@ const projectDetailRoute = new Route({
     component: ProjectDetail
 });
 
+const notificationsRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/notifications',
+    component: Notifications,
+});
 
 const notFoundRoute = new Route({
     getParentRoute: () => rootRoute,
@@ -170,6 +176,7 @@ const routeTree = rootRoute.addChildren([
         settingsRoute,
         projectsRoute,
         projectDetailRoute,
+        notificationsRoute,
         // Manager routes
         managerDashboardRoute,
         userManagementRoute,

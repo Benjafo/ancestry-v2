@@ -1,15 +1,15 @@
+import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { DashboardSummary, Notification, Project, dashboardApi, projectsApi } from '../api/client';
+import { DashboardSummary, Project, UserEvent, dashboardApi, projectsApi } from '../api/client';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
-import { formatDate } from '../utils/dateUtils';
 
 const Dashboard = () => {
     const user = getUser();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<UserEvent[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [projectsLoading, setProjectsLoading] = useState(true);
     const [projectsError, setProjectsError] = useState<string | null>(null);
@@ -20,10 +20,20 @@ const Dashboard = () => {
                 // Fetch dashboard summary
                 const summaryData = await dashboardApi.getSummary();
                 setSummary(summaryData);
+                console.log('Dashboard Summary:', summaryData);
 
-                // Fetch notifications
-                const notificationsData = await dashboardApi.getNotifications();
-                setNotifications(notificationsData.notifications);
+                // Fetch user events
+                const userEventsData = await dashboardApi.getUserEvents();
+                setNotifications(userEventsData.userEvents);
+                console.log('User Events:', userEventsData);
+                console.log('Created Projects:', userEventsData.userEvents.filter(event => event.event_type === 'project_created'));
+
+                // Debug notification structure
+                if (userEventsData.userEvents.length > 0) {
+                    console.log('First notification:', userEventsData.userEvents[0]);
+                    console.log('createdAt type:', typeof userEventsData.userEvents[0].createdAt);
+                    console.log('createdAt value:', userEventsData.userEvents[0].createdAt);
+                }
 
                 setIsLoading(false);
             } catch (err) {
@@ -48,6 +58,12 @@ const Dashboard = () => {
         fetchDashboardData();
         fetchProjects();
     }, []);
+
+    const formatEventType = (eventType: string): string => {
+        return eventType.split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
 
     if (isLoading) {
         return (
@@ -78,55 +94,37 @@ const Dashboard = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Welcome, {user?.first_name}</h1>
-                <button className="btn-primary">New Research Request</button>
+                {/* <button className="btn-primary">New Research Request</button> */}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Summary Card */}
-                <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Research Summary</h2>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Active Projects</span>
-                            <span className="text-xl font-semibold dark:text-white">{summary?.projectCount}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Unread Notifications</span>
-                            <span className="text-xl font-semibold dark:text-white">
-                                {notifications.filter(n => !n.isRead).length}
+                <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 md:col-span-3">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Research Summary</h2>
+                        {user?.roles?.includes('manager') && (
+                            <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded">
+                                Showing system-wide statistics
                             </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Recent Updates</span>
-                            <span className="text-xl font-semibold dark:text-white">
-                                {summary?.recentActivity.length}
-                            </span>
-                        </div>
+                        )}
                     </div>
-                </div>
-
-                {/* Recent Activity Card */}
-                <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 md:col-span-2">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-                    <div className="space-y-4">
-                        {summary?.recentActivity.length === 0 ? (
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
-                                <p className="text-gray-500 dark:text-gray-400">No recent activity.</p>
-                            </div>
-                        ) : (
-                            summary?.recentActivity.map(activity => (
-                                <div key={activity.id} className="border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
-                                    <div className="flex justify-between">
-                                        <span className="font-medium dark:text-white">{activity.description}</span>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            {formatDate(activity.date)}
-                                        </span>
-                                    </div>
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        {activity.type === 'update' ? 'Update' : 'Discovery'}
-                                    </div>
-                                </div>
-                            )))}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Active Projects</div>
+                            <div className="text-3xl font-semibold dark:text-white">{summary?.projectCount || 0}</div>
+                        </div>
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Notifications</div>
+                            <div className="text-3xl font-semibold dark:text-white">{notifications.length}</div>
+                        </div>
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Documents</div>
+                            <div className="text-3xl font-semibold dark:text-white">{summary?.documentCount || 0}</div>
+                        </div>
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Family Members</div>
+                            <div className="text-3xl font-semibold dark:text-white">{summary?.personCount || 0}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -146,28 +144,45 @@ const Dashboard = () => {
 
             {/* Notifications */}
             <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Notifications</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Notifications</h2>
+                    <Link to="/notifications" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                        View all
+                    </Link>
+                </div>
                 <div className="space-y-4">
                     {notifications.length === 0 ? (
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
                             <p className="text-gray-500 dark:text-gray-400">No notifications.</p>
                         </div>
                     ) : (
-                        notifications.map(notification => (
+                        notifications.slice(0, 5).map(notification => (
                             <div
                                 key={notification.id}
-                                className={`border-l-4 ${notification.isRead ? 'border-gray-300 dark:border-gray-600' : 'border-primary-500'} pl-4 py-2`}
+                                className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2"
                             >
                                 <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{notification.title}</span>
+                                    <span className="font-medium dark:text-white">{formatEventType(notification.event_type)}</span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {formatDate(notification.date)}
+                                        {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
                                     </span>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                                {notification.actor && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        By {notification.actor.first_name} {notification.actor.last_name}
+                                    </p>
+                                )}
                             </div>
                         )))}
                 </div>
+                {notifications.length > 5 && (
+                    <div className="mt-4 text-center">
+                        <Link to="/notifications" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            View all {notifications.length} notifications
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );

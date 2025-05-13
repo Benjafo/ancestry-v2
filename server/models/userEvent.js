@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
-const Notification = sequelize.define('Notification', {
+const UserEvent = sequelize.define('UserEvent', {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -15,7 +15,14 @@ const Notification = sequelize.define('Notification', {
             key: 'user_id'
         }
     },
-    title: {
+    actor_id: {
+        type: DataTypes.UUID,
+        references: {
+            model: 'users',
+            key: 'user_id'
+        }
+    },
+    event_type: {
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -23,13 +30,16 @@ const Notification = sequelize.define('Notification', {
         type: DataTypes.TEXT,
         allowNull: false
     },
-    is_read: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
+    entity_id: {
+        type: DataTypes.UUID
+    },
+    entity_type: {
+        type: DataTypes.STRING
     }
 }, {
+    tableName: 'user_events',
     timestamps: true,
     underscored: true
 });
 
-module.exports = Notification;
+module.exports = UserEvent;
