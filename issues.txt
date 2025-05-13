@@ -38,3 +38,4 @@ Settings: validation for fields
 Manager dashboard: pending tasks
 Manager dashboard: recent activity should be accurate
 User management -> create user: should close modal after creating user
+Client assignment -> assignment history
