@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ClientProfile, clientApi } from '../api/client';
-import { getUser, logout } from '../utils/auth';
+import { getUser } from '../utils/auth';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -22,9 +22,9 @@ const Settings = () => {
     const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
     // Account deletion state
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteConfirmation, setDeleteConfirmation] = useState('');
-    const [deleteError, setDeleteError] = useState<string | null>(null);
+    // const [isDeleting, setIsDeleting] = useState(false);
+    // const [deleteConfirmation, setDeleteConfirmation] = useState('');
+    // const [deleteError, setDeleteError] = useState<string | null>(null);
 
     // Profile state
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
@@ -143,32 +143,32 @@ const Settings = () => {
         }
     };
 
-    const handleDeleteAccount = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setDeleteError(null);
+    // const handleDeleteAccount = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     setDeleteError(null);
 
-        if (deleteConfirmation !== 'DELETE') {
-            setDeleteError('Please type DELETE to confirm account deletion');
-            return;
-        }
+    //     if (deleteConfirmation !== 'DELETE') {
+    //         setDeleteError('Please type DELETE to confirm account deletion');
+    //         return;
+    //     }
 
-        setIsDeleting(true);
+    //     setIsDeleting(true);
 
-        try {
-            // In a real app, we would call an API
-            // await authApi.deleteAccount();
+    //     try {
+    //         // In a real app, we would call an API
+    //         // await authApi.deleteAccount();
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+    //         // Simulate API call
+    //         await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Log the user out
-            logout();
-        } catch (err) {
-            console.error('Error deleting account:', err);
-            setDeleteError('Failed to delete account. Please try again.');
-            setIsDeleting(false);
-        }
-    };
+    //         // Log the user out
+    //         logout();
+    //     } catch (err) {
+    //         console.error('Error deleting account:', err);
+    //         setDeleteError('Failed to delete account. Please try again.');
+    //         setIsDeleting(false);
+    //     }
+    // };
 
     return (
         <div className="space-y-6">
@@ -393,7 +393,7 @@ const Settings = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <form onSubmit={handlePasswordSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Current Password
@@ -501,7 +501,7 @@ const Settings = () => {
                 </div>
             </div>
 
-            {/* Delete Account Section */}
+            {/* Delete Account Section
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Delete Account</h2>
@@ -550,7 +550,7 @@ const Settings = () => {
                         </div>
                     </form>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };
