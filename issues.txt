@@ -39,3 +39,6 @@ Manager dashboard: pending tasks
 Manager dashboard: recent activity should be accurate
 User management -> create user: should close modal after creating user
 Client assignment -> assignment history
+
+General: move reused code into utility functions
+General: user events need to be logged in the backend

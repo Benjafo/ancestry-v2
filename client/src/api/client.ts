@@ -279,6 +279,7 @@ export interface ManagerDashboardSummary {
         description: string;
         projectId: string;
         date: string;
+        actor?: string;
     }[];
     pendingTasks: {
         id: string;
@@ -654,6 +655,11 @@ export const managerApi = {
         projects: Project[]
     }> => {
         const response = await apiClient.get(`manager/clients/${clientId}/assignments`);
+        return response.json();
+    },
+
+    getAssignmentHistory: async (clientId: string): Promise<{ history: UserEvent[] }> => {
+        const response = await apiClient.get(`manager/clients/${clientId}/assignment-history`);
         return response.json();
     },
 

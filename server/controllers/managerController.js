@@ -1,4 +1,5 @@
-const { User, Role, Project } = require('../models');
+const { User, Role, Project, UserEvent } = require('../models');
+const { Op } = require('sequelize');
 
 // Get dashboard summary for managers
 exports.getDashboardSummary = async (req, res) => {
@@ -35,21 +36,25 @@ exports.getDashboardSummary = async (req, res) => {
             on_hold: await Project.count({ where: { status: 'on_hold' } })
         };
 
-        // Fetch recent activity (simplified for now)
-        const recentActivity = await Project.findAll({
+        // Fetch real user events for recent activity
+        const userEvents = await UserEvent.findAll({
             limit: 10,
-            order: [['updated_at', 'DESC']],
-            attributes: ['id', 'title', 'status', 'updated_at']
+            order: [['created_at', 'DESC']],
+            include: [{
+                model: User,
+                as: 'actor',
+                attributes: ['first_name', 'last_name']
+            }]
         });
 
-        // Transform recent activity into a standardized format
-        const formattedActivity = recentActivity.map(project => ({
-            id: `activity-${project.id}`,
-            type: 'project_update',
-            description: `Project "${project.title}" was updated`,
-            entityId: project.id,
-            entityType: 'project',
-            date: project.updated_at
+        // Transform user events into the expected format for the dashboard
+        const formattedActivity = userEvents.map(event => ({
+            id: event.id,
+            type: event.event_type,
+            description: event.message,
+            projectId: event.entity_type === 'project' ? event.entity_id : null,
+            date: event.created_at,
+            actor: event.actor ? `${event.actor.first_name} ${event.actor.last_name}` : 'System'
         }));
 
         // For now, return empty pending tasks (to be implemented later)
@@ -456,8 +461,25 @@ exports.getAssignmentHistory = async (req, res) => {
             return res.status(404).json({ message: 'Client not found' });
         }
         
-        // For now, return empty history (to be implemented with a proper history table later)
-        res.status(200).json({ history: [] });
+        // Get assignment-related events for this client
+        const assignmentEvents = await UserEvent.findAll({
+            where: {
+                user_id: clientId,
+                event_type: {
+                    [Op.or]: ['project_assigned', 'project_removed']
+                }
+            },
+            order: [['created_at', 'DESC']],
+            include: [{
+                model: User,
+                as: 'actor',
+                attributes: ['first_name', 'last_name']
+            }]
+        });
+        
+        res.status(200).json({ 
+            history: assignmentEvents 
+        });
     } catch (error) {
         console.error('Get assignment history error:', error);
         res.status(500).json({ message: 'Server error retrieving assignment history' });
