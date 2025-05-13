@@ -338,7 +338,7 @@ const UserManagement = () => {
                                     Last Login
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Action
+                                    {/* Action */}
                                 </th>
                             </tr>
                         </thead>
@@ -378,8 +378,8 @@ const UserManagement = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_active
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                 }`}>
                                                 {user.is_active ? 'Active' : 'Inactive'}
                                             </span>
@@ -398,27 +398,6 @@ const UserManagement = () => {
                                                 >
                                                     Edit
                                                 </button>
-                                                <button
-                                                    className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
-                                                    onClick={() => handleResetPassword(user.user_id)}
-                                                >
-                                                    Reset Password
-                                                </button>
-                                                {user.is_active ? (
-                                                    <button
-                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                        onClick={() => handleDeactivateUser(user.user_id)}
-                                                    >
-                                                        Deactivate
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                                        onClick={() => handleReactivateUser(user.user_id)}
-                                                    >
-                                                        Reactivate
-                                                    </button>
-                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -631,6 +610,51 @@ const UserManagement = () => {
                                     <p className="text-sm text-red-600">{formErrors.submit}</p>
                                 )}
                             </div>
+
+                            <hr className="my-6 border-gray-200 dark:border-gray-700" />
+
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-md font-medium text-gray-700 dark:text-gray-300">Account Actions</h3>
+                                    <div className="mt-3 flex flex-col space-y-3">
+                                        <button
+                                            type="button"
+                                            className="px-4 py-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-md hover:bg-yellow-200 dark:hover:bg-yellow-800 text-left"
+                                            onClick={() => {
+                                                handleResetPassword(selectedUser.user_id);
+                                                setIsEditModalOpen(false);
+                                            }}
+                                        >
+                                            Reset Password
+                                        </button>
+
+                                        {selectedUser.is_active ? (
+                                            <button
+                                                type="button"
+                                                className="px-4 py-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-md hover:bg-red-200 dark:hover:bg-red-800 text-left"
+                                                onClick={() => {
+                                                    handleDeactivateUser(selectedUser.user_id);
+                                                    setIsEditModalOpen(false);
+                                                }}
+                                            >
+                                                Deactivate User
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className="px-4 py-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-md hover:bg-green-200 dark:hover:bg-green-800 text-left"
+                                                onClick={() => {
+                                                    handleReactivateUser(selectedUser.user_id);
+                                                    setIsEditModalOpen(false);
+                                                }}
+                                            >
+                                                Reactivate User
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="mt-6 flex justify-end space-x-3">
                                 <button
                                     type="button"

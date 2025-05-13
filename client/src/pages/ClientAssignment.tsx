@@ -33,7 +33,7 @@ const ClientAssignment = () => {
                 managerApi.getUsers('clients'),
                 projectsApi.getProjects()
             ]);
-            
+
             setClients(clientsResponse.users);
             setProjects(projectsResponse.projects);
             setIsLoading(false);
@@ -59,12 +59,12 @@ const ClientAssignment = () => {
 
     const handleAssignToProject = async (projectId: string) => {
         if (!selectedClient) return;
-        
+
         try {
             await managerApi.assignClientToProject(selectedClient, projectId);
             setSuccessMessage('Client assigned to project successfully');
             fetchClientAssignments(selectedClient);
-            
+
             // Clear success message after 3 seconds
             setTimeout(() => {
                 setSuccessMessage(null);
@@ -77,12 +77,12 @@ const ClientAssignment = () => {
 
     const handleRemoveFromProject = async (projectId: string) => {
         if (!selectedClient) return;
-        
+
         try {
             await managerApi.removeClientFromProject(selectedClient, projectId);
             setSuccessMessage('Client removed from project successfully');
             fetchClientAssignments(selectedClient);
-            
+
             // Clear success message after 3 seconds
             setTimeout(() => {
                 setSuccessMessage(null);
@@ -98,7 +98,7 @@ const ClientAssignment = () => {
         if (!clientAssignments) return false;
         return clientAssignments.projects.some(project => project.id === projectId);
     };
-    
+
     const formatStatus = (status: string): string => {
         switch (status) {
             case 'active':
@@ -159,7 +159,7 @@ const ClientAssignment = () => {
                         </div>
                         <div className="ml-3">
                             <p className="text-sm text-red-700">{error}</p>
-                            <button 
+                            <button
                                 className="text-sm font-medium text-red-700 hover:text-red-600 mt-1"
                                 onClick={() => setError(null)}
                             >
@@ -177,13 +177,12 @@ const ClientAssignment = () => {
                         <p className="text-gray-500 dark:text-gray-400 col-span-full">No clients found</p>
                     ) : (
                         clients.map(client => (
-                            <div 
-                                key={client.user_id} 
-                                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                                    selectedClient === client.user_id 
-                                        ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900' 
+                            <div
+                                key={client.user_id}
+                                className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedClient === client.user_id
+                                        ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900'
                                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
-                                }`}
+                                    }`}
                                 onClick={() => setSelectedClient(client.user_id)}
                             >
                                 <div className="flex items-center">
@@ -228,7 +227,7 @@ const ClientAssignment = () => {
                                                         <div className="font-medium text-sm dark:text-white">{project.title}</div>
                                                         <div className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(project.status)}</div>
                                                     </div>
-                                                    <button 
+                                                    <button
                                                         className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
                                                         onClick={() => handleRemoveFromProject(project.id)}
                                                     >
@@ -253,7 +252,7 @@ const ClientAssignment = () => {
                                                             <div className="font-medium text-sm dark:text-white">{project.title}</div>
                                                             <div className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(project.status)}</div>
                                                         </div>
-                                                        <button 
+                                                        <button
                                                             className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm"
                                                             onClick={() => handleAssignToProject(project.id)}
                                                         >
