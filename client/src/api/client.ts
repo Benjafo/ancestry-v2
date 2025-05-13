@@ -144,6 +144,8 @@ export interface UserEvent {
 
 export interface DashboardSummary {
     projectCount: number;
+    documentCount?: number;
+    personCount?: number;
 }
 
 export interface Project {

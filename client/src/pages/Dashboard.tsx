@@ -86,22 +86,27 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Summary Card */}
-                <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+                <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 md:col-span-3">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Research Summary</h2>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Active Projects</span>
-                            <span className="text-xl font-semibold dark:text-white">{summary?.projectCount}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Active Projects</div>
+                            <div className="text-3xl font-semibold dark:text-white">{summary?.projectCount || 0}</div>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400">Notifications</span>
-                            <span className="text-xl font-semibold dark:text-white">
-                                {notifications.length}
-                            </span>
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Notifications</div>
+                            <div className="text-3xl font-semibold dark:text-white">{notifications.length}</div>
+                        </div>
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Documents</div>
+                            <div className="text-3xl font-semibold dark:text-white">{summary?.documentCount || 0}</div>
+                        </div>
+                        <div className="stat-card p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                            <div className="text-gray-500 dark:text-gray-400 mb-1">Family Members</div>
+                            <div className="text-3xl font-semibold dark:text-white">{summary?.personCount || 0}</div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {/* Projects */}
