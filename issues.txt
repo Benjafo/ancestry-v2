@@ -30,8 +30,11 @@ Project -> family members: adding birth date and death date in the biographical 
 [FIXED] Dashboard: research summary
 [FIXED] Dashboard: recent activity (NOTE: Consolidated with notifications)
 [FIXED] Dashboard: notifications
+[FIXED] User management: bundle reset password and delete into the edit modal
+[FIXED] Client assignment: replace back to dashboard with add user button
+[FIXED] User management -> create user: validation for fields
 
 Settings: validation for fields
 Manager dashboard: pending tasks
-User management: bundle reset password and delete into the edit modal
-Client assignment: replace back to dashboard with add user button
+Manager dashboard: recent activity should be accurate
+User management -> create user: should close modal after creating user

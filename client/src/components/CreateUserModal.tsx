@@ -29,24 +29,41 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, defaultRole = 'client' }:
     const validateForm = () => {
         const errors: Record<string, string> = {};
 
+        // Email validation
         if (!formData.email) {
             errors.email = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
             errors.email = 'Email is invalid';
         }
 
+        // Password validation
         if (!formData.password) {
             errors.password = 'Password is required';
         } else if (formData.password.length < 8) {
             errors.password = 'Password must be at least 8 characters';
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+            errors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
         }
 
+        // First name validation
         if (!formData.first_name) {
             errors.first_name = 'First name is required';
+        } else if (formData.first_name.length < 2 || formData.first_name.length > 50) {
+            errors.first_name = 'First name must be between 2 and 50 characters';
         }
 
+        // Last name validation
         if (!formData.last_name) {
             errors.last_name = 'Last name is required';
+        } else if (formData.last_name.length < 2 || formData.last_name.length > 50) {
+            errors.last_name = 'Last name must be between 2 and 50 characters';
+        }
+
+        // Role validation
+        if (!formData.role) {
+            errors.role = 'Role is required';
+        } else if (!['client', 'manager'].includes(formData.role)) {
+            errors.role = 'Role must be either "client" or "manager"';
         }
 
         setFormErrors(errors);
@@ -70,9 +87,20 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, defaultRole = 'client' }:
                 last_name: '',
                 role: defaultRole
             });
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error creating user:', err);
-            setFormErrors({ submit: 'Failed to create user. Please try again.' });
+            
+            // Check if it's a validation error from the server
+            if (err.response?.data?.errors) {
+                // Map server validation errors to form fields
+                const serverErrors: Record<string, string> = {};
+                Object.entries(err.response.data.errors).forEach(([field, messages]) => {
+                    serverErrors[field] = Array.isArray(messages) ? messages[0] : String(messages);
+                });
+                setFormErrors(serverErrors);
+            } else {
+                setFormErrors({ submit: 'Failed to create user. Please try again.' });
+            }
         }
     };
 
@@ -122,6 +150,9 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, defaultRole = 'client' }:
                                 value={formData.password}
                                 onChange={handleInputChange}
                             />
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Password must be at least 8 characters and include uppercase, lowercase, and numbers.
+                            </p>
                             {formErrors.password && (
                                 <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
                             )}
