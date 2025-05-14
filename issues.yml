@@ -2,6 +2,7 @@ project:
   active:
     Project: tree view
     Project: there should be a page or modal to view all events in the timeline, even if they are duplicated
+    Project: the add document button does not open the modal
     Project -> overview: recent activity should be accurate
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
@@ -26,10 +27,13 @@ project:
 
 other:
   active:
+    Project -> new project: the description field does not implement dark mode
+    Project -> edit project: the status dropdown has not implemented dark mode
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page
-    membersanager dashboard: pending tasks
+    Manager dashboard: pending tasks
     Manager dashboard: add a quick actions button to create a task
     User management: add pagination and limit to three rows of users in the select client card
+    Settings: add dropdown for state/province based on country
     General: implement the task feature
     General: user events need to be logged in the backend
 
@@ -55,7 +59,6 @@ other:
 
 future_functionality:
   active:
-    Settings: add dropdown for state/province based on country
     General: import GEDCOM file page
     General: footer links
     General: payment processing

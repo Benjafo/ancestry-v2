@@ -1,10 +1,12 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { ManagerDashboardSummary, managerApi } from '../api/client';
+import { ManagerDashboardSummary, Project, managerApi } from '../api/client';
 import { formatDate } from '../utils/dateUtils';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorAlert from '../components/common/ErrorAlert';
 import EmptyState from '../components/common/EmptyState';
+import SuccessAlert from '../components/common/SuccessAlert';
+import CreateProjectModal from '../components/projects/CreateProjectModal';
 
 // Helper function to get the appropriate icon for each activity type
 const getActivityIcon = (type: string) => {
@@ -65,20 +67,38 @@ const ManagerDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [dashboardData, setDashboardData] = useState<ManagerDashboardSummary | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const fetchDashboardData = async () => {
+        try {
+            setIsLoading(true);
+            const data = await managerApi.getDashboardSummary();
+            setDashboardData(data);
+            setIsLoading(false);
+        } catch (err) {
+            console.error('Error fetching manager dashboard data:', err);
+            setError('Failed to load dashboard data');
+            setIsLoading(false);
+        }
+    };
+
+    const handleProjectCreated = (newProject: Project) => {
+        setIsCreateModalOpen(false);
+        
+        // Show success message
+        setSuccessMessage('Project created successfully');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+        
+        // Refresh dashboard data to include the new project
+        fetchDashboardData();
+    };
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const data = await managerApi.getDashboardSummary();
-                setDashboardData(data);
-                setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching manager dashboard data:', err);
-                setError('Failed to load dashboard data');
-                setIsLoading(false);
-            }
-        };
-
         fetchDashboardData();
     }, []);
 
@@ -96,18 +116,8 @@ const ManagerDashboard = () => {
 
     return (
         <div className="space-y-6">
-            {/* <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Manager Dashboard</h1>
-                <div className="flex space-x-2">
-                    <Link to="/manager/users" className="btn-secondary">
-                        Manage Users
-                    </Link>
-                    <Link to="/manager/client-assignment" className="btn-primary">
-                        Assign Clients
-                    </Link>
-                </div>
-            </div> */}
-
+            {successMessage && <SuccessAlert message={successMessage} />}
+            
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
@@ -273,14 +283,24 @@ const ManagerDashboard = () => {
                         </svg>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">Assign Clients</span>
                     </Link>
-                    <Link to="/projects?create=true" className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <div 
+                        className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                        onClick={() => setIsCreateModalOpen(true)}
+                    >
                         <svg className="h-8 w-8 text-primary-600 dark:text-primary-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">New Project</span>
-                    </Link>
+                    </div>
                 </div>
             </div>
+
+            {/* Create Project Modal */}
+            <CreateProjectModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={handleProjectCreated}
+            />
         </div>
     );
 };
