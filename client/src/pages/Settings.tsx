@@ -7,6 +7,7 @@ import {
     validateAddress,
     validateAddressGroup,
     validateCity,
+    validateCountry,
     validatePassword,
     validatePasswordMatch,
     validatePhone,
@@ -85,7 +86,6 @@ const Settings = () => {
             ...profileData,
             [name]: value
         };
-
         setProfileData(updatedProfileData);
     };
 
@@ -152,6 +152,12 @@ const Settings = () => {
             const zipValidation = validateZipCode(profileData.zip_code || '', profileData.country || '', true);
             if (!zipValidation.isValid && zipValidation.message) {
                 newValidationErrors.zip_code = zipValidation.message;
+            }
+
+            // Validate country format
+            const countryValidation = validateCountry(profileData.country || '', true);
+            if (!countryValidation.isValid && countryValidation.message) {
+                newValidationErrors.country = countryValidation.message;
             }
         }
 
@@ -356,7 +362,7 @@ const Settings = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
                                     <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Street Address <span className="text-red-500">*</span>
+                                        Street Address
                                     </label>
                                     <input
                                         type="text"
@@ -417,7 +423,7 @@ const Settings = () => {
                                         value={profileData.country}
                                         onChange={handleProfileChange}
                                     >
-                                        <option value="">Select a country</option>
+                                        <option value="" disabled>Select a country</option>
                                         <option value="USA">United States</option>
                                         <option value="CAN">Canada</option>
                                         <option value="GBR">United Kingdom</option>

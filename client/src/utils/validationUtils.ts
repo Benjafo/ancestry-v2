@@ -11,12 +11,12 @@ export const validatePhone = (phone: string): { isValid: boolean; message?: stri
     if (!phone) return { isValid: true }; // Optional field
 
     // Basic international phone format
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    const phoneRegex = /^\+?[1-9]\d{9}$/;
 
     if (!phoneRegex.test(phone)) {
         return {
             isValid: false,
-            message: 'Please enter a valid phone number (e.g., +1234567890)'
+            message: 'Please enter a valid phone number (e.g., 1234567890)'
         };
     }
 
@@ -136,6 +136,24 @@ export const validateAddress = (address: string, required = false): { isValid: b
 };
 
 /**
+ * Validates a country
+ * @param country The country to validate
+ * @param required Whether the field is required
+ * @returns Object with isValid flag and optional error message
+ */
+export const validateCountry = (country: string, required = false): { isValid: boolean; message?: string } => {
+    if (!country) return required
+        ? { isValid: false, message: 'Country is required' }
+        : { isValid: true }; // Optional field if not required
+
+    if (country.length < 2 || country.toLowerCase() === 'select a country') {
+        return { isValid: false, message: 'Please select a valid country' };
+    }
+
+    return { isValid: true };
+};
+
+/**
  * Validates a password
  * @param password The password to validate
  * @returns Object with isValid flag and optional error message
@@ -215,7 +233,7 @@ export const validateAddressGroup = (
         if (!zipCode) {
             return { isValid: false, message: 'ZIP/Postal code is required', field: 'zip_code' };
         }
-        if (!country) {
+        if (!country || country.toLowerCase() === 'select a country') {
             return { isValid: false, message: 'Country is required', field: 'country' };
         }
     }
