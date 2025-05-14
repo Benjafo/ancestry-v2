@@ -33,12 +33,12 @@ Project -> family members: adding birth date and death date in the biographical 
 [FIXED] User management: bundle reset password and delete into the edit modal
 [FIXED] Client assignment: replace back to dashboard with add user button
 [FIXED] User management -> create user: validation for fields
+[FIXED] Manager dashboard: recent activity should be accurate
+[FIXED] Client assignment -> assignment history
 
 Settings: validation for fields
 Manager dashboard: pending tasks
-Manager dashboard: recent activity should be accurate
 User management -> create user: should close modal after creating user
-Client assignment -> assignment history
 
 General: move reused code into utility functions
 General: user events need to be logged in the backend

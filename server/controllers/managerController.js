@@ -40,6 +40,7 @@ exports.getDashboardSummary = async (req, res) => {
         const userEvents = await UserEvent.findAll({
             limit: 10,
             order: [['created_at', 'DESC']],
+            attributes: ['id', 'event_type', 'message', 'entity_type', 'entity_id', 'created_at', 'updated_at'],
             include: [{
                 model: User,
                 as: 'actor',
@@ -53,7 +54,7 @@ exports.getDashboardSummary = async (req, res) => {
             type: event.event_type,
             description: event.message,
             projectId: event.entity_type === 'project' ? event.entity_id : null,
-            date: event.created_at,
+            date: event.get('created_at'),
             actor: event.actor ? `${event.actor.first_name} ${event.actor.last_name}` : 'System'
         }));
 
@@ -79,10 +80,10 @@ exports.getDashboardSummary = async (req, res) => {
 exports.getUsers = async (req, res) => {
     try {
         const { filter = 'all' } = req.query;
-        
+
         let whereCondition = {};
         let includeCondition = [{ model: Role }];
-        
+
         if (filter === 'clients') {
             includeCondition = [{
                 model: Role,
@@ -94,12 +95,12 @@ exports.getUsers = async (req, res) => {
                 where: { name: 'manager' }
             }];
         }
-        
+
         const users = await User.findAll({
             include: includeCondition,
             attributes: { exclude: ['password'] }
         });
-        
+
         // Format users to include roles
         const formattedUsers = users.map(user => {
             const userData = user.toJSON();
@@ -108,7 +109,7 @@ exports.getUsers = async (req, res) => {
                 roles: userData.Roles ? userData.Roles.map(role => role.name) : []
             };
         });
-        
+
         res.status(200).json({ users: formattedUsers });
     } catch (error) {
         console.error('Get users error:', error);
@@ -120,23 +121,23 @@ exports.getUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         const user = await User.findByPk(userId, {
             include: [{ model: Role }],
             attributes: { exclude: ['password'] }
         });
-        
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
+
         // Format user to include roles
         const userData = user.toJSON();
         const formattedUser = {
             ...userData,
             roles: userData.Roles ? userData.Roles.map(role => role.name) : []
         };
-        
+
         res.status(200).json({ user: formattedUser });
     } catch (error) {
         console.error('Get user error:', error);
@@ -148,13 +149,13 @@ exports.getUserById = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         const { email, password, first_name, last_name, role } = req.body;
-        
+
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
-        
+
         // Create new user
         const user = await User.create({
             email,
@@ -163,29 +164,29 @@ exports.createUser = async (req, res) => {
             last_name,
             is_active: true
         });
-        
+
         // Find the requested role
         const userRole = await Role.findOne({ where: { name: role } });
         if (!userRole) {
             return res.status(400).json({ message: 'Invalid role' });
         }
-        
+
         // Assign role to user
         await user.addRole(userRole);
-        
+
         // Get user with roles
         const createdUser = await User.findByPk(user.user_id, {
             include: [{ model: Role }],
             attributes: { exclude: ['password'] }
         });
-        
+
         // Format user to include roles
         const userData = createdUser.toJSON();
         const formattedUser = {
             ...userData,
             roles: userData.Roles ? userData.Roles.map(role => role.name) : []
         };
-        
+
         res.status(201).json({
             message: 'User created successfully',
             user: formattedUser
@@ -201,19 +202,19 @@ exports.updateUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const { first_name, last_name, role } = req.body;
-        
+
         // Find user
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
+
         // Update user properties
         if (first_name) user.first_name = first_name;
         if (last_name) user.last_name = last_name;
-        
+
         await user.save();
-        
+
         // Update role if provided
         if (role) {
             // Find the requested role
@@ -221,28 +222,28 @@ exports.updateUser = async (req, res) => {
             if (!userRole) {
                 return res.status(400).json({ message: 'Invalid role' });
             }
-            
+
             // Remove existing roles
             const currentRoles = await user.getRoles();
             await user.removeRoles(currentRoles);
-            
+
             // Assign new role
             await user.addRole(userRole);
         }
-        
+
         // Get updated user with roles
         const updatedUser = await User.findByPk(userId, {
             include: [{ model: Role }],
             attributes: { exclude: ['password'] }
         });
-        
+
         // Format user to include roles
         const userData = updatedUser.toJSON();
         const formattedUser = {
             ...userData,
             roles: userData.Roles ? userData.Roles.map(role => role.name) : []
         };
-        
+
         res.status(200).json({
             message: 'User updated successfully',
             user: formattedUser
@@ -257,17 +258,17 @@ exports.updateUser = async (req, res) => {
 exports.deactivateUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Find user
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
+
         // Deactivate user
         user.is_active = false;
         await user.save();
-        
+
         res.status(200).json({ message: 'User deactivated successfully' });
     } catch (error) {
         console.error('Deactivate user error:', error);
@@ -279,17 +280,17 @@ exports.deactivateUser = async (req, res) => {
 exports.reactivateUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Find user
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
+
         // Reactivate user
         user.is_active = true;
         await user.save();
-        
+
         res.status(200).json({ message: 'User reactivated successfully' });
     } catch (error) {
         console.error('Reactivate user error:', error);
@@ -301,20 +302,20 @@ exports.reactivateUser = async (req, res) => {
 exports.resetUserPassword = async (req, res) => {
     try {
         const { userId } = req.params;
-        
+
         // Find user
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
+
         // Generate temporary password
         const temporaryPassword = Math.random().toString(36).slice(-8);
-        
+
         // Update user password
         user.password = temporaryPassword; // Will be hashed by the model hook
         await user.save();
-        
+
         res.status(200).json({
             message: 'Password reset successfully',
             temporaryPassword
@@ -329,7 +330,7 @@ exports.resetUserPassword = async (req, res) => {
 exports.getClientAssignments = async (req, res) => {
     try {
         const { clientId } = req.params;
-        
+
         // Verify client exists
         const client = await User.findByPk(clientId, {
             include: [{
@@ -337,11 +338,11 @@ exports.getClientAssignments = async (req, res) => {
                 where: { name: 'client' }
             }]
         });
-        
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        
+
         // Get client's projects
         const projects = await Project.findAll({
             include: [{
@@ -350,7 +351,7 @@ exports.getClientAssignments = async (req, res) => {
                 through: { attributes: ['access_level'] }
             }]
         });
-        
+
         // Format projects to include access level
         const formattedProjects = projects.map(project => {
             const projectData = project.toJSON();
@@ -359,7 +360,7 @@ exports.getClientAssignments = async (req, res) => {
                 access_level: projectData.Users[0]?.project_users?.access_level || 'view'
             };
         });
-        
+
         res.status(200).json({
             projects: formattedProjects
         });
@@ -374,7 +375,7 @@ exports.assignClientToProject = async (req, res) => {
     try {
         const { clientId, projectId } = req.params;
         const { accessLevel = 'view' } = req.body;
-        
+
         // Verify client exists
         const client = await User.findByPk(clientId, {
             include: [{
@@ -382,27 +383,27 @@ exports.assignClientToProject = async (req, res) => {
                 where: { name: 'client' }
             }]
         });
-        
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        
+
         // Verify project exists
         const project = await Project.findByPk(projectId);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        
+
         // Validate access level
         if (!['view', 'edit'].includes(accessLevel)) {
             return res.status(400).json({ message: 'Invalid access level. Must be "view" or "edit"' });
         }
-        
+
         // Assign client to project with specified access level
-        await project.addUser(clientId, { 
+        await project.addUser(clientId, {
             through: { access_level: accessLevel }
         });
-        
+
         res.status(200).json({ message: 'Client assigned to project successfully' });
     } catch (error) {
         console.error('Assign client to project error:', error);
@@ -414,7 +415,7 @@ exports.assignClientToProject = async (req, res) => {
 exports.removeClientFromProject = async (req, res) => {
     try {
         const { clientId, projectId } = req.params;
-        
+
         // Verify client exists
         const client = await User.findByPk(clientId, {
             include: [{
@@ -422,20 +423,20 @@ exports.removeClientFromProject = async (req, res) => {
                 where: { name: 'client' }
             }]
         });
-        
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        
+
         // Verify project exists
         const project = await Project.findByPk(projectId);
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        
+
         // Remove client from project
         await project.removeUser(clientId);
-        
+
         res.status(200).json({ message: 'Client removed from project successfully' });
     } catch (error) {
         console.error('Remove client from project error:', error);
@@ -448,7 +449,7 @@ exports.removeClientFromProject = async (req, res) => {
 exports.getAssignmentHistory = async (req, res) => {
     try {
         const { clientId } = req.params;
-        
+
         // Verify client exists
         const client = await User.findByPk(clientId, {
             include: [{
@@ -456,11 +457,11 @@ exports.getAssignmentHistory = async (req, res) => {
                 where: { name: 'client' }
             }]
         });
-        
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        
+
         // Get assignment-related events for this client
         const assignmentEvents = await UserEvent.findAll({
             where: {
@@ -476,9 +477,9 @@ exports.getAssignmentHistory = async (req, res) => {
                 attributes: ['first_name', 'last_name']
             }]
         });
-        
-        res.status(200).json({ 
-            history: assignmentEvents 
+
+        res.status(200).json({
+            history: assignmentEvents
         });
     } catch (error) {
         console.error('Get assignment history error:', error);

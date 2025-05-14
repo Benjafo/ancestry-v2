@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ManagerDashboardSummary, managerApi } from '../api/client';
-import { formatDate, formatDateTime } from '../utils/dateUtils';
+import { formatDate } from '../utils/dateUtils';
 
 // Helper function to get the appropriate icon for each activity type
 const getActivityIcon = (type: string) => {
@@ -115,7 +115,7 @@ const ManagerDashboard = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            {/* <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Manager Dashboard</h1>
                 <div className="flex space-x-2">
                     <Link to="/manager/users" className="btn-secondary">
@@ -125,7 +125,7 @@ const ManagerDashboard = () => {
                         Assign Clients
                     </Link>
                 </div>
-            </div>
+            </div> */}
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -202,7 +202,7 @@ const ManagerDashboard = () => {
                         <p className="text-gray-500 dark:text-gray-400 text-center py-4">No recent activity</p>
                     ) : (
                         <div className="space-y-4">
-                            {dashboardData.recentActivity.map((activity) => (
+                            {dashboardData.recentActivity.slice(0, 3).map((activity) => (
                                 <div key={activity.id} className="flex items-start border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
                                     <div className="flex-shrink-0 mr-3">
                                         {getActivityIcon(activity.type)}
@@ -211,7 +211,7 @@ const ManagerDashboard = () => {
                                         <p className="text-sm text-gray-900 dark:text-white">{activity.description}</p>
                                         <div className="flex justify-between">
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {formatDateTime(activity.date)}
+                                                {formatDate(activity.date)}
                                             </p>
                                             {activity.actor && (
                                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -231,6 +231,14 @@ const ManagerDashboard = () => {
                                     )}
                                 </div>
                             ))}
+
+                            {dashboardData.recentActivity.length > 3 && (
+                                <div className="mt-4 text-center">
+                                    <Link to="/notifications" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                        View all {dashboardData.recentActivity.length} activities
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -246,10 +254,10 @@ const ManagerDashboard = () => {
                                 <div key={task.id} className="flex items-start border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
                                     <div className="flex-shrink-0 mr-3">
                                         <div className={`h-3 w-3 rounded-full mt-1 ${task.priority === 'high'
-                                                ? 'bg-red-500'
-                                                : task.priority === 'medium'
-                                                    ? 'bg-yellow-500'
-                                                    : 'bg-green-500'
+                                            ? 'bg-red-500'
+                                            : task.priority === 'medium'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-green-500'
                                             }`}></div>
                                     </div>
                                     <div className="flex-1">
