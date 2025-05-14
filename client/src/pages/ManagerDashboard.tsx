@@ -1,7 +1,61 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ManagerDashboardSummary, managerApi } from '../api/client';
-import { formatDate, formatDateTime } from '../utils/dateUtils';
+import { formatDate } from '../utils/dateUtils';
+
+// Helper function to get the appropriate icon for each activity type
+const getActivityIcon = (type: string) => {
+    switch (type) {
+        case 'project_update':
+            return (
+                <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+            );
+        case 'project_created':
+            return (
+                <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                </div>
+            );
+        case 'project_assigned':
+            return (
+                <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-purple-600 dark:text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+            );
+        case 'project_removed':
+            return (
+                <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-red-600 dark:text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+            );
+        case 'user_created':
+            return (
+                <div className="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-yellow-600 dark:text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                </div>
+            );
+        default:
+            return (
+                <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            );
+    }
+};
 
 const ManagerDashboard = () => {
     // const user = getUser(); // Commented out due to linting error (unused variable)
@@ -61,7 +115,7 @@ const ManagerDashboard = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            {/* <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Manager Dashboard</h1>
                 <div className="flex space-x-2">
                     <Link to="/manager/users" className="btn-secondary">
@@ -71,7 +125,7 @@ const ManagerDashboard = () => {
                         Assign Clients
                     </Link>
                 </div>
-            </div>
+            </div> */}
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -148,30 +202,25 @@ const ManagerDashboard = () => {
                         <p className="text-gray-500 dark:text-gray-400 text-center py-4">No recent activity</p>
                     ) : (
                         <div className="space-y-4">
-                            {dashboardData.recentActivity.map((activity) => (
+                            {dashboardData.recentActivity.slice(0, 3).map((activity) => (
                                 <div key={activity.id} className="flex items-start border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
                                     <div className="flex-shrink-0 mr-3">
-                                        {activity.type === 'project_update' ? (
-                                            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                                                <svg className="h-4 w-4 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                                </svg>
-                                            </div>
-                                        ) : (
-                                            <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                                                <svg className="h-4 w-4 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            </div>
-                                        )}
+                                        {getActivityIcon(activity.type)}
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm text-gray-900 dark:text-white">{activity.description}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {formatDateTime(activity.date)}
-                                        </p>
+                                        <div className="flex justify-between">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {formatDate(activity.date)}
+                                            </p>
+                                            {activity.actor && (
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    By: {activity.actor}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    {activity.type === 'project_update' && (
+                                    {activity.projectId && (
                                         <Link
                                             to="/projects/:projectId"
                                             params={{ projectId: activity.projectId }}
@@ -182,6 +231,14 @@ const ManagerDashboard = () => {
                                     )}
                                 </div>
                             ))}
+
+                            {dashboardData.recentActivity.length > 3 && (
+                                <div className="mt-4 text-center">
+                                    <Link to="/notifications" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                        View all {dashboardData.recentActivity.length} activities
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -197,10 +254,10 @@ const ManagerDashboard = () => {
                                 <div key={task.id} className="flex items-start border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
                                     <div className="flex-shrink-0 mr-3">
                                         <div className={`h-3 w-3 rounded-full mt-1 ${task.priority === 'high'
-                                                ? 'bg-red-500'
-                                                : task.priority === 'medium'
-                                                    ? 'bg-yellow-500'
-                                                    : 'bg-green-500'
+                                            ? 'bg-red-500'
+                                            : task.priority === 'medium'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-green-500'
                                             }`}></div>
                                     </div>
                                     <div className="flex-1">

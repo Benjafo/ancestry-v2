@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { hasRole, logout } from '../../utils/auth';
 import { DarkModeToggle } from '../DarkModeToggle';
+import Footer from './Footer';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -87,11 +88,12 @@ export const Layout = ({ children }: LayoutProps) => {
     return (
         <div className="flex h-screen">
             <Sidebar />
-            <div className="flex-1 overflow-auto dark:bg-gray-900">
+            <div className="flex-1 overflow-auto dark:bg-gray-900 flex flex-col">
                 <Header />
-                <main className="p-6 dark:bg-gray-900">
+                <main className="p-6 dark:bg-gray-900 flex-grow">
                     {children}
                 </main>
+                <Footer />
             </div>
         </div>
     );
