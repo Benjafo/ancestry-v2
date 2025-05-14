@@ -32,6 +32,7 @@ Project -> family members: adding birth date and death date in the biographical 
 [FIXED] User management -> dark mode issue for inactive users
 [FIXED] User management -> create user: role form does not match dark mode
 [FIXED] User management: bundle reset password and delete into the edit modal
+[FIXED] User management -> create user: should close modal after creating user
 [FIXED] Client assignment -> assignment history
 [FIXED] Client assignment: replace back to dashboard with add user button
 [FIXED] Settings: delete account form submission (NOTE: Commented out section)
@@ -39,7 +40,7 @@ Project -> family members: adding birth date and death date in the biographical 
 Settings: validation for fields
 Settings: change password form submission
 Manager dashboard: pending tasks
-User management -> create user: should close modal after creating user
+User management: Add filtering for status and sorting by name, email, and last login
 
 General: move reused code into utility functions
 General: user events need to be logged in the backend

@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react';
 import { DashboardSummary, Project, UserEvent, dashboardApi, projectsApi } from '../api/client';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
+import { formatSnakeCase } from '../utils/formatUtils';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ErrorAlert from '../components/common/ErrorAlert';
+import EmptyState from '../components/common/EmptyState';
 
 const Dashboard = () => {
     const user = getUser();
@@ -59,35 +63,13 @@ const Dashboard = () => {
         fetchProjects();
     }, []);
 
-    const formatEventType = (eventType: string): string => {
-        return eventType.split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    };
-
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
 
     if (error) {
-        return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ErrorAlert message={error} />;
     }
 
     return (
@@ -152,9 +134,7 @@ const Dashboard = () => {
                 </div>
                 <div className="space-y-4">
                     {notifications.length === 0 ? (
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
-                            <p className="text-gray-500 dark:text-gray-400">No notifications.</p>
-                        </div>
+                        <EmptyState message="No notifications." />
                     ) : (
                         notifications.slice(0, 5).map(notification => (
                             <div
@@ -162,7 +142,7 @@ const Dashboard = () => {
                                 className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2"
                             >
                                 <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{formatEventType(notification.event_type)}</span>
+                                    <span className="font-medium dark:text-white">{formatSnakeCase(notification.event_type)}</span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
                                         {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
                                     </span>

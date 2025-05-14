@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { UserEvent, dashboardApi } from '../api/client';
+import ErrorAlert from '../components/common/ErrorAlert';
+import { formatSnakeCase } from '../utils/formatUtils';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState<UserEvent[]>([]);
@@ -60,12 +62,6 @@ const Notifications = () => {
     // Get unique event types for filter dropdown
     const eventTypes = ['all', ...Array.from(new Set(notifications.map(n => n.event_type)))];
 
-    const formatEventType = (eventType: string): string => {
-        return eventType.split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    };
-
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -75,20 +71,7 @@ const Notifications = () => {
     }
 
     if (error) {
-        return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ErrorAlert message={error} />
     }
 
     return (
@@ -122,7 +105,7 @@ const Notifications = () => {
                     >
                         {eventTypes.map(type => (
                             <option key={type} value={type}>
-                                {type === 'all' ? 'All Types' : formatEventType(type)}
+                                {type === 'all' ? 'All Types' : formatSnakeCase(type)}
                             </option>
                         ))}
                     </select>
@@ -152,7 +135,7 @@ const Notifications = () => {
                             >
                                 <div className="flex justify-between">
                                     <span className="font-medium dark:text-white">
-                                        {formatEventType(notification.event_type)}
+                                        {formatSnakeCase(notification.event_type)}
                                     </span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
                                         {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}

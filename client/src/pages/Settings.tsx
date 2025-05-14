@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ClientProfile, clientApi } from '../api/client';
+import ErrorAlert from '../components/common/ErrorAlert';
+import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
 
 interface ProfileFormData extends ClientProfile {
@@ -181,35 +183,9 @@ const Settings = () => {
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Profile Information</h2>
 
-                    {profileError && (
-                        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-red-700">{profileError}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {profileError && <ErrorAlert message={profileError} />}
 
-                    {profileSuccess && (
-                        <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-green-700">{profileSuccess}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {profileSuccess && <SuccessAlert message={profileSuccess} />}
 
                     <form onSubmit={handleProfileSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -363,35 +339,9 @@ const Settings = () => {
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h2>
 
-                    {passwordError && (
-                        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-red-700">{passwordError}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {passwordError && <ErrorAlert message={passwordError} />}
 
-                    {passwordSuccess && (
-                        <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-green-700">{passwordSuccess}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {passwordSuccess && <SuccessAlert message={passwordSuccess} />}
 
                     <form onSubmit={handlePasswordSubmit} className="space-y-6">
                         <div>
