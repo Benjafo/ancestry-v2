@@ -27,10 +27,13 @@ export const validatePhone = (phone: string): { isValid: boolean; message?: stri
  * Validates a ZIP/Postal code based on the country
  * @param zipCode The ZIP/Postal code to validate
  * @param country The country code (e.g., 'USA', 'CAN')
+ * @param required Whether the field is required
  * @returns Object with isValid flag and optional error message
  */
-export const validateZipCode = (zipCode: string, country: string): { isValid: boolean; message?: string } => {
-    if (!zipCode) return { isValid: true }; // Optional field
+export const validateZipCode = (zipCode: string, country: string, required = false): { isValid: boolean; message?: string } => {
+    if (!zipCode) return required 
+        ? { isValid: false, message: 'ZIP/Postal code is required when any address field is filled' }
+        : { isValid: true }; // Optional field if not required
     
     let isValid = false;
     let message = '';
@@ -72,10 +75,13 @@ export const validateZipCode = (zipCode: string, country: string): { isValid: bo
 /**
  * Validates a city name
  * @param city The city name to validate
+ * @param required Whether the field is required
  * @returns Object with isValid flag and optional error message
  */
-export const validateCity = (city: string): { isValid: boolean; message?: string } => {
-    if (!city) return { isValid: true }; // Optional field
+export const validateCity = (city: string, required = false): { isValid: boolean; message?: string } => {
+    if (!city) return required 
+        ? { isValid: false, message: 'City is required when any address field is filled' }
+        : { isValid: true }; // Optional field if not required
     
     if (city.length < 2) {
         return { isValid: false, message: 'City name must be at least 2 characters' };
@@ -92,10 +98,13 @@ export const validateCity = (city: string): { isValid: boolean; message?: string
 /**
  * Validates a state/province name or code
  * @param state The state/province to validate
+ * @param required Whether the field is required
  * @returns Object with isValid flag and optional error message
  */
-export const validateState = (state: string): { isValid: boolean; message?: string } => {
-    if (!state) return { isValid: true }; // Optional field
+export const validateState = (state: string, required = false): { isValid: boolean; message?: string } => {
+    if (!state) return required 
+        ? { isValid: false, message: 'State/Province is required when any address field is filled' }
+        : { isValid: true }; // Optional field if not required
     
     if (state.length < 2) {
         return { isValid: false, message: 'State/province must be at least 2 characters' };
@@ -107,10 +116,13 @@ export const validateState = (state: string): { isValid: boolean; message?: stri
 /**
  * Validates an address
  * @param address The address to validate
+ * @param required Whether the field is required
  * @returns Object with isValid flag and optional error message
  */
-export const validateAddress = (address: string): { isValid: boolean; message?: string } => {
-    if (!address) return { isValid: true }; // Optional field
+export const validateAddress = (address: string, required = false): { isValid: boolean; message?: string } => {
+    if (!address) return required 
+        ? { isValid: false, message: 'Street address is required when any address field is filled' }
+        : { isValid: true }; // Optional field if not required
     
     if (address.length < 5) {
         return { isValid: false, message: 'Address must be at least 5 characters' };
@@ -164,6 +176,50 @@ export const validatePasswordMatch = (password: string, confirmPassword: string)
     
     if (password !== confirmPassword) {
         return { isValid: false, message: 'Passwords do not match' };
+    }
+    
+    return { isValid: true };
+};
+
+/**
+ * Validates that address fields are filled as a group
+ * If any one field is filled, all must be filled
+ * @param address Street address
+ * @param city City
+ * @param state State/Province
+ * @param zipCode ZIP/Postal code
+ * @param country Country
+ * @returns Object with isValid flag and optional error message
+ */
+export const validateAddressGroup = (
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    country: string
+): { isValid: boolean; message?: string; field?: string } => {
+    // Check if any field is filled
+    const anyFilled = !!(address || city || state || zipCode || country);
+    
+    // If any field is filled, all must be filled
+    if (anyFilled) {
+        const commonMessage = 'All address fields must be filled out';
+        
+        if (!address) {
+            return { isValid: false, message: commonMessage, field: 'address' };
+        }
+        if (!city) {
+            return { isValid: false, message: commonMessage, field: 'city' };
+        }
+        if (!state) {
+            return { isValid: false, message: commonMessage, field: 'state' };
+        }
+        if (!zipCode) {
+            return { isValid: false, message: commonMessage, field: 'zip_code' };
+        }
+        if (!country) {
+            return { isValid: false, message: commonMessage, field: 'country' };
+        }
     }
     
     return { isValid: true };

@@ -5,6 +5,7 @@ import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
 import {
     validateAddress,
+    validateAddressGroup,
     validateCity,
     validatePassword,
     validatePasswordMatch,
@@ -78,51 +79,16 @@ const Settings = () => {
     // Handle profile form changes
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setProfileData(prev => ({
-            ...prev,
+
+        // Update form data
+        const updatedProfileData = {
+            ...profileData,
             [name]: value
-        }));
-
-        // // Validate field
-        // let validation: { isValid: boolean; message?: string } = { isValid: true };
-
-        // switch (name) {
-        //     case 'phone':
-        //         validation = validatePhone(value);
-        //         break;
-        //     case 'address':
-        //         validation = validateAddress(value);
-        //         break;
-        //     case 'city':
-        //         validation = validateCity(value);
-        //         break;
-        //     case 'state':
-        //         validation = validateState(value);
-        //         break;
-        //     case 'zip_code':
-        //         // Ensure country is not undefined
-        //         validation = validateZipCode(value, profileData.country || '');
-        //         break;
-        // }
-
-        // if (!validation.isValid && validation.message) {
-        //     setValidationErrors(prev => ({
-        //         ...prev,
-        //         [name]: validation.message as string
-        //     }));
-        // } else {
-        //     // Remove the error for this field if it exists
-        //     setValidationErrors(prev => {
-        //         // Create a new object without the property
-        //         const newErrors: Record<string, string> = {};
-        //         for (const key in prev) {
-        //             if (key !== name) {
-        //                 newErrors[key] = prev[key];
-        //             }
-        //         }
-        //         return newErrors;
-        //     });
-        // }
+        };
+        setProfileData(updatedProfileData);
+        
+        // Clear validation errors when user is typing
+        setValidationErrors({});
     };
 
     // Handle profile form submission
@@ -140,28 +106,55 @@ const Settings = () => {
             newValidationErrors.phone = phoneValidation.message;
         }
 
-        // Validate address
-        const addressValidation = validateAddress(profileData.address || '');
-        if (!addressValidation.isValid && addressValidation.message) {
-            newValidationErrors.address = addressValidation.message;
+        // Check if any address field is filled
+        const anyAddressFieldFilled = !!(
+            profileData.address ||
+            profileData.city ||
+            profileData.state ||
+            profileData.zip_code ||
+            profileData.country
+        );
+
+        // Validate address fields as a group
+        if (anyAddressFieldFilled) {
+            const groupValidation = validateAddressGroup(
+                profileData.address || '',
+                profileData.city || '',
+                profileData.state || '',
+                profileData.zip_code || '',
+                profileData.country || ''
+            );
+
+            if (!groupValidation.isValid && groupValidation.message && groupValidation.field) {
+                newValidationErrors[groupValidation.field] = groupValidation.message;
+            }
         }
 
-        // Validate city
-        const cityValidation = validateCity(profileData.city || '');
-        if (!cityValidation.isValid && cityValidation.message) {
-            newValidationErrors.city = cityValidation.message;
-        }
+        // If any address field is filled, also validate their format
+        if (anyAddressFieldFilled) {
+            // Validate address format
+            const addressValidation = validateAddress(profileData.address || '', true);
+            if (!addressValidation.isValid && addressValidation.message) {
+                newValidationErrors.address = addressValidation.message;
+            }
 
-        // Validate state
-        const stateValidation = validateState(profileData.state || '');
-        if (!stateValidation.isValid && stateValidation.message) {
-            newValidationErrors.state = stateValidation.message;
-        }
+            // Validate city format
+            const cityValidation = validateCity(profileData.city || '', true);
+            if (!cityValidation.isValid && cityValidation.message) {
+                newValidationErrors.city = cityValidation.message;
+            }
 
-        // Validate zip code
-        const zipValidation = validateZipCode(profileData.zip_code || '', profileData.country || '');
-        if (!zipValidation.isValid && zipValidation.message) {
-            newValidationErrors.zip_code = zipValidation.message;
+            // Validate state format
+            const stateValidation = validateState(profileData.state || '', true);
+            if (!stateValidation.isValid && stateValidation.message) {
+                newValidationErrors.state = stateValidation.message;
+            }
+
+            // Validate zip code format
+            const zipValidation = validateZipCode(profileData.zip_code || '', profileData.country || '', true);
+            if (!zipValidation.isValid && zipValidation.message) {
+                newValidationErrors.zip_code = zipValidation.message;
+            }
         }
 
         // If there are validation errors, update the state and return
@@ -295,8 +288,9 @@ const Settings = () => {
                                 message="Please correct the following errors:"
                             />
                             <ul className="mt-2 list-disc list-inside text-sm text-red-600">
-                                {Object.entries(validationErrors).map(([field, message]) => (
-                                    <li key={field}>{message}</li>
+                                {/* Show each unique error message only once */}
+                                {Array.from(new Set(Object.values(validationErrors))).map((message, index) => (
+                                    <li key={index}>{message}</li>
                                 ))}
                             </ul>
                         </div>
