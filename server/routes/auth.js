@@ -9,7 +9,8 @@ const {
     loginValidation,
     refreshTokenValidation,
     requestPasswordResetValidation,
-    resetPasswordValidation
+    resetPasswordValidation,
+    changePasswordValidation
 } = require('../validations/authValidations');
 
 // Apply rate limiter to all auth routes
@@ -24,5 +25,6 @@ router.post('/reset-password', validate(resetPasswordValidation), authController
 
 // Protected routes
 router.get('/profile', verifyToken, authController.getProfile);
+router.post('/change-password', verifyToken, validate(changePasswordValidation), authController.changePassword);
 
 module.exports = router;

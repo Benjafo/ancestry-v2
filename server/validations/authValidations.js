@@ -69,3 +69,16 @@ exports.resetPasswordValidation = [
         .isLength({ min: 8 }).withMessage(errorMessages.minLength('Password', 8))
         .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
 ];
+
+/**
+ * Validation rules for changing password
+ */
+exports.changePasswordValidation = [
+    body('currentPassword')
+        .notEmpty().withMessage(errorMessages.required('Current password')),
+    
+    body('newPassword')
+        .notEmpty().withMessage(errorMessages.required('New password'))
+        .isLength({ min: 8 }).withMessage(errorMessages.minLength('New password', 8))
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('New password must contain at least one uppercase letter, one lowercase letter, and one number')
+];

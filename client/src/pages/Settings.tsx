@@ -1,8 +1,19 @@
 import { useEffect, useState } from 'react';
-import { ClientProfile, clientApi } from '../api/client';
+import { ClientProfile, authApi, clientApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
+import {
+    validateAddress,
+    validateAddressGroup,
+    validateCity,
+    validateCountry,
+    validatePassword,
+    validatePasswordMatch,
+    validatePhone,
+    validateState,
+    validateZipCode
+} from '../utils/validationUtils';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -12,6 +23,9 @@ interface ProfileFormData extends ClientProfile {
 
 const Settings = () => {
     const user = getUser();
+
+    // Validation state
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     // Password state
     const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -54,9 +68,16 @@ const Settings = () => {
                     ...prev,
                     ...data.profile
                 }));
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error('Error fetching profile data:', err);
-                setProfileError('Failed to load profile data');
+                // Try to extract error message from the API response if available
+                const errorMessage = 
+                    typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                        ? String(err.response.message)
+                        : err instanceof Error
+                            ? err.message
+                            : 'Failed to load profile data';
+                setProfileError(errorMessage);
             }
         };
 
@@ -66,10 +87,13 @@ const Settings = () => {
     // Handle profile form changes
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setProfileData(prev => ({
-            ...prev,
+
+        // Update form data
+        const updatedProfileData = {
+            ...profileData,
             [name]: value
-        }));
+        };
+        setProfileData(updatedProfileData);
     };
 
     // Handle profile form submission
@@ -77,6 +101,79 @@ const Settings = () => {
         e.preventDefault();
         setProfileError(null);
         setProfileSuccess(null);
+
+        // Validate all fields before submission
+        const newValidationErrors: Record<string, string> = {};
+
+        // Validate phone
+        const phoneValidation = validatePhone(profileData.phone || '');
+        if (!phoneValidation.isValid && phoneValidation.message) {
+            newValidationErrors.phone = phoneValidation.message;
+        }
+
+        // Check if any address field is filled
+        const anyAddressFieldFilled = !!(
+            profileData.address ||
+            profileData.city ||
+            profileData.state ||
+            profileData.zip_code ||
+            profileData.country
+        );
+
+        // Validate address fields as a group
+        if (anyAddressFieldFilled) {
+            const groupValidation = validateAddressGroup(
+                profileData.address || '',
+                profileData.city || '',
+                profileData.state || '',
+                profileData.zip_code || '',
+                profileData.country || ''
+            );
+
+            if (!groupValidation.isValid && groupValidation.message && groupValidation.field) {
+                newValidationErrors[groupValidation.field] = groupValidation.message;
+            }
+        }
+
+        // If any address field is filled, also validate their format
+        if (anyAddressFieldFilled) {
+            // Validate address format
+            const addressValidation = validateAddress(profileData.address || '', true);
+            if (!addressValidation.isValid && addressValidation.message) {
+                newValidationErrors.address = addressValidation.message;
+            }
+
+            // Validate city format
+            const cityValidation = validateCity(profileData.city || '', true);
+            if (!cityValidation.isValid && cityValidation.message) {
+                newValidationErrors.city = cityValidation.message;
+            }
+
+            // Validate state format
+            const stateValidation = validateState(profileData.state || '', true);
+            if (!stateValidation.isValid && stateValidation.message) {
+                newValidationErrors.state = stateValidation.message;
+            }
+
+            // Validate zip code format
+            const zipValidation = validateZipCode(profileData.zip_code || '', profileData.country || '', true);
+            if (!zipValidation.isValid && zipValidation.message) {
+                newValidationErrors.zip_code = zipValidation.message;
+            }
+
+            // Validate country format
+            const countryValidation = validateCountry(profileData.country || '', true);
+            if (!countryValidation.isValid && countryValidation.message) {
+                newValidationErrors.country = countryValidation.message;
+            }
+        }
+
+        // If there are validation errors, update the state and return
+        if (Object.keys(newValidationErrors).length > 0) {
+            setValidationErrors(newValidationErrors);
+            return;
+        }
+
         setIsUpdatingProfile(true);
 
         try {
@@ -90,9 +187,16 @@ const Settings = () => {
 
             setProfileSuccess(response.message || 'Profile updated successfully');
             setIsUpdatingProfile(false);
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error updating profile:', err);
-            setProfileError('Failed to update profile');
+            // Try to extract error message from the API response if available
+            const errorMessage = 
+                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                    ? String(err.response.message)
+                    : err instanceof Error
+                        ? err.message
+                        : 'Failed to update profile';
+            setProfileError(errorMessage);
             setIsUpdatingProfile(false);
         }
     };
@@ -104,6 +208,9 @@ const Settings = () => {
             ...prev,
             [name]: value
         }));
+
+        // Clear any previous password error
+        setPasswordError(null);
     };
 
     const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -112,34 +219,46 @@ const Settings = () => {
         setPasswordSuccess(null);
 
         // Validate passwords
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setPasswordError('New passwords do not match');
+        const passwordValidation = validatePassword(passwordData.newPassword);
+        if (!passwordValidation.isValid) {
+            setPasswordError(passwordValidation.message || 'Invalid password');
             return;
         }
 
-        if (passwordData.newPassword.length < 8) {
-            setPasswordError('Password must be at least 8 characters long');
+        const passwordMatchValidation = validatePasswordMatch(
+            passwordData.newPassword,
+            passwordData.confirmPassword
+        );
+        if (!passwordMatchValidation.isValid) {
+            setPasswordError(passwordMatchValidation.message || 'Passwords do not match');
             return;
         }
 
         setIsChangingPassword(true);
 
         try {
-            // In a real app, we would call an API
-            // await authApi.changePassword(passwordData);
+            // Call the API to change the password
+            const response = await authApi.changePassword(
+                passwordData.currentPassword,
+                passwordData.newPassword
+            );
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            setPasswordSuccess('Password changed successfully');
+            setPasswordSuccess(response.message || 'Password changed successfully');
             setPasswordData({
                 currentPassword: '',
                 newPassword: '',
                 confirmPassword: ''
             });
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error changing password:', err);
-            setPasswordError('Failed to change password. Please try again.');
+            // Try to extract error message from the API response if available
+            const errorMessage = 
+                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                    ? String(err.response.message)
+                    : err instanceof Error
+                        ? err.message
+                        : 'Failed to change password. Please try again.';
+            setPasswordError(errorMessage);
         } finally {
             setIsChangingPassword(false);
         }
@@ -186,6 +305,20 @@ const Settings = () => {
                     {profileError && <ErrorAlert message={profileError} />}
 
                     {profileSuccess && <SuccessAlert message={profileSuccess} />}
+
+                    {/* Display validation errors */}
+                    {Object.keys(validationErrors).length > 0 && (
+                        <div className="mb-4">
+                            <ErrorAlert
+                                message="Please correct the following errors:"
+                            />
+                            <ul className="mt-2 list-disc list-inside text-sm text-red-600">
+                                {Object.entries(validationErrors).map(([field, message]) => (
+                                    <li key={field}>{message}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     <form onSubmit={handleProfileSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -311,7 +444,7 @@ const Settings = () => {
                                         value={profileData.country}
                                         onChange={handleProfileChange}
                                     >
-                                        <option value="">Select a country</option>
+                                        <option value="" disabled>Select a country</option>
                                         <option value="USA">United States</option>
                                         <option value="CAN">Canada</option>
                                         <option value="GBR">United Kingdom</option>

@@ -160,7 +160,6 @@ const ProjectDetail = () => {
     };
 
     useEffect(() => {
-        console.log('Fetching project details for ID:', projectId);
         const fetchProjectDetails = async () => {
             try {
                 const projectData = await projectsApi.getProjectById(projectId);
