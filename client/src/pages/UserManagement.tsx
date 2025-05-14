@@ -207,7 +207,7 @@ const UserManagement = () => {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50' : ''}>
+                                    <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50 dark:bg-gray-700' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
@@ -272,6 +272,7 @@ const UserManagement = () => {
                     onSuccess={() => {
                         setSuccessMessage('User created successfully');
                         fetchUsers();
+                        setIsCreateModalOpen(false); // Close the modal
                         setTimeout(() => {
                             setSuccessMessage(null);
                         }, 3000);

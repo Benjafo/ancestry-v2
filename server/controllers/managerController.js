@@ -38,7 +38,7 @@ exports.getDashboardSummary = async (req, res) => {
 
         // Fetch real user events for recent activity
         const userEvents = await UserEvent.findAll({
-            limit: 10,
+            // limit: 10,
             order: [['created_at', 'DESC']],
             attributes: ['id', 'event_type', 'message', 'entity_type', 'entity_id', 'created_at', 'updated_at'],
             include: [{
