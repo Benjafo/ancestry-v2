@@ -3,6 +3,15 @@ import { ClientProfile, clientApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
+import {
+    validateAddress,
+    validateCity,
+    validatePassword,
+    validatePasswordMatch,
+    validatePhone,
+    validateState,
+    validateZipCode
+} from '../utils/validationUtils';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -12,6 +21,9 @@ interface ProfileFormData extends ClientProfile {
 
 const Settings = () => {
     const user = getUser();
+
+    // Validation state
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     // Password state
     const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -70,6 +82,47 @@ const Settings = () => {
             ...prev,
             [name]: value
         }));
+
+        // // Validate field
+        // let validation: { isValid: boolean; message?: string } = { isValid: true };
+
+        // switch (name) {
+        //     case 'phone':
+        //         validation = validatePhone(value);
+        //         break;
+        //     case 'address':
+        //         validation = validateAddress(value);
+        //         break;
+        //     case 'city':
+        //         validation = validateCity(value);
+        //         break;
+        //     case 'state':
+        //         validation = validateState(value);
+        //         break;
+        //     case 'zip_code':
+        //         // Ensure country is not undefined
+        //         validation = validateZipCode(value, profileData.country || '');
+        //         break;
+        // }
+
+        // if (!validation.isValid && validation.message) {
+        //     setValidationErrors(prev => ({
+        //         ...prev,
+        //         [name]: validation.message as string
+        //     }));
+        // } else {
+        //     // Remove the error for this field if it exists
+        //     setValidationErrors(prev => {
+        //         // Create a new object without the property
+        //         const newErrors: Record<string, string> = {};
+        //         for (const key in prev) {
+        //             if (key !== name) {
+        //                 newErrors[key] = prev[key];
+        //             }
+        //         }
+        //         return newErrors;
+        //     });
+        // }
     };
 
     // Handle profile form submission
@@ -77,6 +130,46 @@ const Settings = () => {
         e.preventDefault();
         setProfileError(null);
         setProfileSuccess(null);
+
+        // Validate all fields before submission
+        const newValidationErrors: Record<string, string> = {};
+
+        // Validate phone
+        const phoneValidation = validatePhone(profileData.phone || '');
+        if (!phoneValidation.isValid && phoneValidation.message) {
+            newValidationErrors.phone = phoneValidation.message;
+        }
+
+        // Validate address
+        const addressValidation = validateAddress(profileData.address || '');
+        if (!addressValidation.isValid && addressValidation.message) {
+            newValidationErrors.address = addressValidation.message;
+        }
+
+        // Validate city
+        const cityValidation = validateCity(profileData.city || '');
+        if (!cityValidation.isValid && cityValidation.message) {
+            newValidationErrors.city = cityValidation.message;
+        }
+
+        // Validate state
+        const stateValidation = validateState(profileData.state || '');
+        if (!stateValidation.isValid && stateValidation.message) {
+            newValidationErrors.state = stateValidation.message;
+        }
+
+        // Validate zip code
+        const zipValidation = validateZipCode(profileData.zip_code || '', profileData.country || '');
+        if (!zipValidation.isValid && zipValidation.message) {
+            newValidationErrors.zip_code = zipValidation.message;
+        }
+
+        // If there are validation errors, update the state and return
+        if (Object.keys(newValidationErrors).length > 0) {
+            setValidationErrors(newValidationErrors);
+            return;
+        }
+
         setIsUpdatingProfile(true);
 
         try {
@@ -104,6 +197,9 @@ const Settings = () => {
             ...prev,
             [name]: value
         }));
+
+        // Clear any previous password error
+        setPasswordError(null);
     };
 
     const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -112,13 +208,18 @@ const Settings = () => {
         setPasswordSuccess(null);
 
         // Validate passwords
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setPasswordError('New passwords do not match');
+        const passwordValidation = validatePassword(passwordData.newPassword);
+        if (!passwordValidation.isValid) {
+            setPasswordError(passwordValidation.message || 'Invalid password');
             return;
         }
 
-        if (passwordData.newPassword.length < 8) {
-            setPasswordError('Password must be at least 8 characters long');
+        const passwordMatchValidation = validatePasswordMatch(
+            passwordData.newPassword,
+            passwordData.confirmPassword
+        );
+        if (!passwordMatchValidation.isValid) {
+            setPasswordError(passwordMatchValidation.message || 'Passwords do not match');
             return;
         }
 
@@ -186,6 +287,20 @@ const Settings = () => {
                     {profileError && <ErrorAlert message={profileError} />}
 
                     {profileSuccess && <SuccessAlert message={profileSuccess} />}
+
+                    {/* Display validation errors */}
+                    {Object.keys(validationErrors).length > 0 && (
+                        <div className="mb-4">
+                            <ErrorAlert
+                                message="Please correct the following errors:"
+                            />
+                            <ul className="mt-2 list-disc list-inside text-sm text-red-600">
+                                {Object.entries(validationErrors).map(([field, message]) => (
+                                    <li key={field}>{message}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     <form onSubmit={handleProfileSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

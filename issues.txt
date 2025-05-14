@@ -36,11 +36,12 @@ Project -> family members: adding birth date and death date in the biographical 
 [FIXED] Client assignment -> assignment history
 [FIXED] Client assignment: replace back to dashboard with add user button
 [FIXED] Settings: delete account form submission (NOTE: Commented out section)
+[FIXED] General: move reused code into utility functions
 
 Settings: validation for fields
+Settings: Add dropdown for state/province based on country
 Settings: change password form submission
 Manager dashboard: pending tasks
 User management: Add filtering for status and sorting by name, email, and last login
-
-General: move reused code into utility functions
 General: user events need to be logged in the backend
+General: success and error messages are not displayed properly

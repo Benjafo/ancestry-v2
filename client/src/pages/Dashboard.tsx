@@ -1,12 +1,12 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { DashboardSummary, Project, UserEvent, dashboardApi, projectsApi } from '../api/client';
+import EmptyState from '../components/common/EmptyState';
+import ErrorAlert from '../components/common/ErrorAlert';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
 import { formatSnakeCase } from '../utils/formatUtils';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorAlert from '../components/common/ErrorAlert';
-import EmptyState from '../components/common/EmptyState';
 
 const Dashboard = () => {
     const user = getUser();
@@ -24,20 +24,10 @@ const Dashboard = () => {
                 // Fetch dashboard summary
                 const summaryData = await dashboardApi.getSummary();
                 setSummary(summaryData);
-                console.log('Dashboard Summary:', summaryData);
 
                 // Fetch user events
                 const userEventsData = await dashboardApi.getUserEvents();
                 setNotifications(userEventsData.userEvents);
-                console.log('User Events:', userEventsData);
-                console.log('Created Projects:', userEventsData.userEvents.filter(event => event.event_type === 'project_created'));
-
-                // Debug notification structure
-                if (userEventsData.userEvents.length > 0) {
-                    console.log('First notification:', userEventsData.userEvents[0]);
-                    console.log('createdAt type:', typeof userEventsData.userEvents[0].createdAt);
-                    console.log('createdAt value:', userEventsData.userEvents[0].createdAt);
-                }
 
                 setIsLoading(false);
             } catch (err) {
