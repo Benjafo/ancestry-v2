@@ -2,18 +2,21 @@ import { useEffect, useState } from 'react';
 import { UserDetails, managerApi } from '../api/client';
 import CreateUserModal from '../components/CreateUserModal';
 import EditUserModal from '../components/EditUserModal';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import SuccessAlert from '../components/common/SuccessAlert';
+import EmptyState from '../components/common/EmptyState';
 import ErrorAlert from '../components/common/ErrorAlert';
 import InfoAlert from '../components/common/InfoAlert';
-import EmptyState from '../components/common/EmptyState';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import SuccessAlert from '../components/common/SuccessAlert';
 
 const UserManagement = () => {
     const [users, setUsers] = useState<UserDetails[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'clients' | 'managers'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortField, setSortField] = useState<'name' | 'email' | 'role' | 'status' | 'last_login' | ''>('');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
@@ -52,13 +55,55 @@ const UserManagement = () => {
         setIsEditModalOpen(true);
     };
 
+    const handleSort = (field: 'name' | 'email' | 'role' | 'status' | 'last_login') => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    // Apply filters
     const filteredUsers = users.filter(user => {
         const searchTermLower = searchTerm.toLowerCase();
-        return (
+        const matchesSearch = (
             user.first_name.toLowerCase().includes(searchTermLower) ||
             user.last_name.toLowerCase().includes(searchTermLower) ||
             user.email.toLowerCase().includes(searchTermLower)
         );
+
+        // Apply status filter
+        const matchesStatus =
+            statusFilter === 'all' ||
+            (statusFilter === 'active' && user.is_active) ||
+            (statusFilter === 'inactive' && !user.is_active);
+
+        return matchesSearch && matchesStatus;
+    });
+
+    // Apply sorting
+    const sortedUsers = [...filteredUsers].sort((a, b) => {
+        if (sortField === 'name') {
+            const nameA = `${a.first_name} ${a.last_name}`.toLowerCase();
+            const nameB = `${b.first_name} ${b.last_name}`.toLowerCase();
+            return sortDirection === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        } else if (sortField === 'email') {
+            return sortDirection === 'asc' ? a.email.localeCompare(b.email) : b.email.localeCompare(a.email);
+        } else if (sortField === 'role') {
+            const roleA = a.roles[0] || '';
+            const roleB = b.roles[0] || '';
+            return sortDirection === 'asc' ? roleA.localeCompare(roleB) : roleB.localeCompare(roleA);
+        } else if (sortField === 'status') {
+            const statusA = a.is_active ? 'active' : 'inactive';
+            const statusB = b.is_active ? 'active' : 'inactive';
+            return sortDirection === 'asc' ? statusA.localeCompare(statusB) : statusB.localeCompare(statusA);
+        } else if (sortField === 'last_login') {
+            const dateA = a.last_login ? new Date(a.last_login).getTime() : 0;
+            const dateB = b.last_login ? new Date(b.last_login).getTime() : 0;
+            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+        return 0;
     });
 
     if (isLoading) {
@@ -82,34 +127,45 @@ const UserManagement = () => {
             {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
             {temporaryPassword && (
-                <InfoAlert 
-                    message={`Temporary password: ${temporaryPassword}. Please save this password. It will not be shown again.`} 
-                    onDismiss={() => setTemporaryPassword(null)} 
+                <InfoAlert
+                    message={`Temporary password: ${temporaryPassword}. Please save this password. It will not be shown again.`}
+                    onDismiss={() => setTemporaryPassword(null)}
                 />
             )}
 
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                        <div className="flex space-x-2">
-                            <button
-                                className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                                onClick={() => setFilter('all')}
+                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <div className="flex space-x-2">
+                                <button
+                                    className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                                    onClick={() => setFilter('all')}
+                                >
+                                    All Users
+                                </button>
+                                <button
+                                    className={`px-4 py-2 rounded-md ${filter === 'clients' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                                    onClick={() => setFilter('clients')}
+                                >
+                                    Clients
+                                </button>
+                                <button
+                                    className={`px-4 py-2 rounded-md ${filter === 'managers' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                                    onClick={() => setFilter('managers')}
+                                >
+                                    Managers
+                                </button>
+                            </div>
+                            <select
+                                className="form-select rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
                             >
-                                All Users
-                            </button>
-                            <button
-                                className={`px-4 py-2 rounded-md ${filter === 'clients' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                                onClick={() => setFilter('clients')}
-                            >
-                                Clients
-                            </button>
-                            <button
-                                className={`px-4 py-2 rounded-md ${filter === 'managers' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                                onClick={() => setFilter('managers')}
-                            >
-                                Managers
-                            </button>
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
                         </div>
                         <div className="relative">
                             <input
@@ -132,20 +188,40 @@ const UserManagement = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Name
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('name')}
+                                >
+                                    Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Email
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('email')}
+                                >
+                                    Email {sortField === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Role
+                                <th 
+                                    scope="col" 
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('role')}
+                                >
+                                    Role {sortField === 'role' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
+                                <th 
+                                    scope="col" 
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('status')}
+                                >
+                                    Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Last Login
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('last_login')}
+                                >
+                                    Last Login {sortField === 'last_login' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     {/* Action */}
@@ -153,14 +229,14 @@ const UserManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredUsers.length === 0 ? (
+                            {sortedUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-4">
                                         <EmptyState message="No users found" />
                                     </td>
                                 </tr>
                             ) : (
-                                filteredUsers.map((user) => (
+                                sortedUsers.map((user) => (
                                     <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50 dark:bg-gray-700' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
