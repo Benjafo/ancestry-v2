@@ -1,6 +1,9 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
+import ErrorAlert from '../components/common/ErrorAlert';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import SuccessAlert from '../components/common/SuccessAlert';
 import AddPersonModal from '../components/projects/AddPersonModal';
 import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
 import CreatePersonModal from '../components/projects/CreatePersonModal';
@@ -13,10 +16,6 @@ import ProjectOverviewTab from '../components/projects/ProjectOverviewTab';
 import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { formatDate } from '../utils/dateUtils';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorAlert from '../components/common/ErrorAlert';
-import SuccessAlert from '../components/common/SuccessAlert';
-import EmptyState from '../components/common/EmptyState';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -231,7 +230,20 @@ const ProjectDetail = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Back to Projects
-     cl
+                    </Link>
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
+                </div>
+                <div className="flex space-x-2">
+                    <button
+                        className="btn-secondary"
+                        onClick={handleOpenEditModal}
+                    >
+                        Edit Project
+                    </button>
+                    <button className="btn-primary">Add Document</button>
+                </div>
+            </div>
+
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
                 {/* Project Header */}
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">

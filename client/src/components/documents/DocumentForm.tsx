@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorAlert from '../common/ErrorAlert';
 
 // Helper function to extract error message safely
 const getErrorMessage = (error: unknown): string => {
