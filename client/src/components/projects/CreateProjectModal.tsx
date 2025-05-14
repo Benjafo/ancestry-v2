@@ -17,21 +17,21 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!title.trim()) {
             setError('Project title is required');
             return;
         }
-        
+
         try {
             setIsSubmitting(true);
             setError(null);
-            
+
             const response = await projectsApi.createProject({
                 title,
                 description
             });
-            
+
             onSuccess(response.project);
         } catch (err) {
             console.error('Error creating project:', err);
@@ -55,7 +55,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
                         </svg>
                     </button>
                 </div>
-                
+
                 <form onSubmit={handleSubmit} className="p-6">
                     {error && (
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
@@ -71,7 +71,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
                             </div>
                         </div>
                     )}
-                    
+
                     <div className="mb-4">
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Project Title <span className="text-red-500">*</span>
@@ -86,7 +86,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
                             required
                         />
                     </div>
-                    
+
                     <div className="mb-4">
                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Description
@@ -95,12 +95,12 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
                             id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="form-textarea w-full rounded-md"
+                            className="form-textarea w-full rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                             rows={4}
                             placeholder="Enter project description"
                         ></textarea>
                     </div>
-                    
+
                     <div className="flex justify-end space-x-2 mt-6">
                         <button
                             type="button"

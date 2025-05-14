@@ -24,11 +24,11 @@ project:
     Project -> family members: duplicate header with heading and "add person" button should be removed
     Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
     Project -> family members: edit button is obstructed by link to view person modal
+    Project -> new project: the description field does not implement dark mode
+    Project -> edit project: the status dropdown has not implemented dark mode
 
 other:
   active:
-    Project -> new project: the description field does not implement dark mode
-    Project -> edit project: the status dropdown has not implemented dark mode
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page
     Manager dashboard: pending tasks
     Manager dashboard: add a quick actions button to create a task

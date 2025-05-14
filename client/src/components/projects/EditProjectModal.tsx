@@ -92,7 +92,7 @@ const EditProjectModal = <T extends Project = Project>({
                                 type="text"
                                 id="title"
                                 name="title"
-                                className={`form-input mt-1 block w-full rounded-md ${formErrors.title ? 'border-red-300' : ''}`}
+                                className={`form-input mt-1 block w-full rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 ${formErrors.title ? 'border-red-300 dark:border-red-500' : ''}`}
                                 value={formData.title}
                                 onChange={handleInputChange}
                             />
@@ -108,7 +108,7 @@ const EditProjectModal = <T extends Project = Project>({
                                 id="description"
                                 name="description"
                                 rows={4}
-                                className={`form-input mt-1 block w-full rounded-md ${formErrors.description ? 'border-red-300' : ''}`}
+                                className={`form-input mt-1 block w-full rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 ${formErrors.description ? 'border-red-300 dark:border-red-500' : ''}`}
                                 value={formData.description}
                                 onChange={handleInputChange}
                             />
@@ -123,7 +123,7 @@ const EditProjectModal = <T extends Project = Project>({
                             <select
                                 id="status"
                                 name="status"
-                                className="form-select mt-1 block w-full rounded-md"
+                                className="form-select mt-1 block w-full rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                                 value={formData.status}
                                 onChange={handleInputChange}
                             >
