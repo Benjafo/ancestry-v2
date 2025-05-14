@@ -9,17 +9,17 @@
  */
 export const validatePhone = (phone: string): { isValid: boolean; message?: string } => {
     if (!phone) return { isValid: true }; // Optional field
-    
+
     // Basic international phone format
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    
+
     if (!phoneRegex.test(phone)) {
-        return { 
-            isValid: false, 
-            message: 'Please enter a valid phone number (e.g., +1234567890)' 
+        return {
+            isValid: false,
+            message: 'Please enter a valid phone number (e.g., +1234567890)'
         };
     }
-    
+
     return { isValid: true };
 };
 
@@ -31,44 +31,44 @@ export const validatePhone = (phone: string): { isValid: boolean; message?: stri
  * @returns Object with isValid flag and optional error message
  */
 export const validateZipCode = (zipCode: string, country: string, required = false): { isValid: boolean; message?: string } => {
-    if (!zipCode) return required 
-        ? { isValid: false, message: 'ZIP/Postal code is required when any address field is filled' }
+    if (!zipCode) return required
+        ? { isValid: false, message: 'ZIP/Postal code is required' }
         : { isValid: true }; // Optional field if not required
-    
+
     let isValid = false;
     let message = '';
-    
+
     switch (country) {
         case 'USA':
             // US ZIP code: 5 digits or 5+4 format
             isValid = /^\d{5}(-\d{4})?$/.test(zipCode);
             message = 'US ZIP code must be 5 digits or 5+4 format (e.g., 12345 or 12345-6789)';
             break;
-            
+
         case 'CAN':
             // Canadian postal code: A1A 1A1 format
             isValid = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
             message = 'Canadian postal code must be in A1A 1A1 format';
             break;
-            
+
         case 'GBR':
             // UK postcode: Various formats
             isValid = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i.test(zipCode);
             message = 'UK postcode format is invalid';
             break;
-            
+
         case 'AUS':
             // Australian postcode: 4 digits
             isValid = /^\d{4}$/.test(zipCode);
             message = 'Australian postcode must be 4 digits';
             break;
-            
+
         default:
             // For other countries, just ensure it's not empty
             isValid = zipCode.trim().length > 0;
             message = 'Please enter a valid postal code';
     }
-    
+
     return { isValid, message: isValid ? undefined : message };
 };
 
@@ -79,19 +79,19 @@ export const validateZipCode = (zipCode: string, country: string, required = fal
  * @returns Object with isValid flag and optional error message
  */
 export const validateCity = (city: string, required = false): { isValid: boolean; message?: string } => {
-    if (!city) return required 
-        ? { isValid: false, message: 'City is required when any address field is filled' }
+    if (!city) return required
+        ? { isValid: false, message: 'City is required' }
         : { isValid: true }; // Optional field if not required
-    
+
     if (city.length < 2) {
         return { isValid: false, message: 'City name must be at least 2 characters' };
     }
-    
+
     // City should contain only letters, spaces, hyphens, and apostrophes
     if (!/^[A-Za-z\s\-']+$/.test(city)) {
         return { isValid: false, message: 'City name contains invalid characters' };
     }
-    
+
     return { isValid: true };
 };
 
@@ -102,14 +102,14 @@ export const validateCity = (city: string, required = false): { isValid: boolean
  * @returns Object with isValid flag and optional error message
  */
 export const validateState = (state: string, required = false): { isValid: boolean; message?: string } => {
-    if (!state) return required 
-        ? { isValid: false, message: 'State/Province is required when any address field is filled' }
+    if (!state) return required
+        ? { isValid: false, message: 'State/Province is required' }
         : { isValid: true }; // Optional field if not required
-    
+
     if (state.length < 2) {
         return { isValid: false, message: 'State/province must be at least 2 characters' };
     }
-    
+
     return { isValid: true };
 };
 
@@ -120,18 +120,18 @@ export const validateState = (state: string, required = false): { isValid: boole
  * @returns Object with isValid flag and optional error message
  */
 export const validateAddress = (address: string, required = false): { isValid: boolean; message?: string } => {
-    if (!address) return required 
-        ? { isValid: false, message: 'Street address is required when any address field is filled' }
+    if (!address) return required
+        ? { isValid: false, message: 'Street address is required' }
         : { isValid: true }; // Optional field if not required
-    
+
     if (address.length < 5) {
         return { isValid: false, message: 'Address must be at least 5 characters' };
     }
-    
+
     if (address.length > 100) {
         return { isValid: false, message: 'Address must be less than 100 characters' };
     }
-    
+
     return { isValid: true };
 };
 
@@ -142,26 +142,26 @@ export const validateAddress = (address: string, required = false): { isValid: b
  */
 export const validatePassword = (password: string): { isValid: boolean; message?: string } => {
     if (!password) return { isValid: false, message: 'Password is required' };
-    
+
     if (password.length < 8) {
         return { isValid: false, message: 'Password must be at least 8 characters long' };
     }
-    
+
     // Check for at least one uppercase letter
     if (!/[A-Z]/.test(password)) {
         return { isValid: false, message: 'Password must contain at least one uppercase letter' };
     }
-    
+
     // Check for at least one lowercase letter
     if (!/[a-z]/.test(password)) {
         return { isValid: false, message: 'Password must contain at least one lowercase letter' };
     }
-    
+
     // Check for at least one number
     if (!/[0-9]/.test(password)) {
         return { isValid: false, message: 'Password must contain at least one number' };
     }
-    
+
     return { isValid: true };
 };
 
@@ -173,11 +173,11 @@ export const validatePassword = (password: string): { isValid: boolean; message?
  */
 export const validatePasswordMatch = (password: string, confirmPassword: string): { isValid: boolean; message?: string } => {
     if (!confirmPassword) return { isValid: false, message: 'Please confirm your password' };
-    
+
     if (password !== confirmPassword) {
         return { isValid: false, message: 'Passwords do not match' };
     }
-    
+
     return { isValid: true };
 };
 
@@ -200,27 +200,25 @@ export const validateAddressGroup = (
 ): { isValid: boolean; message?: string; field?: string } => {
     // Check if any field is filled
     const anyFilled = !!(address || city || state || zipCode || country);
-    
+
     // If any field is filled, all must be filled
     if (anyFilled) {
-        const commonMessage = 'All address fields must be filled out';
-        
         if (!address) {
-            return { isValid: false, message: commonMessage, field: 'address' };
+            return { isValid: false, message: 'Street address is required', field: 'address' };
         }
         if (!city) {
-            return { isValid: false, message: commonMessage, field: 'city' };
+            return { isValid: false, message: 'City is required', field: 'city' };
         }
         if (!state) {
-            return { isValid: false, message: commonMessage, field: 'state' };
+            return { isValid: false, message: 'State/Province is required', field: 'state' };
         }
         if (!zipCode) {
-            return { isValid: false, message: commonMessage, field: 'zip_code' };
+            return { isValid: false, message: 'ZIP/Postal code is required', field: 'zip_code' };
         }
         if (!country) {
-            return { isValid: false, message: commonMessage, field: 'country' };
+            return { isValid: false, message: 'Country is required', field: 'country' };
         }
     }
-    
+
     return { isValid: true };
 };

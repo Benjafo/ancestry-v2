@@ -1,6 +1,6 @@
 export const Footer = () => {
     const currentYear = new Date().getFullYear();
-    
+
     return (
         <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="container mx-auto">
@@ -16,9 +16,9 @@ export const Footer = () => {
                         </ul>
                     </div>
                 </div>
-                <div className="mt-2 text-xs">
+                {/* <div className="mt-2 text-xs">
                     <p>Version 1.0.0</p>
-                </div>
+                </div> */}
             </div>
         </footer>
     );

@@ -85,10 +85,8 @@ const Settings = () => {
             ...profileData,
             [name]: value
         };
+
         setProfileData(updatedProfileData);
-        
-        // Clear validation errors when user is typing
-        setValidationErrors({});
     };
 
     // Handle profile form submission
@@ -288,9 +286,8 @@ const Settings = () => {
                                 message="Please correct the following errors:"
                             />
                             <ul className="mt-2 list-disc list-inside text-sm text-red-600">
-                                {/* Show each unique error message only once */}
-                                {Array.from(new Set(Object.values(validationErrors))).map((message, index) => (
-                                    <li key={index}>{message}</li>
+                                {Object.entries(validationErrors).map(([field, message]) => (
+                                    <li key={field}>{message}</li>
                                 ))}
                             </ul>
                         </div>
@@ -359,7 +356,7 @@ const Settings = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
                                     <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Street Address
+                                        Street Address <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
