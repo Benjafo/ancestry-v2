@@ -2,6 +2,9 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { ManagerDashboardSummary, managerApi } from '../api/client';
 import { formatDate } from '../utils/dateUtils';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ErrorAlert from '../components/common/ErrorAlert';
+import EmptyState from '../components/common/EmptyState';
 
 // Helper function to get the appropriate icon for each activity type
 const getActivityIcon = (type: string) => {
@@ -80,37 +83,15 @@ const ManagerDashboard = () => {
     }, []);
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
 
     if (error) {
-        return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ErrorAlert message={error} />;
     }
 
     if (!dashboardData) {
-        return (
-            <div className="text-center py-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Dashboard Data</h3>
-                <p className="text-gray-500">Unable to retrieve dashboard information.</p>
-            </div>
-        );
+        return <EmptyState message="Unable to retrieve dashboard information." />;
     }
 
     return (
@@ -199,7 +180,7 @@ const ManagerDashboard = () => {
                 <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
                     {dashboardData.recentActivity.length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-400 text-center py-4">No recent activity</p>
+                        <EmptyState message="No recent activity" />
                     ) : (
                         <div className="space-y-4">
                             {dashboardData.recentActivity.slice(0, 3).map((activity) => (
@@ -247,7 +228,7 @@ const ManagerDashboard = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Pending Tasks</h2>
                     {dashboardData.pendingTasks.length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-400 text-center py-4">No pending tasks</p>
+                        <EmptyState message="No pending tasks" />
                     ) : (
                         <div className="space-y-4">
                             {dashboardData.pendingTasks.map((task) => (

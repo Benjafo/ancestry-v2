@@ -13,6 +13,10 @@ import ProjectOverviewTab from '../components/projects/ProjectOverviewTab';
 import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { formatDate } from '../utils/dateUtils';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ErrorAlert from '../components/common/ErrorAlert';
+import SuccessAlert from '../components/common/SuccessAlert';
+import EmptyState from '../components/common/EmptyState';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -200,30 +204,17 @@ const ProjectDetail = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
 
     if (error || !project) {
         return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error || 'Project not found'}</p>
-                        <div className="mt-2">
-                            <Link to="/projects" className="text-sm font-medium text-red-700 hover:text-red-600">
-                                Return to Projects
-                            </Link>
-                        </div>
-                    </div>
+            <div className="space-y-4">
+                <ErrorAlert message={error || 'Project not found'} />
+                <div className="text-center">
+                    <Link to="/projects" className="text-sm font-medium text-primary-600 hover:text-primary-500">
+                        Return to Projects
+                    </Link>
                 </div>
             </div>
         );
@@ -231,20 +222,7 @@ const ProjectDetail = () => {
 
     return (
         <div className="space-y-6">
-            {successMessage && (
-                <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-green-700">{successMessage}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {successMessage && <SuccessAlert message={successMessage} />}
 
             <div className="flex justify-between items-center">
                 <div>
@@ -253,20 +231,7 @@ const ProjectDetail = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         Back to Projects
-                    </Link>
-                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
-                </div>
-                <div className="flex space-x-2">
-                    <button
-                        className="btn-secondary"
-                        onClick={handleOpenEditModal}
-                    >
-                        Edit Project
-                    </button>
-                    <button className="btn-primary">Add Document</button>
-                </div>
-            </div>
-
+     cl
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
                 {/* Project Header */}
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">

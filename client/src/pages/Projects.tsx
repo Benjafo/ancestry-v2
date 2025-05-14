@@ -4,6 +4,10 @@ import CreateProjectModal from '../components/projects/CreateProjectModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectList from '../components/projects/ProjectList';
 import { hasRole } from '../utils/auth';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ErrorAlert from '../components/common/ErrorAlert';
+import SuccessAlert from '../components/common/SuccessAlert';
+import EmptyState from '../components/common/EmptyState';
 
 const Projects = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -111,28 +115,11 @@ const Projects = () => {
     // };
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
 
     if (error) {
-        return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ErrorAlert message={error} />;
     }
 
     return (
@@ -142,20 +129,7 @@ const Projects = () => {
                 <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
             </div>
 
-            {successMessage && (
-                <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-green-700">{successMessage}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {successMessage && <SuccessAlert message={successMessage} />}
 
             {/* Filters */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
@@ -189,9 +163,7 @@ const Projects = () => {
 
             {/* Projects List */}
             {filteredProjects.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center">
-                    <p className="text-gray-500 dark:text-gray-400">No projects found matching the selected filter.</p>
-                </div>
+                <EmptyState message="No projects found matching the selected filter." />
             ) : (
                 <ProjectList
                     projects={filteredProjects}
