@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClientProfile, clientApi } from '../api/client';
+import { ClientProfile, authApi, clientApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
@@ -68,9 +68,16 @@ const Settings = () => {
                     ...prev,
                     ...data.profile
                 }));
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error('Error fetching profile data:', err);
-                setProfileError('Failed to load profile data');
+                // Try to extract error message from the API response if available
+                const errorMessage = 
+                    typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                        ? String(err.response.message)
+                        : err instanceof Error
+                            ? err.message
+                            : 'Failed to load profile data';
+                setProfileError(errorMessage);
             }
         };
 
@@ -180,9 +187,16 @@ const Settings = () => {
 
             setProfileSuccess(response.message || 'Profile updated successfully');
             setIsUpdatingProfile(false);
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error updating profile:', err);
-            setProfileError('Failed to update profile');
+            // Try to extract error message from the API response if available
+            const errorMessage = 
+                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                    ? String(err.response.message)
+                    : err instanceof Error
+                        ? err.message
+                        : 'Failed to update profile';
+            setProfileError(errorMessage);
             setIsUpdatingProfile(false);
         }
     };
@@ -223,21 +237,28 @@ const Settings = () => {
         setIsChangingPassword(true);
 
         try {
-            // In a real app, we would call an API
-            // await authApi.changePassword(passwordData);
+            // Call the API to change the password
+            const response = await authApi.changePassword(
+                passwordData.currentPassword,
+                passwordData.newPassword
+            );
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            setPasswordSuccess('Password changed successfully');
+            setPasswordSuccess(response.message || 'Password changed successfully');
             setPasswordData({
                 currentPassword: '',
                 newPassword: '',
                 confirmPassword: ''
             });
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error changing password:', err);
-            setPasswordError('Failed to change password. Please try again.');
+            // Try to extract error message from the API response if available
+            const errorMessage = 
+                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                    ? String(err.response.message)
+                    : err instanceof Error
+                        ? err.message
+                        : 'Failed to change password. Please try again.';
+            setPasswordError(errorMessage);
         } finally {
             setIsChangingPassword(false);
         }
