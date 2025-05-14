@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { Project, UserDetails, UserEvent, managerApi, projectsApi } from '../api/client';
 import CreateUserModal from '../components/CreateUserModal';
 import { formatDateTime } from '../utils/dateUtils';
+import { formatSnakeCase, formatStatus } from '../utils/formatUtils';
+import ErrorAlert from '../components/common/ErrorAlert';
+import SuccessAlert from '../components/common/SuccessAlert';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import EmptyState from '../components/common/EmptyState';
 
 // Assignment History Component
 const AssignmentHistory = ({ clientId }: { clientId: string }) => {
@@ -26,38 +31,16 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
         fetchHistory();
     }, [clientId]);
 
-    const formatEventType = (eventType: string): string => {
-        return eventType.split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    };
-
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-32">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-32" size="md" />;
     }
 
     if (error) {
-        return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ErrorAlert message={error} />;
     }
 
     if (history.length === 0) {
-        return <p className="text-gray-500 dark:text-gray-400 text-center py-4">No assignment history found.</p>;
+        return <EmptyState message="No assignment history found." />;
     }
 
     return (
@@ -65,7 +48,7 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
             {history.map(event => (
                 <div key={event.id} className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2">
                     <div className="flex justify-between">
-                        <span className="font-medium dark:text-white">{formatEventType(event.event_type)}</span>
+                        <span className="font-medium dark:text-white">{formatSnakeCase(event.event_type)}</span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                             {event.createdAt ? formatDateTime(event.createdAt) : 'No date'}
                         </span>
@@ -180,30 +163,8 @@ const ClientAssignment = () => {
         return clientAssignments.projects.some(project => project.id === projectId);
     };
 
-    const formatStatus = (status: string): string => {
-        switch (status) {
-            case 'active':
-                return 'Active';
-            case 'completed':
-                return 'Completed';
-            case 'on_hold':
-                return 'On Hold';
-            default:
-                return status.charAt(0).toUpperCase() + status.slice(1);
-        }
-    };
-
-    // const getSelectedClient = () => {
-    //     if (!selectedClient) return null;
-    //     return clients.find(client => client.user_id === selectedClient);
-    // };
-
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
 
     return (
@@ -218,47 +179,15 @@ const ClientAssignment = () => {
                 </button>
             </div>
 
-            {successMessage && (
-                <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-green-700">{successMessage}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {successMessage && <SuccessAlert message={successMessage} />}
 
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-red-700">{error}</p>
-                            <button
-                                className="text-sm font-medium text-red-700 hover:text-red-600 mt-1"
-                                onClick={() => setError(null)}
-                            >
-                                Dismiss
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Select Client</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {clients.length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-400 col-span-full">No clients found</p>
+                        <EmptyState message="No clients found" />
                     ) : (
                         clients.map(client => (
                             <div
@@ -294,15 +223,13 @@ const ClientAssignment = () => {
                     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
                         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Project Assignments</h2>
                         {isLoadingAssignments ? (
-                            <div className="flex justify-center items-center h-32">
-                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-                            </div>
+                            <LoadingSpinner containerClassName="h-32" size="md" />
                         ) : (
                             <>
                                 <div className="mb-4">
                                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Projects</h3>
                                     {!clientAssignments || clientAssignments.projects.length === 0 ? (
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm">No projects assigned</p>
+                                        <EmptyState message="No projects assigned" />
                                     ) : (
                                         <div className="space-y-2">
                                             {clientAssignments.projects.map(project => (
@@ -325,7 +252,7 @@ const ClientAssignment = () => {
                                 <div>
                                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Available Projects</h3>
                                     {projects.filter(project => !isProjectAssigned(project.id)).length === 0 ? (
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm">No available projects</p>
+                                        <EmptyState message="No available projects" />
                                     ) : (
                                         <div className="space-y-2">
                                             {projects

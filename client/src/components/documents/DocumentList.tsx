@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
+import { capitalizeWords } from '../../utils/formatUtils';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorAlert from '../common/ErrorAlert';
+import EmptyState from '../common/EmptyState';
 
 // Helper function to extract error message safely
 const getErrorMessage = (error: unknown): string => {
@@ -140,9 +144,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
         }
     };
 
-    const formatDocumentType = (documentType: string) => {
-        return documentType.charAt(0).toUpperCase() + documentType.slice(1);
-    };
+    // Using the utility function instead of a local function
 
     const handleEdit = (documentId: string) => {
         if (onEditDocument) {
@@ -172,28 +174,11 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
     };
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            </div>
-        );
+        return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
 
     if (error) {
-        return (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                <div className="flex">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ErrorAlert message={error} />;
     }
 
     return (
@@ -236,9 +221,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
             </div>
             
             {filteredDocuments.length === 0 ? (
-                <div className="text-center py-8">
-                    <p className="text-gray-500">No documents found.</p>
-                </div>
+                <EmptyState message="No documents found." />
             ) : (
                 <div className="bg-white shadow overflow-hidden sm:rounded-md">
                     <ul className="divide-y divide-gray-200">
@@ -258,7 +241,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                                     {document.title}
                                                 </p>
                                                 <p className="text-sm text-gray-500">
-                                                    {formatDocumentType(document.document_type)}
+                                                    {capitalizeWords(document.document_type)}
                                                 </p>
                                             </div>
                                         </div>
