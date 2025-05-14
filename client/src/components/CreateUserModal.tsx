@@ -87,20 +87,9 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, defaultRole = 'client' }:
                 last_name: '',
                 role: defaultRole
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error creating user:', err);
-            
-            // Check if it's a validation error from the server
-            if (err.response?.data?.errors) {
-                // Map server validation errors to form fields
-                const serverErrors: Record<string, string> = {};
-                Object.entries(err.response.data.errors).forEach(([field, messages]) => {
-                    serverErrors[field] = Array.isArray(messages) ? messages[0] : String(messages);
-                });
-                setFormErrors(serverErrors);
-            } else {
-                setFormErrors({ submit: 'Failed to create user. Please try again.' });
-            }
+            setFormErrors({ submit: 'Failed to create user. Please try again.' });
         }
     };
 

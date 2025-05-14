@@ -29,57 +29,46 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
 
     const validateForm = () => {
         const errors: Record<string, string> = {};
-        
+
         // First name validation
         if (!formData.first_name) {
             errors.first_name = 'First name is required';
         } else if (formData.first_name.length < 2 || formData.first_name.length > 50) {
             errors.first_name = 'First name must be between 2 and 50 characters';
         }
-        
+
         // Last name validation
         if (!formData.last_name) {
             errors.last_name = 'Last name is required';
         } else if (formData.last_name.length < 2 || formData.last_name.length > 50) {
             errors.last_name = 'Last name must be between 2 and 50 characters';
         }
-        
+
         // Role validation
         if (!formData.role) {
             errors.role = 'Role is required';
         } else if (!['client', 'manager'].includes(formData.role)) {
             errors.role = 'Role must be either "client" or "manager"';
         }
-        
+
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
     const handleUpdateUser = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
-        
+
         try {
             await managerApi.updateUser(user.user_id, formData);
             onSuccess('User updated successfully');
             onClose();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating user:', err);
-            
-            // Check if it's a validation error from the server
-            if (err.response?.data?.errors) {
-                // Map server validation errors to form fields
-                const serverErrors: Record<string, string> = {};
-                Object.entries(err.response.data.errors).forEach(([field, messages]) => {
-                    serverErrors[field] = Array.isArray(messages) ? messages[0] : String(messages);
-                });
-                setFormErrors(serverErrors);
-            } else {
-                setFormErrors({ submit: 'Failed to update user. Please try again.' });
-            }
+            setFormErrors({ submit: 'Failed to update user. Please try again.' });
         }
     };
 
@@ -88,14 +77,9 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
             await managerApi.deactivateUser(user.user_id);
             onSuccess('User deactivated successfully');
             onClose();
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error deactivating user:', err);
-            
-            if (err.response?.data?.message) {
-                setFormErrors({ submit: err.response.data.message });
-            } else {
-                setFormErrors({ submit: 'Failed to deactivate user. Please try again.' });
-            }
+            setFormErrors({ submit: 'Failed to deactivate user. Please try again.' });
         }
     };
 
@@ -104,14 +88,9 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
             await managerApi.reactivateUser(user.user_id);
             onSuccess('User reactivated successfully');
             onClose();
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error reactivating user:', err);
-            
-            if (err.response?.data?.message) {
-                setFormErrors({ submit: err.response.data.message });
-            } else {
-                setFormErrors({ submit: 'Failed to reactivate user. Please try again.' });
-            }
+            setFormErrors({ submit: 'Failed to reactivate user. Please try again.' });
         }
     };
 
@@ -200,7 +179,7 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
                     </div>
 
                     <hr className="my-6 border-gray-200 dark:border-gray-700" />
-                    
+
                     <div className="space-y-4">
                         <div>
                             <h3 className="text-md font-medium text-gray-700 dark:text-gray-300">Account Actions</h3>
@@ -215,7 +194,7 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
                                 >
                                     Reset Password
                                 </button>
-                                
+
                                 {user.is_active ? (
                                     <button
                                         type="button"
@@ -236,7 +215,7 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="mt-6 flex justify-end space-x-3">
                         <button
                             type="button"
