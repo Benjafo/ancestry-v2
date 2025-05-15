@@ -32,8 +32,8 @@ project:
     Project -> edit project: the status dropdown has not implemented dark mode
 other:
   active:
-    Settings: email preferences form submission
     Manager dashboard: pending tasks
+    Manager dashboard: view all system events, e.g. user profile edited
     General: implement the task feature
   finished:
     Dashboard: research summary
@@ -44,6 +44,7 @@ other:
     Settings: validation for fields
     Settings: change password form submission
     Settings: add dropdown for state/province based on country
+    Settings: email preferences form submission
     Projects: view project button is not aligned to bottom of card
     Manager dashboard: recent activity should be accurate
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page

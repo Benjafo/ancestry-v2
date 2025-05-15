@@ -60,6 +60,15 @@ const Settings = () => {
         country: ''
     });
     
+    // Email preferences state
+    const [emailPreferences, setEmailPreferences] = useState({
+        email_notifications: true,
+        research_updates: true
+    });
+    const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
+    const [preferencesError, setPreferencesError] = useState<string | null>(null);
+    const [preferencesSuccess, setPreferencesSuccess] = useState<string | null>(null);
+    
     // State/province options based on selected country
     const [stateOptions, setStateOptions] = useState<Array<{code: string, name: string}>>([]);
 
@@ -110,6 +119,50 @@ const Settings = () => {
             setStateOptions([]);
         }
     }, [profileData.country]);
+    
+    // Initialize email preferences from profile data
+    useEffect(() => {
+        if (profileData) {
+            setEmailPreferences({
+                email_notifications: profileData.email_notifications ?? true,
+                research_updates: profileData.research_updates ?? true
+            });
+        }
+    }, [profileData]);
+    
+    // Handle email preference changes
+    const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        setEmailPreferences(prev => ({
+            ...prev,
+            [name]: checked
+        }));
+    };
+    
+    // Handle email preferences form submission
+    const handlePreferencesSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPreferencesError(null);
+        setPreferencesSuccess(null);
+        setIsUpdatingPreferences(true);
+        
+        try {
+            const response = await clientApi.updateProfile(emailPreferences);
+            setPreferencesSuccess(response.message || 'Email preferences updated successfully');
+        } catch (err: unknown) {
+            console.error('Error updating email preferences:', err);
+            // Try to extract error message from the API response if available
+            const errorMessage = 
+                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
+                    ? String(err.response.message)
+                    : err instanceof Error
+                        ? err.message
+                        : 'Failed to update email preferences';
+            setPreferencesError(errorMessage);
+        } finally {
+            setIsUpdatingPreferences(false);
+        }
+    };
 
     // Handle profile form changes
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -582,19 +635,25 @@ const Settings = () => {
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Email Preferences</h2>
-                    <div className="space-y-4">
+                    
+                    {preferencesError && <ErrorAlert message={preferencesError} />}
+                    
+                    {preferencesSuccess && <SuccessAlert message={preferencesSuccess} />}
+                    
+                    <form onSubmit={handlePreferencesSubmit} className="space-y-4">
                         <div className="flex items-start">
                             <div className="flex items-center h-5">
                                 <input
-                                    id="marketing"
-                                    name="marketing"
+                                    id="email_notifications"
+                                    name="email_notifications"
                                     type="checkbox"
                                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                    defaultChecked
+                                    checked={emailPreferences.email_notifications}
+                                    onChange={handlePreferenceChange}
                                 />
                             </div>
                             <div className="ml-3 text-sm">
-                                <label htmlFor="marketing" className="font-medium text-gray-700 dark:text-gray-300">
+                                <label htmlFor="email_notifications" className="font-medium text-gray-700 dark:text-gray-300">
                                     Marketing Emails
                                 </label>
                                 <p className="text-gray-500 dark:text-gray-400">Receive emails about new features, promotions, and updates.</p>
@@ -603,15 +662,16 @@ const Settings = () => {
                         <div className="flex items-start">
                             <div className="flex items-center h-5">
                                 <input
-                                    id="newsletter"
-                                    name="newsletter"
+                                    id="research_updates"
+                                    name="research_updates"
                                     type="checkbox"
                                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                    defaultChecked
+                                    checked={emailPreferences.research_updates}
+                                    onChange={handlePreferenceChange}
                                 />
                             </div>
                             <div className="ml-3 text-sm">
-                                <label htmlFor="newsletter" className="font-medium text-gray-700 dark:text-gray-300">
+                                <label htmlFor="research_updates" className="font-medium text-gray-700 dark:text-gray-300">
                                     Newsletter
                                 </label>
                                 <p className="text-gray-500 dark:text-gray-400">Receive our monthly newsletter with genealogy tips and resources.</p>
@@ -619,13 +679,14 @@ const Settings = () => {
                         </div>
                         <div className="flex justify-end">
                             <button
-                                type="button"
+                                type="submit"
                                 className="btn-primary"
+                                disabled={isUpdatingPreferences}
                             >
-                                Save Preferences
+                                {isUpdatingPreferences ? 'Saving...' : 'Save Preferences'}
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
