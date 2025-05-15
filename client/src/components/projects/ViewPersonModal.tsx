@@ -7,9 +7,10 @@ interface ViewPersonModalProps {
     isOpen: boolean;
     onClose: () => void;
     onEdit?: (person: Person) => void; // Optional callback for edit button
+    projectStatus?: 'active' | 'completed' | 'on_hold'; // Add project status prop
 }
 
-const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit }) => {
+const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit, projectStatus }) => {
     const [person, setPerson] = useState<Person | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                         {loading ? 'Loading...' : person ? `${person.first_name} ${person.last_name}` : 'Person Details'}
                     </h2>
                     <div className="flex items-center space-x-2">
-                        {!loading && person && onEdit && (
+                        {!loading && person && onEdit && projectStatus !== 'completed' && (
                             <button
                                 onClick={() => {
                                     onEdit(person);
@@ -77,6 +78,11 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
+                        )}
+                        {!loading && person && projectStatus === 'completed' && (
+                            <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
+                                Read-only
+                            </span>
                         )}
                         <button
                             onClick={onClose}

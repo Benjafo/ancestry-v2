@@ -34,7 +34,7 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                     {person.first_name} {person.last_name}
                                 </h3>
 
-                                {project.access_level === 'edit' && (
+                                {project.access_level === 'edit' && project.status !== 'completed' && (
                                     <div className="flex space-x-2">
                                         <button
                                             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"

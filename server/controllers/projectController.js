@@ -273,6 +273,13 @@ exports.updateProject = async (req, res) => {
             }
         }
         
+        // Check if project is completed - only allow status changes
+        if (project.status === 'completed' && (title !== undefined || description !== undefined)) {
+            return res.status(403).json({ 
+                message: 'Completed projects cannot be modified. You can only change the status.' 
+            });
+        }
+        
         // Update fields
         if (title) project.title = title;
         if (description) project.description = description;
@@ -458,6 +465,18 @@ async function checkProjectAccess(req, projectId) {
 async function checkProjectEditAccess(req, projectId) {
     // Check if user is a manager
     const isManager = req.user.roles.includes('manager');
+    
+    // First, check if the project is completed
+    const project = await Project.findByPk(projectId);
+    
+    if (!project) {
+        throw new Error('Project not found');
+    }
+    
+    // If project is completed, prevent edit operations
+    if (project.status === 'completed') {
+        throw new Error('Completed projects cannot be modified');
+    }
     
     if (isManager) {
         return true;

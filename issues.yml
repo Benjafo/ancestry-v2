@@ -8,6 +8,7 @@ project:
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> timeline: there are duplicate events in the timeline, events should be listed as a family event if over three persons are attached to it, otherwise it should list the attached persons separated by commas. An event should only appear once on the timeline
+    Project -> family members: clients should not be able to edit family members in the view person modal
     Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
     Project -> family members: create and edit person modal should allow for creating and editing relationships
     Project -> family members: add and edit events in create and edit modal is broken
@@ -16,11 +17,13 @@ project:
   finished:
     Project: researcher should be able to create "research notes"
     Project: implement research notes tab
+    Project: switching between tabs should change the "Add X" button, e.g. add document, add event, add person, add research note
     Project -> documents: no date on documents
     Project -> documents: type is blank
     Project -> documents: duplicate documents are shown
     Project -> timeline: fix capitalization of event type
     Project -> timeline: related person should appear before event in timeline view
+    Project -> family members: person cards should all be the same height
     Project -> family members: after canceling delete, view person modal appear
     Project -> family members: duplicate header with heading and "add person" button should be removed
     Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
@@ -30,10 +33,10 @@ project:
 other:
   active:
     Settings: email preferences form submission
-    Projects: project details overwriting new project
+    Projects: project details overwriting new project (?)
     Manager dashboard: (TASK) pending tasks
     Manager dashboard: (TASK) add a quick actions button to create a task
-    User management: sorting is not working properly
+    User management: sorting should not consider case
     General: (TASK) implement the task feature
     General: once a project is "completed", it should not be editable
   finished:
