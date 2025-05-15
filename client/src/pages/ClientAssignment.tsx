@@ -64,7 +64,7 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
         </div>
     );
 };
-
+  
 const ClientAssignment = () => {
     const [clients, setClients] = useState<UserDetails[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
@@ -77,6 +77,10 @@ const ClientAssignment = () => {
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+    
+    // Pagination for client cards (3 rows x 3 columns = 9 clients per page)
+    const [currentPage, setCurrentPage] = useState(1);
+    const clientsPerPage = 9;
 
     useEffect(() => {
         fetchInitialData();
@@ -189,32 +193,87 @@ const ClientAssignment = () => {
                     {clients.length === 0 ? (
                         <EmptyState message="No clients found" />
                     ) : (
-                        clients.map(client => (
-                            <div
-                                key={client.user_id}
-                                className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedClient === client.user_id
-                                    ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
-                                    }`}
-                                onClick={() => setSelectedClient(client.user_id)}
-                            >
-                                <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-                                        <span className="text-primary-800 dark:text-primary-200 font-medium">
-                                            {client.first_name.charAt(0)}{client.last_name.charAt(0)}
-                                        </span>
-                                    </div>
-                                    <div className="ml-4">
-                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                            {client.first_name} {client.last_name}
+                        // Display only clients for the current page
+                        clients
+                            .slice((currentPage - 1) * clientsPerPage, currentPage * clientsPerPage)
+                            .map(client => (
+                                <div
+                                    key={client.user_id}
+                                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${selectedClient === client.user_id
+                                        ? 'border-primary-500 bg-primary-50 dark:border-primary-400 dark:bg-primary-900'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
+                                        }`}
+                                    onClick={() => setSelectedClient(client.user_id)}
+                                >
+                                    <div className="flex items-center">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                            <span className="text-primary-800 dark:text-primary-200 font-medium">
+                                                {client.first_name.charAt(0)}{client.last_name.charAt(0)}
+                                            </span>
                                         </div>
-                                        <div className="text-sm text-gray-500 dark:text-gray-400">{client.email}</div>
+                                        <div className="ml-4">
+                                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                {client.first_name} {client.last_name}
+                                            </div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">{client.email}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            ))
                     )}
                 </div>
+                
+                {/* Pagination Controls */}
+                {clients.length > clientsPerPage && (
+                    <div className="mt-4 flex justify-center">
+                        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button
+                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${
+                                    currentPage === 1
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                        : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                <span className="sr-only">Previous</span>
+                                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                            
+                            {/* Page Numbers */}
+                            {Array.from({ length: Math.ceil(clients.length / clientsPerPage) }, (_, i) => (
+                                <button
+                                    key={i + 1}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${
+                                        currentPage === i + 1
+                                            ? 'z-10 bg-primary-50 dark:bg-primary-900 border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-200'
+                                            : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            
+                            <button
+                                onClick={() => setCurrentPage(Math.min(Math.ceil(clients.length / clientsPerPage), currentPage + 1))}
+                                disabled={currentPage === Math.ceil(clients.length / clientsPerPage)}
+                                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${
+                                    currentPage === Math.ceil(clients.length / clientsPerPage)
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                        : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                <span className="sr-only">Next</span>
+                                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        </nav>
+                    </div>
+                )}
             </div>
 
             {selectedClient && (

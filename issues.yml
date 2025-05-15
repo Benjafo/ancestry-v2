@@ -12,7 +12,6 @@ project:
     Project -> family members: add and edit events in create and edit modal is broken
     Project -> family members: add and edit documents in create and edit modal is broken
     Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
-
   finished:
     Projects: view project button is not aligned to bottom of card
     Project -> documents: no date on documents
@@ -26,17 +25,16 @@ project:
     Project -> family members: edit button is obstructed by link to view person modal
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
-
 other:
   active:
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page
-    Manager dashboard: pending tasks
-    Manager dashboard: add a quick actions button to create a task
+    Manager dashboard: (TASK) pending tasks
+    Manager dashboard: (TASK) add a quick actions button to create a task
     User management: add pagination and limit to three rows of users in the select client card
     Settings: add dropdown for state/province based on country
-    General: implement the task feature
+    General: (TASK) implement the task feature
+    General: the default / route should redirect to the dashboard
     General: user events need to be logged in the backend
-
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
@@ -56,7 +54,6 @@ other:
     Settings: change password form submission
     General: move reused code into utility functions
     General: success and error messages are not displayed properly
-
 future_functionality:
   active:
     General: import GEDCOM file page

@@ -616,8 +616,14 @@ export const managerApi = {
     },
 
     // User Management
-    getUsers: async (filter: 'all' | 'clients' | 'managers' = 'all'): Promise<{ users: UserDetails[] }> => {
-        const response = await apiClient.get(`manager/users?filter=${filter}`);
+    getUsers: async (
+        filter: 'all' | 'clients' | 'managers' = 'all',
+        page: number = 1,
+        limit: number = 10
+    ): Promise<{ users: UserDetails[]; metadata: ApiMetadata }> => {
+        const response = await apiClient.get('manager/users', {
+            searchParams: { filter, page, limit }
+        });
         return response.json();
     },
 

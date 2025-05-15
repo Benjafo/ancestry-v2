@@ -76,10 +76,11 @@ exports.getDashboardSummary = async (req, res) => {
     }
 };
 
-// Get all users with optional filtering
+// Get all users with optional filtering and pagination
 exports.getUsers = async (req, res) => {
     try {
-        const { filter = 'all' } = req.query;
+        const { filter = 'all', page = 1, limit = 10 } = req.query;
+        const offset = (parseInt(page) - 1) * parseInt(limit);
 
         let whereCondition = {};
         let includeCondition = [{ model: Role }];
@@ -96,9 +97,18 @@ exports.getUsers = async (req, res) => {
             }];
         }
 
+        // Get total count for pagination
+        const count = await User.count({
+            include: includeCondition
+        });
+
+        // Get paginated users
         const users = await User.findAll({
             include: includeCondition,
-            attributes: { exclude: ['password'] }
+            attributes: { exclude: ['password'] },
+            limit: parseInt(limit),
+            offset: offset,
+            order: [['created_at', 'DESC']]
         });
 
         // Format users to include roles
@@ -110,7 +120,15 @@ exports.getUsers = async (req, res) => {
             };
         });
 
-        res.status(200).json({ users: formattedUsers });
+        res.status(200).json({
+            users: formattedUsers,
+            metadata: {
+                total: count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(count / parseInt(limit))
+            }
+        });
     } catch (error) {
         console.error('Get users error:', error);
         res.status(500).json({ message: 'Server error retrieving users' });
