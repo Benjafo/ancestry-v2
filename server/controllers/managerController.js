@@ -1,4 +1,5 @@
 const { User, Role, Project, UserEvent } = require('../models');
+const UserEventService = require('../services/userEventService');
 const { Op } = require('sequelize');
 
 // Get dashboard summary for managers
@@ -259,6 +260,16 @@ exports.createUser = async (req, res) => {
             roles: userData.Roles ? userData.Roles.map(role => role.name) : []
         };
 
+        // Create user event for the manager who created the user
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'user_created',
+            `Created new ${role} user: ${first_name} ${last_name}`,
+            user.user_id,
+            'user'
+        );
+
         res.status(201).json({
             message: 'User created successfully',
             user: formattedUser
@@ -341,6 +352,16 @@ exports.deactivateUser = async (req, res) => {
         user.is_active = false;
         await user.save();
 
+        // Create user event for the manager who deactivated the user
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'user_deactivated',
+            `Deactivated user: ${user.first_name} ${user.last_name}`,
+            userId,
+            'user'
+        );
+
         res.status(200).json({ message: 'User deactivated successfully' });
     } catch (error) {
         console.error('Deactivate user error:', error);
@@ -362,6 +383,16 @@ exports.reactivateUser = async (req, res) => {
         // Reactivate user
         user.is_active = true;
         await user.save();
+
+        // Create user event for the manager who reactivated the user
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'user_reactivated',
+            `Reactivated user: ${user.first_name} ${user.last_name}`,
+            userId,
+            'user'
+        );
 
         res.status(200).json({ message: 'User reactivated successfully' });
     } catch (error) {
@@ -387,6 +418,16 @@ exports.resetUserPassword = async (req, res) => {
         // Update user password
         user.password = temporaryPassword; // Will be hashed by the model hook
         await user.save();
+
+        // Create user event for the manager who reset the password
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'password_reset',
+            `Reset password for user: ${user.first_name} ${user.last_name}`,
+            userId,
+            'user'
+        );
 
         res.status(200).json({
             message: 'Password reset successfully',
@@ -476,6 +517,26 @@ exports.assignClientToProject = async (req, res) => {
             through: { access_level: accessLevel }
         });
 
+        // Create user event for the client
+        await UserEventService.createEvent(
+            clientId,
+            req.user.user_id, // The manager doing the assignment
+            'project_assigned',
+            `You've been assigned to a new project: ${project.title}`,
+            projectId,
+            'project'
+        );
+
+        // Create user event for the manager
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'project_assigned',
+            `Assigned client to project: ${project.title}`,
+            projectId,
+            'project'
+        );
+
         res.status(200).json({ message: 'Client assigned to project successfully' });
     } catch (error) {
         console.error('Assign client to project error:', error);
@@ -508,6 +569,26 @@ exports.removeClientFromProject = async (req, res) => {
 
         // Remove client from project
         await project.removeUser(clientId);
+
+        // Create user event for the client
+        await UserEventService.createEvent(
+            clientId,
+            req.user.user_id, // The manager doing the removal
+            'project_removed',
+            `You've been removed from project: ${project.title}`,
+            projectId,
+            'project'
+        );
+
+        // Create user event for the manager
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'project_removed',
+            `Removed client from project: ${project.title}`,
+            projectId,
+            'project'
+        );
 
         res.status(200).json({ message: 'Client removed from project successfully' });
     } catch (error) {

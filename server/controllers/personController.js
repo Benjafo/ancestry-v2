@@ -1,4 +1,6 @@
 const personService = require('../services/personService');
+const UserEventService = require('../services/userEventService');
+const { Project } = require('../models');
 
 /**
  * Person Controller
@@ -65,6 +67,29 @@ exports.createPerson = async (req, res) => {
     try {
         const person = await personService.createPerson(req.body);
         
+        // Create user events for person creation
+        if (req.body.project_id) {
+            // Create event for the actor (the user who created the person)
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'person_created',
+                `Added person: ${person.first_name} ${person.last_name}`,
+                person.person_id,
+                'person'
+            );
+            
+            // Create events for all project users
+            await UserEventService.createEventForProjectUsers(
+                req.body.project_id,
+                req.user.user_id,
+                'person_discovered',
+                `New family member discovered: ${person.first_name} ${person.last_name}`,
+                person.person_id,
+                'person'
+            );
+        }
+        
         res.status(201).json({
             message: 'Person created successfully',
             person
@@ -88,6 +113,29 @@ exports.updatePerson = async (req, res) => {
     try {
         const { personId } = req.params;
         const person = await personService.updatePerson(personId, req.body);
+        
+        // Create user events for person update
+        if (req.body.project_id) {
+            // Create event for the actor (the user who updated the person)
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'person_updated',
+                `Updated person: ${person.first_name} ${person.last_name}`,
+                person.person_id,
+                'person'
+            );
+            
+            // Create events for all project users
+            await UserEventService.createEventForProjectUsers(
+                req.body.project_id,
+                req.user.user_id,
+                'person_updated',
+                `Family member information updated: ${person.first_name} ${person.last_name}`,
+                person.person_id,
+                'person'
+            );
+        }
         
         res.json({
             message: 'Person updated successfully',
@@ -118,7 +166,45 @@ exports.updatePerson = async (req, res) => {
 exports.deletePerson = async (req, res) => {
     try {
         const { personId } = req.params;
+        
+        // Get person info before deleting
+        const person = await personService.getPersonById(personId);
+        
+        if (!person) {
+            return res.status(404).json({ message: 'Person not found' });
+        }
+        
+        // Get project ID from query parameter or request body
+        const projectId = req.query.project_id || req.body.project_id;
+        
+        // Store person info for events
+        const personName = `${person.first_name} ${person.last_name}`;
+        
+        // Delete the person
         await personService.deletePerson(personId);
+        
+        // Create user events for person deletion
+        if (projectId) {
+            // Create event for the actor (the user who deleted the person)
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'person_deleted',
+                `Deleted person: ${personName}`,
+                null, // No person ID since it's deleted
+                'person'
+            );
+            
+            // Create events for all project users
+            await UserEventService.createEventForProjectUsers(
+                projectId,
+                req.user.user_id,
+                'person_deleted',
+                `Family member removed: ${personName}`,
+                null, // No person ID since it's deleted
+                'person'
+            );
+        }
         
         res.json({
             message: 'Person deleted successfully'
@@ -228,13 +314,66 @@ exports.addPersonToProject = async (req, res) => {
         const { projectId } = req.params;
         const { person_id } = req.body;
         
-        // This would typically be handled by a projectService
-        // For now, we'll just return a not implemented response
-        res.status(501).json({ 
-            message: 'Not implemented yet' 
+        if (!projectId || !person_id) {
+            return res.status(400).json({ 
+                message: 'Project ID and Person ID are required' 
+            });
+        }
+        
+        // Get project and person info
+        const project = await Project.findByPk(projectId);
+        const person = await personService.getPersonById(person_id);
+        
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        
+        if (!person) {
+            return res.status(404).json({ message: 'Person not found' });
+        }
+        
+        // Add person to project
+        const { ProjectPerson } = require('../models');
+        const projectPerson = await ProjectPerson.create({
+            project_id: projectId,
+            person_id: person_id
+        });
+        
+        // Create user events
+        // Create event for the actor (the user who added the person to the project)
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'person_added_to_project',
+            `Added ${person.first_name} ${person.last_name} to project: ${project.title}`,
+            person.person_id,
+            'person'
+        );
+        
+        // Create events for all project users
+        await UserEventService.createEventForProjectUsers(
+            projectId,
+            req.user.user_id,
+            'person_added_to_project',
+            `New family member added to project: ${person.first_name} ${person.last_name}`,
+            person.person_id,
+            'person'
+        );
+        
+        res.status(201).json({
+            message: 'Person added to project successfully',
+            projectPerson
         });
     } catch (error) {
         console.error('Add person to project error:', error);
+        
+        // Handle duplicate entry
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ 
+                message: 'Person is already in this project' 
+            });
+        }
+        
         res.status(500).json({ 
             message: 'Server error adding person to project',
             error: error.message 

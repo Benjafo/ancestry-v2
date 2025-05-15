@@ -61,11 +61,15 @@ CHECK (status IN ('active', 'completed', 'on_hold'));
 -- Add check constraints to user_events table
 ALTER TABLE user_events
 ADD CONSTRAINT check_user_event_type
-CHECK (event_type IN ('project_created', 'project_assigned', 'project_updated', 
-                      'document_added', 'document_uploaded', 
-                      'person_created', 'person_discovered',
-                      'event_recorded', 'relationship_created', 'relationship_established',
-                      'research_milestone', 'project_update'));
+CHECK (event_type IN (
+    'project_created', 'project_assigned', 'project_updated', 'project_removed',
+    'document_added', 'document_uploaded', 'document_updated', 'document_deleted',
+    'person_created', 'person_discovered', 'person_updated', 'person_deleted', 'person_added_to_project',
+    'event_recorded',
+    'relationship_created', 'relationship_established',
+    'research_milestone', 'project_update',
+    'user_created', 'user_deactivated', 'user_reactivated', 'password_reset'
+));
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_persons_names ON persons(last_name, first_name);
