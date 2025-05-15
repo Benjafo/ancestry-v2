@@ -82,7 +82,8 @@ CHECK (event_type IN (
     'event_recorded',
     'relationship_created', 'relationship_established',
     'research_milestone', 'project_update',
-    'user_created', 'user_deactivated', 'user_reactivated', 'password_reset'
+    'user_created', 'user_deactivated', 'user_reactivated', 'password_reset',
+    'profile_updated'
 ));
 
 -- Add indexes for performance

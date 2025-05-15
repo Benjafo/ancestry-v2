@@ -1,4 +1,5 @@
-const { ClientProfile } = require('../models');
+const { ClientProfile, User, Role } = require('../models');
+const UserEventService = require('../services/userEventService');
 
 // Get client profile
 exports.getProfile = async (req, res) => {
@@ -64,6 +65,38 @@ exports.updateProfile = async (req, res) => {
         // Save with force option
         await profile.save({ force: true });
         console.log('Profile saved');
+        
+        // Create a user event for the user who updated their profile
+        await UserEventService.createEvent(
+            userId,                // The user receiving the notification (the user themselves)
+            userId,                // The actor (the user themselves)
+            'profile_updated',     // Event type
+            'You updated your profile information', // Message for the user
+            userId,                // Entity ID (the user's ID)
+            'user'                 // Entity type
+        );
+
+        // Find all managers to notify them about the profile update
+        const managers = await User.findAll({
+            include: [{
+                model: Role,
+                where: { name: 'manager' }
+            }],
+            attributes: ['user_id']
+        });
+
+        // Create events for all managers if there are any
+        if (managers.length > 0) {
+            const managerIds = managers.map(manager => manager.user_id);
+            await UserEventService.createEventForMultipleUsers(
+                managerIds,
+                userId,
+                'client_profile_updated',
+                `Client ${req.user.first_name} ${req.user.last_name} updated their profile`,
+                userId,
+                'user'
+            );
+        }
         
         res.json({
             message: 'Profile updated successfully',
