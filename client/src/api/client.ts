@@ -621,7 +621,8 @@ export const managerApi = {
         page: number = 1,
         limit: number = 10,
         sortField?: string,
-        sortDirection?: 'asc' | 'desc'
+        sortDirection?: 'asc' | 'desc',
+        statusFilter?: 'all' | 'active' | 'inactive'
     ): Promise<{ users: UserDetails[]; metadata: ApiMetadata }> => {
         const searchParams: Record<string, string | number> = { filter, page, limit };
         
@@ -630,6 +631,10 @@ export const managerApi = {
             if (sortDirection) {
                 searchParams.sortDirection = sortDirection;
             }
+        }
+        
+        if (statusFilter && statusFilter !== 'all') {
+            searchParams.status = statusFilter;
         }
         
         const response = await apiClient.get('manager/users', { searchParams });

@@ -29,7 +29,6 @@ other:
   active:
     Manager dashboard: (TASK) pending tasks
     Manager dashboard: (TASK) add a quick actions button to create a task
-    User management: sorting only works for the current page in pagination
     Settings: add dropdown for state/province based on country
     General: (TASK) implement the task feature
     General: user events need to be logged in the backend
@@ -46,6 +45,7 @@ other:
     User management: bundle reset password and delete into the edit modal
     User management: dark mode issue for inactive users
     User management: Add filtering for status and sorting by name, email, and last login
+    User management: sorting only works for the current page in pagination
     Client assignment: assignment history
     Client assignment: replace back to dashboard with add user button
     Client assignment: add pagination and limit to three rows of users in the select client card

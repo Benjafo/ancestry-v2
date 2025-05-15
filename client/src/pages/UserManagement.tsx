@@ -31,7 +31,7 @@ const UserManagement = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, [filter, currentPage, pageSize, sortField, sortDirection]);
+    }, [filter, currentPage, pageSize, sortField, sortDirection, statusFilter]);
 
     const fetchUsers = async () => {
         try {
@@ -41,7 +41,8 @@ const UserManagement = () => {
                 currentPage, 
                 pageSize,
                 sortField || undefined,
-                sortDirection
+                sortDirection,
+                statusFilter
             );
             setUsers(response.users);
             setTotalPages(response.metadata.totalPages);
@@ -82,23 +83,15 @@ const UserManagement = () => {
         }
     };
 
-    // Apply client-side filtering for search and status
-    // (Server doesn't handle these filters, so we still need to do them client-side)
+    // Apply client-side filtering for search only
+    // (Status filtering is now handled server-side)
     const filteredUsers = users.filter(user => {
         const searchTermLower = searchTerm.toLowerCase();
-        const matchesSearch = (
+        return (
             user.first_name.toLowerCase().includes(searchTermLower) ||
             user.last_name.toLowerCase().includes(searchTermLower) ||
             user.email.toLowerCase().includes(searchTermLower)
         );
-
-        // Apply status filter
-        const matchesStatus =
-            statusFilter === 'all' ||
-            (statusFilter === 'active' && user.is_active) ||
-            (statusFilter === 'inactive' && !user.is_active);
-
-        return matchesSearch && matchesStatus;
     });
 
     if (isLoading) {

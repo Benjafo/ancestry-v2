@@ -84,7 +84,8 @@ exports.getUsers = async (req, res) => {
             page = 1, 
             limit = 10,
             sortField = 'created_at',
-            sortDirection = 'desc'
+            sortDirection = 'desc',
+            status
         } = req.query;
         
         const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -93,6 +94,14 @@ exports.getUsers = async (req, res) => {
         let whereCondition = {};
         let includeCondition = [{ model: Role }];
 
+        // Apply status filter if provided
+        if (status === 'active') {
+            whereCondition.is_active = true;
+        } else if (status === 'inactive') {
+            whereCondition.is_active = false;
+        }
+
+        // Apply role filter
         if (filter === 'clients') {
             includeCondition = [{
                 model: Role,
@@ -107,6 +116,7 @@ exports.getUsers = async (req, res) => {
 
         // Get total count for pagination
         const count = await User.count({
+            where: whereCondition,
             include: includeCondition
         });
 
@@ -147,6 +157,7 @@ exports.getUsers = async (req, res) => {
 
         // Get paginated and sorted users
         const users = await User.findAll({
+            where: whereCondition,
             include: includeCondition,
             attributes: { exclude: ['password'] },
             limit: parseInt(limit),
