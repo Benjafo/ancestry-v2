@@ -44,6 +44,17 @@ const rootRoute = new RootRoute({
     component: RootLayout,
 });
 
+// Redirect root route to dashboard
+const indexRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/',
+    beforeLoad: async () => {
+        throw redirect({
+            to: '/dashboard',
+        });
+    },
+});
+
 // Public routes
 const loginRoute = new Route({
     getParentRoute: () => rootRoute,
@@ -169,6 +180,7 @@ const clientAssignmentRoute = new Route({
 
 // Create the router
 const routeTree = rootRoute.addChildren([
+    indexRoute,
     loginRoute,
     registerRoute,
     authLayoutRoute.addChildren([
