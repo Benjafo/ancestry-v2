@@ -274,7 +274,9 @@ exports.updateProject = async (req, res) => {
         }
         
         // Check if project is completed - only allow status changes
-        if (project.status === 'completed' && (title !== undefined || description !== undefined)) {
+        if (project.status === 'completed' && 
+            ((title !== undefined && title !== project.title) || 
+             (description !== undefined && description !== project.description))) {
             return res.status(403).json({ 
                 message: 'Completed projects cannot be modified. You can only change the status.' 
             });
@@ -473,9 +475,11 @@ async function checkProjectEditAccess(req, projectId) {
         throw new Error('Project not found');
     }
     
-    // If project is completed, prevent edit operations
-    if (project.status === 'completed') {
-        throw new Error('Completed projects cannot be modified');
+    // If project is completed AND this is not a status change request, prevent edit operations
+    // We'll check req.body to see if this is a status-only change
+    if (project.status === 'completed' && req.body && 
+        (Object.keys(req.body).length > 1 || (Object.keys(req.body).length === 1 && !req.body.status))) {
+        throw new Error('Completed projects cannot be modified. You can only change the status.');
     }
     
     if (isManager) {

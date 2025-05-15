@@ -55,7 +55,12 @@ const EditProjectModal = <T extends Project = Project>({
         setIsSubmitting(true);
         
         try {
-            const response = await projectsApi.updateProject(project.id, formData);
+            // If project is completed, only send status
+            const dataToSend = project.status === 'completed' 
+                ? { status: formData.status } 
+                : formData;
+                
+            const response = await projectsApi.updateProject(project.id, dataToSend);
             // Cast the response to the same type as the input project
             onSuccess({ ...project, ...response.project } as T);
         } catch (err) {

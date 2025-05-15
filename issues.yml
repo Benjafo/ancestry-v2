@@ -33,7 +33,6 @@ project:
 other:
   active:
     Settings: email preferences form submission
-    Projects: project details overwriting new project (?)
     Manager dashboard: (TASK) pending tasks
     Manager dashboard: (TASK) add a quick actions button to create a task
     User management: sorting should not consider case

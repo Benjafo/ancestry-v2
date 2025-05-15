@@ -234,10 +234,9 @@ const ProjectDetail = () => {
                 </div>
                 <div className="flex space-x-2">
                     <button
-                        className={`btn-secondary ${project.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className="btn-secondary"
                         onClick={handleOpenEditModal}
-                        disabled={project.status === 'completed'}
-                        title={project.status === 'completed' ? 'Completed projects cannot be edited' : 'Edit project'}
+                        title={project.status === 'completed' ? 'You can only change the status of completed projects' : 'Edit project'}
                     >
                         Edit Project
                     </button>
