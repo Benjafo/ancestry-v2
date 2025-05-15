@@ -37,7 +37,6 @@ other:
     Manager dashboard: (TASK) add a quick actions button to create a task
     User management: sorting should not consider case
     General: (TASK) implement the task feature
-    General: once a project is "completed", it should not be editable
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
@@ -65,6 +64,7 @@ other:
     General: success and error messages are not displayed properly
     General: the default / route should redirect to the dashboard
     General: user events need to be logged in the backend
+    General: once a project is "completed", it should not be editable
 future_functionality:
   active:
     General: full codebase audit with gemini

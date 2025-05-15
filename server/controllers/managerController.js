@@ -1,6 +1,6 @@
 const { User, Role, Project, UserEvent } = require('../models');
 const UserEventService = require('../services/userEventService');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 
 // Get dashboard summary for managers
 exports.getDashboardSummary = async (req, res) => {
@@ -127,8 +127,8 @@ exports.getUsers = async (req, res) => {
         // Handle special case for name sorting (which combines first_name and last_name)
         if (sortField === 'name') {
             order = [
-                ['first_name', direction],
-                ['last_name', direction]
+                [Sequelize.fn('LOWER', Sequelize.col('first_name')), direction],
+                [Sequelize.fn('LOWER', Sequelize.col('last_name')), direction]
             ];
         } 
         // Handle special case for role sorting (which is in a related model)
@@ -153,7 +153,13 @@ exports.getUsers = async (req, res) => {
             };
             
             const dbField = fieldMap[sortField] || 'created_at';
-            order = [[dbField, direction]];
+            
+            // Use case-insensitive sorting for string fields
+            if (['email'].includes(sortField)) {
+                order = [[Sequelize.fn('LOWER', Sequelize.col(dbField)), direction]];
+            } else {
+                order = [[dbField, direction]];
+            }
         }
 
         // Get paginated and sorted users
