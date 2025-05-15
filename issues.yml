@@ -33,10 +33,8 @@ project:
 other:
   active:
     Settings: email preferences form submission
-    Manager dashboard: (TASK) pending tasks
-    Manager dashboard: (TASK) add a quick actions button to create a task
-    User management: sorting should not consider case
-    General: (TASK) implement the task feature
+    Manager dashboard: pending tasks
+    General: implement the task feature
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
@@ -49,6 +47,7 @@ other:
     Projects: view project button is not aligned to bottom of card
     Manager dashboard: recent activity should be accurate
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page
+    Manager dashboard: add a quick actions button to create a task
     User management -> create user: role form does not match dark mode
     User management -> create user: should close modal after creating user
     User management -> create user: validation for fields
@@ -56,6 +55,7 @@ other:
     User management: dark mode issue for inactive users
     User management: Add filtering for status and sorting by name, email, and last login
     User management: sorting only works for the current page in pagination
+    User management: sorting should not consider case
     Client assignment: assignment history
     Client assignment: replace back to dashboard with add user button
     Client assignment: add pagination and limit to three rows of users in the select client card
