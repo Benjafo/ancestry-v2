@@ -3,6 +3,7 @@ import { ClientProfile, authApi, clientApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
+import { STATES_BY_COUNTRY } from '../utils/locationData';
 import {
     validateAddress,
     validateAddressGroup,
@@ -14,7 +15,6 @@ import {
     validateState,
     validateZipCode
 } from '../utils/validationUtils';
-import { STATES_BY_COUNTRY, getStateCodeFromName } from '../utils/locationData';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -59,7 +59,7 @@ const Settings = () => {
         zip_code: '',
         country: ''
     });
-    
+
     // Email preferences state
     const [emailPreferences, setEmailPreferences] = useState({
         email_notifications: true,
@@ -68,16 +68,16 @@ const Settings = () => {
     const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false);
     const [preferencesError, setPreferencesError] = useState<string | null>(null);
     const [preferencesSuccess, setPreferencesSuccess] = useState<string | null>(null);
-    
+
     // State/province options based on selected country
-    const [stateOptions, setStateOptions] = useState<Array<{code: string, name: string}>>([]);
+    const [stateOptions, setStateOptions] = useState<Array<{ code: string, name: string }>>([]);
 
     // Fetch profile data on component mount
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 const data = await clientApi.getProfile();
-                
+
                 // Handle potential state name to code conversion
                 let profileState = data.profile.state;
                 if (data.profile.country && STATES_BY_COUNTRY[data.profile.country]) {
@@ -89,7 +89,7 @@ const Settings = () => {
                         profileState = stateMatch.code;
                     }
                 }
-                
+
                 setProfileData(prev => ({
                     ...prev,
                     ...data.profile,
@@ -98,7 +98,7 @@ const Settings = () => {
             } catch (err: unknown) {
                 console.error('Error fetching profile data:', err);
                 // Try to extract error message from the API response if available
-                const errorMessage = 
+                const errorMessage =
                     typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
                         ? String(err.response.message)
                         : err instanceof Error
@@ -110,7 +110,7 @@ const Settings = () => {
 
         fetchProfileData();
     }, []);
-    
+
     // Update state options when country changes
     useEffect(() => {
         if (profileData.country && STATES_BY_COUNTRY[profileData.country]) {
@@ -119,7 +119,7 @@ const Settings = () => {
             setStateOptions([]);
         }
     }, [profileData.country]);
-    
+
     // Initialize email preferences from profile data
     useEffect(() => {
         if (profileData) {
@@ -129,7 +129,7 @@ const Settings = () => {
             });
         }
     }, [profileData]);
-    
+
     // Handle email preference changes
     const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = e.target;
@@ -138,21 +138,21 @@ const Settings = () => {
             [name]: checked
         }));
     };
-    
+
     // Handle email preferences form submission
     const handlePreferencesSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setPreferencesError(null);
         setPreferencesSuccess(null);
         setIsUpdatingPreferences(true);
-        
+
         try {
             const response = await clientApi.updateProfile(emailPreferences);
             setPreferencesSuccess(response.message || 'Email preferences updated successfully');
         } catch (err: unknown) {
             console.error('Error updating email preferences:', err);
             // Try to extract error message from the API response if available
-            const errorMessage = 
+            const errorMessage =
                 typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
                     ? String(err.response.message)
                     : err instanceof Error
@@ -270,7 +270,7 @@ const Settings = () => {
         } catch (err: unknown) {
             console.error('Error updating profile:', err);
             // Try to extract error message from the API response if available
-            const errorMessage = 
+            const errorMessage =
                 typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
                     ? String(err.response.message)
                     : err instanceof Error
@@ -332,7 +332,7 @@ const Settings = () => {
         } catch (err: unknown) {
             console.error('Error changing password:', err);
             // Try to extract error message from the API response if available
-            const errorMessage = 
+            const errorMessage =
                 typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
                     ? String(err.response.message)
                     : err instanceof Error
@@ -635,11 +635,11 @@ const Settings = () => {
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
                 <div className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Email Preferences</h2>
-                    
+
                     {preferencesError && <ErrorAlert message={preferencesError} />}
-                    
+
                     {preferencesSuccess && <SuccessAlert message={preferencesSuccess} />}
-                    
+
                     <form onSubmit={handlePreferencesSubmit} className="space-y-4">
                         <div className="flex items-start">
                             <div className="flex items-center h-5">

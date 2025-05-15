@@ -1,12 +1,12 @@
 import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { ManagerDashboardSummary, Project, managerApi } from '../api/client';
-import { formatDate } from '../utils/dateUtils';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorAlert from '../components/common/ErrorAlert';
+import { ManagerDashboardSummary, managerApi } from '../api/client';
 import EmptyState from '../components/common/EmptyState';
+import ErrorAlert from '../components/common/ErrorAlert';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
+import { formatDate } from '../utils/dateUtils';
 
 // Helper function to get the appropriate icon for each activity type
 const getActivityIcon = (type: string) => {
@@ -91,17 +91,17 @@ const ManagerDashboard = () => {
         }
     };
 
-    const handleProjectCreated = (newProject: Project) => {
+    const handleProjectCreated = () => {
         setIsCreateModalOpen(false);
-        
+
         // Show success message
         setSuccessMessage('Project created successfully');
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
             setSuccessMessage(null);
         }, 3000);
-        
+
         // Refresh dashboard data to include the new project
         fetchDashboardData();
     };
@@ -125,7 +125,7 @@ const ManagerDashboard = () => {
     return (
         <div className="space-y-6">
             {successMessage && <SuccessAlert message={successMessage} />}
-            
+
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
@@ -291,7 +291,7 @@ const ManagerDashboard = () => {
                         </svg>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">Assign Clients</span>
                     </Link>
-                    <div 
+                    <div
                         className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
                         onClick={() => setIsCreateModalOpen(true)}
                     >
@@ -300,7 +300,7 @@ const ManagerDashboard = () => {
                         </svg>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">New Project</span>
                     </div>
-                    <div 
+                    <div
                         className="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
                         onClick={() => console.log('Create task clicked - functionality not implemented yet')}
                     >

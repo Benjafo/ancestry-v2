@@ -30,7 +30,7 @@ const Projects = () => {
         setIsCreateModalOpen(true);
     };
 
-    const handleProjectCreated = (newProject: Project) => {
+    const handleProjectCreated = () => {
         // Refresh projects list to ensure sorting is maintained
         fetchProjects();
         setIsCreateModalOpen(false);
@@ -49,7 +49,7 @@ const Projects = () => {
         setIsEditModalOpen(true);
     };
 
-    const handleProjectUpdated = (updatedProject: Project) => {
+    const handleProjectUpdated = () => {
         // Refresh projects list to ensure sorting is maintained
         fetchProjects();
         setIsEditModalOpen(false);
@@ -98,7 +98,7 @@ const Projects = () => {
         if (filter !== 'all' && project.status !== filter) {
             return false;
         }
-        
+
         // Then apply search filter
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
@@ -107,7 +107,7 @@ const Projects = () => {
                 project.description.toLowerCase().includes(term)
             );
         }
-        
+
         return true;
     });
 
@@ -172,7 +172,7 @@ const Projects = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    
+
                     {/* Sort Controls */}
                     <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-500 dark:text-gray-400">Sort by:</span>
