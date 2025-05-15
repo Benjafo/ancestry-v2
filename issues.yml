@@ -34,15 +34,14 @@ other:
     Manager dashboard: (TASK) pending tasks
     Manager dashboard: (TASK) add a quick actions button to create a task
     User management: sorting is not working properly
-    Client assignment: assignment history should be accurate
     General: (TASK) implement the task feature
-    General: user events need to be logged in the backend
     General: once a project is "completed", it should not be editable
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
     Dashboard: notifications
     Profile: form submission (NOTE Consolidated with settings page)
+    Settings: delete account form submission (NOTE Commented out section)
     Settings: validation for fields
     Settings: change password form submission
     Settings: add dropdown for state/province based on country
@@ -59,10 +58,11 @@ other:
     Client assignment: assignment history
     Client assignment: replace back to dashboard with add user button
     Client assignment: add pagination and limit to three rows of users in the select client card
-    Settings: delete account form submission (NOTE Commented out section)
+    Client assignment: assignment history should be accurate
     General: move reused code into utility functions
     General: success and error messages are not displayed properly
     General: the default / route should redirect to the dashboard
+    General: user events need to be logged in the backend
 future_functionality:
   active:
     General: full codebase audit with gemini
