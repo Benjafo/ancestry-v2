@@ -5,9 +5,9 @@ const UserEventService = require('../services/userEventService');
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.user.user_id;
-        
+
         let profile = await ClientProfile.findByPk(userId);
-        
+
         if (!profile) {
             // Create a default profile if it doesn't exist
             profile = await ClientProfile.create({
@@ -16,7 +16,7 @@ exports.getProfile = async (req, res) => {
                 research_updates: true
             });
         }
-        
+
         res.json({ profile });
     } catch (error) {
         console.error('Get client profile error:', error);
@@ -29,15 +29,15 @@ exports.updateProfile = async (req, res) => {
     try {
         const userId = req.user.user_id;
         console.log('Update profile request body:', req.body); // Log the request body
-        
-        const { 
-            phone, address, city, state, zip_code, country, 
-            email_notifications, research_updates 
+
+        const {
+            phone, address, city, state, zip_code, country,
+            email_notifications, research_updates
         } = req.body;
-        
+
         let profile = await ClientProfile.findByPk(userId);
         console.log('Found profile:', profile ? 'Yes' : 'No'); // Log if profile was found
-        
+
         if (!profile) {
             // Create profile if it doesn't exist
             profile = await ClientProfile.create({
@@ -45,10 +45,10 @@ exports.updateProfile = async (req, res) => {
             });
             console.log('Created new profile');
         }
-        
+
         // Log before update
         console.log('Profile before update:', JSON.stringify(profile));
-        
+
         // Update fields
         if (phone !== undefined) profile.phone = phone;
         if (address !== undefined) profile.address = address;
@@ -58,14 +58,14 @@ exports.updateProfile = async (req, res) => {
         if (country !== undefined) profile.country = country;
         if (email_notifications !== undefined) profile.email_notifications = email_notifications;
         if (research_updates !== undefined) profile.research_updates = research_updates;
-        
+
         // Log after update
         console.log('Profile after update:', JSON.stringify(profile));
-        
+
         // Save with force option
         await profile.save({ force: true });
         console.log('Profile saved');
-        
+
         // Create a user event for the user who updated their profile
         await UserEventService.createEvent(
             userId,                // The user receiving the notification (the user themselves)
@@ -97,7 +97,7 @@ exports.updateProfile = async (req, res) => {
                 'user'
             );
         }
-        
+
         res.json({
             message: 'Profile updated successfully',
             profile

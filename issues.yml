@@ -32,7 +32,10 @@ project:
     Project -> edit project: the status dropdown has not implemented dark mode
 other:
   active:
+    Dashboard: your projects section should be limited to three and include a link to view all projects
     Projects: projects should be sorted by last updated date, and there should be a search and sort by date created feature
+    Projects List: the date and status should be aligned to the bottom of the card
+    Projects List: the height of each card should be the same
     Manager dashboard: pending tasks
     Manager dashboard: view all system events, e.g. user profile edited
     General: implement the task feature

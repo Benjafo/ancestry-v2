@@ -39,7 +39,10 @@ const Dashboard = () => {
 
         const fetchProjects = async () => {
             try {
-                const response = await projectsApi.getProjects();
+                const response = await projectsApi.getProjects({
+                    sortBy: 'updated_at',
+                    sortOrder: 'desc'
+                });
                 setProjects(response.projects);
                 setProjectsLoading(false);
             } catch (err) {

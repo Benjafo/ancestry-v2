@@ -334,8 +334,14 @@ export const dashboardApi = {
 };
 
 export const projectsApi = {
-    getProjects: async (): Promise<{ projects: Project[] }> => {
-        const response = await apiClient.get('projects');
+    getProjects: async (params?: { 
+        search?: string; 
+        sortBy?: string; 
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<{ projects: Project[] }> => {
+        const response = await apiClient.get('projects', { 
+            searchParams: params 
+        });
         return response.json();
     },
 

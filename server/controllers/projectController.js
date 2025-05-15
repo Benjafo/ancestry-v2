@@ -6,21 +6,37 @@ const projectService = require('../services/projectService');
 exports.getProjects = async (req, res) => {
     try {
         let projects;
+        const { search, sortBy = 'updated_at', sortOrder = 'desc' } = req.query;
+        
+        // Build query options
+        const queryOptions = {
+            attributes: { include: ['created_at', 'updated_at'] },
+            order: [[sortBy, sortOrder.toUpperCase()]]
+        };
+        
+        // Add search condition if provided
+        if (search) {
+            queryOptions.where = {
+                [Sequelize.Op.or]: [
+                    { title: { [Sequelize.Op.iLike]: `%${search}%` } },
+                    { description: { [Sequelize.Op.iLike]: `%${search}%` } }
+                ]
+            };
+        }
         
         // Check if user is a manager
         const isManager = req.user.roles.includes('manager');
         
         if (isManager) {
             // Managers can see all projects
-            projects = await Project.findAll({
-                attributes: { include: ['created_at', 'updated_at'] }
-            });
+            projects = await Project.findAll(queryOptions);
         } else {
             // Clients can only see projects they're assigned to
             const user = await User.findByPk(req.user.user_id, {
                 include: [{
                     model: Project,
-                    through: { attributes: ['access_level'] }
+                    through: { attributes: ['access_level'] },
+                    ...queryOptions
                 }]
             });
             

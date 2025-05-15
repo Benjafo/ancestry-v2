@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Project, projectsApi } from '../api/client';
+import EmptyState from '../components/common/EmptyState';
+import ErrorAlert from '../components/common/ErrorAlert';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import SuccessAlert from '../components/common/SuccessAlert';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectList from '../components/projects/ProjectList';
 import { hasRole } from '../utils/auth';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorAlert from '../components/common/ErrorAlert';
-import SuccessAlert from '../components/common/SuccessAlert';
-import EmptyState from '../components/common/EmptyState';
 
 const Projects = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +19,11 @@ const Projects = () => {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+    // Search and sort state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState<'updated_at' | 'created_at'>('updated_at');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const isManager = hasRole('manager');
 
     const handleOpenCreateModal = () => {
@@ -26,7 +31,8 @@ const Projects = () => {
     };
 
     const handleProjectCreated = (newProject: Project) => {
-        setProjects([...projects, newProject]);
+        // Refresh projects list to ensure sorting is maintained
+        fetchProjects();
         setIsCreateModalOpen(false);
 
         // Show success message
@@ -44,10 +50,8 @@ const Projects = () => {
     };
 
     const handleProjectUpdated = (updatedProject: Project) => {
-        // Update the projects list with the updated project
-        setProjects(projects.map(p =>
-            p.id === updatedProject.id ? updatedProject : p
-        ));
+        // Refresh projects list to ensure sorting is maintained
+        fetchProjects();
         setIsEditModalOpen(false);
         setSelectedProject(null);
 
@@ -60,6 +64,22 @@ const Projects = () => {
         }, 3000);
     };
 
+    const fetchProjects = async () => {
+        setIsLoading(true);
+        try {
+            const data = await projectsApi.getProjects({
+                sortBy,
+                sortOrder
+            });
+            setProjects(data.projects);
+            setIsLoading(false);
+        } catch (err) {
+            console.error('Error fetching projects:', err);
+            setError('Failed to load projects');
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
         // Check if we should open the create modal based on URL
         const searchParams = new URLSearchParams(window.location.search);
@@ -69,24 +89,27 @@ const Projects = () => {
             window.history.replaceState({}, '', '/projects');
         }
 
-        const fetchProjects = async () => {
-            try {
-                const data = await projectsApi.getProjects();
-                setProjects(data.projects);
-                setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching projects:', err);
-                setError('Failed to load projects');
-                setIsLoading(false);
-            }
-        };
-
         fetchProjects();
-    }, []);
+    }, [sortBy, sortOrder]);
 
-    const filteredProjects = filter === 'all'
-        ? projects
-        : projects.filter(project => project.status === filter);
+    // Apply client-side filtering for search and status
+    const filteredProjects = projects.filter(project => {
+        // First apply status filter
+        if (filter !== 'all' && project.status !== filter) {
+            return false;
+        }
+        
+        // Then apply search filter
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            return (
+                project.title.toLowerCase().includes(term) ||
+                project.description.toLowerCase().includes(term)
+            );
+        }
+        
+        return true;
+    });
 
     // const getStatusBadgeClass = (status: Project['status']) => {
     //     switch (status) {
@@ -130,6 +153,46 @@ const Projects = () => {
             </div>
 
             {successMessage && <SuccessAlert message={successMessage} />}
+
+            {/* Search and Sort Controls */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm mb-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    {/* Search Input */}
+                    <div className="relative flex-grow">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            placeholder="Search projects..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    
+                    {/* Sort Controls */}
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Sort by:</span>
+                        <select
+                            className="form-select rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            value={`${sortBy}-${sortOrder}`}
+                            onChange={(e) => {
+                                const [newSortBy, newSortOrder] = e.target.value.split('-');
+                                setSortBy(newSortBy as 'updated_at' | 'created_at');
+                                setSortOrder(newSortOrder as 'asc' | 'desc');
+                            }}
+                        >
+                            <option value="updated_at-desc">Last Updated (Newest)</option>
+                            <option value="updated_at-asc">Last Updated (Oldest)</option>
+                            <option value="created_at-desc">Date Created (Newest)</option>
+                            <option value="created_at-asc">Date Created (Oldest)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             {/* Filters */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
