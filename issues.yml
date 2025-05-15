@@ -32,14 +32,13 @@ project:
     Project -> edit project: the status dropdown has not implemented dark mode
 other:
   active:
-    Dashboard: 
     Manager dashboard: pending tasks
-    Manager dashboard: view all system events, e.g. user profile edited
     General: implement the task feature
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
     Dashboard: notifications
+    Dashboard: your projects section should be limited to three and include a link to view all projects
     Profile: form submission (NOTE Consolidated with settings page)
     Settings: delete account form submission (NOTE Commented out section)
     Settings: validation for fields
@@ -53,6 +52,7 @@ other:
     Manager dashboard: recent activity should be accurate
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page
     Manager dashboard: add a quick actions button to create a task
+    Manager dashboard: view all system events, e.g. user profile edited
     User management -> create user: role form does not match dark mode
     User management -> create user: should close modal after creating user
     User management -> create user: validation for fields
