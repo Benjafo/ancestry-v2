@@ -36,6 +36,26 @@ async function seedUsers(transaction) {
     
     console.log('Users seeded successfully with password: password123');
 
+    // Create 12 test users
+    console.log('Creating 12 test users...');
+    const testUsers = [];
+
+    for (let i = 1; i <= 12; i++) {
+        const testUser = await User.create({
+            email: `test${i}@example.com`,
+            password: 'Password123', // Will be hashed by model hooks
+            first_name: `Test ${i}`,
+            last_name: 'Test'
+        }, { transaction });
+        
+        // Assign client role to test user
+        await testUser.addRole(clientRole, { transaction });
+        
+        testUsers.push(testUser);
+    }
+    
+    console.log('Test users created successfully with password: Password123');
+
     // Assign roles to users using Sequelize associations
     console.log('Assigning roles to users...');
     await adminUser.addRole(managerRole, { transaction });
@@ -45,6 +65,7 @@ async function seedUsers(transaction) {
     return {
         adminUser,
         clientUser,
+        testUsers,
         managerRole,
         clientRole
     };
