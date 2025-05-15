@@ -95,18 +95,28 @@ export const validateCity = (city: string, required = false): { isValid: boolean
     return { isValid: true };
 };
 
+import { STATES_BY_COUNTRY } from './locationData';
+
 /**
  * Validates a state/province name or code
  * @param state The state/province to validate
+ * @param country The country code (e.g., 'USA', 'CAN')
  * @param required Whether the field is required
  * @returns Object with isValid flag and optional error message
  */
-export const validateState = (state: string, required = false): { isValid: boolean; message?: string } => {
+export const validateState = (state: string, country: string = '', required = false): { isValid: boolean; message?: string } => {
     if (!state) return required
         ? { isValid: false, message: 'State/Province is required' }
         : { isValid: true }; // Optional field if not required
 
-    if (state.length < 2) {
+    // For countries with predefined states, validate against the list
+    if (country && STATES_BY_COUNTRY[country]) {
+        const validStateCodes = STATES_BY_COUNTRY[country].map(s => s.code);
+        if (!validStateCodes.includes(state)) {
+            return { isValid: false, message: 'Please select a valid state/province' };
+        }
+    } else if (state.length < 2) {
+        // For other countries, just check the length
         return { isValid: false, message: 'State/province must be at least 2 characters' };
     }
 

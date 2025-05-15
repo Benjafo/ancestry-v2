@@ -14,6 +14,7 @@ import {
     validateState,
     validateZipCode
 } from '../utils/validationUtils';
+import { STATES_BY_COUNTRY, getStateCodeFromName } from '../utils/locationData';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -58,15 +59,32 @@ const Settings = () => {
         zip_code: '',
         country: ''
     });
+    
+    // State/province options based on selected country
+    const [stateOptions, setStateOptions] = useState<Array<{code: string, name: string}>>([]);
 
     // Fetch profile data on component mount
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 const data = await clientApi.getProfile();
+                
+                // Handle potential state name to code conversion
+                let profileState = data.profile.state;
+                if (data.profile.country && STATES_BY_COUNTRY[data.profile.country]) {
+                    // Check if state is a full name instead of a code
+                    const stateMatch = STATES_BY_COUNTRY[data.profile.country].find(
+                        state => state.name.toLowerCase() === data.profile.state?.toLowerCase()
+                    );
+                    if (stateMatch) {
+                        profileState = stateMatch.code;
+                    }
+                }
+                
                 setProfileData(prev => ({
                     ...prev,
-                    ...data.profile
+                    ...data.profile,
+                    state: profileState || data.profile.state
                 }));
             } catch (err: unknown) {
                 console.error('Error fetching profile data:', err);
@@ -83,6 +101,15 @@ const Settings = () => {
 
         fetchProfileData();
     }, []);
+    
+    // Update state options when country changes
+    useEffect(() => {
+        if (profileData.country && STATES_BY_COUNTRY[profileData.country]) {
+            setStateOptions(STATES_BY_COUNTRY[profileData.country]);
+        } else {
+            setStateOptions([]);
+        }
+    }, [profileData.country]);
 
     // Handle profile form changes
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -150,7 +177,7 @@ const Settings = () => {
             }
 
             // Validate state format
-            const stateValidation = validateState(profileData.state || '', true);
+            const stateValidation = validateState(profileData.state || '', profileData.country || '', true);
             if (!stateValidation.isValid && stateValidation.message) {
                 newValidationErrors.state = stateValidation.message;
             }
@@ -411,14 +438,32 @@ const Settings = () => {
                                     <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         State / Province
                                     </label>
-                                    <input
-                                        type="text"
-                                        name="state"
-                                        id="state"
-                                        className="form-input"
-                                        value={profileData.state}
-                                        onChange={handleProfileChange}
-                                    />
+                                    {stateOptions.length > 0 ? (
+                                        <select
+                                            name="state"
+                                            id="state"
+                                            className="form-input"
+                                            value={profileData.state}
+                                            onChange={handleProfileChange}
+                                        >
+                                            <option value="" disabled>Select a state/province</option>
+                                            {stateOptions.map(state => (
+                                                <option key={state.code} value={state.code}>
+                                                    {state.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            name="state"
+                                            id="state"
+                                            className="form-input"
+                                            value={profileData.state}
+                                            onChange={handleProfileChange}
+                                            placeholder="Enter state/province"
+                                        />
+                                    )}
                                 </div>
                                 <div>
                                     <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
