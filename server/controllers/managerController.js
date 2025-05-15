@@ -76,11 +76,19 @@ exports.getDashboardSummary = async (req, res) => {
     }
 };
 
-// Get all users with optional filtering and pagination
+// Get all users with optional filtering, pagination, and sorting
 exports.getUsers = async (req, res) => {
     try {
-        const { filter = 'all', page = 1, limit = 10 } = req.query;
+        const { 
+            filter = 'all', 
+            page = 1, 
+            limit = 10,
+            sortField = 'created_at',
+            sortDirection = 'desc'
+        } = req.query;
+        
         const offset = (parseInt(page) - 1) * parseInt(limit);
+        const direction = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
         let whereCondition = {};
         let includeCondition = [{ model: Role }];
@@ -102,13 +110,48 @@ exports.getUsers = async (req, res) => {
             include: includeCondition
         });
 
-        // Get paginated users
+        // Define order based on sortField
+        let order = [];
+        
+        // Handle special case for name sorting (which combines first_name and last_name)
+        if (sortField === 'name') {
+            order = [
+                ['first_name', direction],
+                ['last_name', direction]
+            ];
+        } 
+        // Handle special case for role sorting (which is in a related model)
+        else if (sortField === 'role') {
+            order = [
+                [{ model: Role }, 'name', direction]
+            ];
+        }
+        // Handle special case for status sorting (which is based on is_active)
+        else if (sortField === 'status') {
+            order = [
+                ['is_active', direction]
+            ];
+        }
+        // Default case for other fields
+        else {
+            // Map frontend field names to database column names if needed
+            const fieldMap = {
+                'last_login': 'last_login',
+                'email': 'email',
+                // Add other mappings as needed
+            };
+            
+            const dbField = fieldMap[sortField] || 'created_at';
+            order = [[dbField, direction]];
+        }
+
+        // Get paginated and sorted users
         const users = await User.findAll({
             include: includeCondition,
             attributes: { exclude: ['password'] },
             limit: parseInt(limit),
             offset: offset,
-            order: [['created_at', 'DESC']]
+            order: order
         });
 
         // Format users to include roles

@@ -31,12 +31,18 @@ const UserManagement = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, [filter, currentPage, pageSize]);
+    }, [filter, currentPage, pageSize, sortField, sortDirection]);
 
     const fetchUsers = async () => {
         try {
             setIsLoading(true);
-            const response = await managerApi.getUsers(filter, currentPage, pageSize);
+            const response = await managerApi.getUsers(
+                filter, 
+                currentPage, 
+                pageSize,
+                sortField || undefined,
+                sortDirection
+            );
             setUsers(response.users);
             setTotalPages(response.metadata.totalPages);
             setTotalUsers(response.metadata.total);
@@ -76,7 +82,8 @@ const UserManagement = () => {
         }
     };
 
-    // Apply filters
+    // Apply client-side filtering for search and status
+    // (Server doesn't handle these filters, so we still need to do them client-side)
     const filteredUsers = users.filter(user => {
         const searchTermLower = searchTerm.toLowerCase();
         const matchesSearch = (
@@ -92,30 +99,6 @@ const UserManagement = () => {
             (statusFilter === 'inactive' && !user.is_active);
 
         return matchesSearch && matchesStatus;
-    });
-
-    // Apply sorting
-    const sortedUsers = [...filteredUsers].sort((a, b) => {
-        if (sortField === 'name') {
-            const nameA = `${a.first_name} ${a.last_name}`.toLowerCase();
-            const nameB = `${b.first_name} ${b.last_name}`.toLowerCase();
-            return sortDirection === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-        } else if (sortField === 'email') {
-            return sortDirection === 'asc' ? a.email.localeCompare(b.email) : b.email.localeCompare(a.email);
-        } else if (sortField === 'role') {
-            const roleA = a.roles[0] || '';
-            const roleB = b.roles[0] || '';
-            return sortDirection === 'asc' ? roleA.localeCompare(roleB) : roleB.localeCompare(roleA);
-        } else if (sortField === 'status') {
-            const statusA = a.is_active ? 'active' : 'inactive';
-            const statusB = b.is_active ? 'active' : 'inactive';
-            return sortDirection === 'asc' ? statusA.localeCompare(statusB) : statusB.localeCompare(statusA);
-        } else if (sortField === 'last_login') {
-            const dateA = a.last_login ? new Date(a.last_login).getTime() : 0;
-            const dateB = b.last_login ? new Date(b.last_login).getTime() : 0;
-            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
-        }
-        return 0;
     });
 
     if (isLoading) {
@@ -241,14 +224,14 @@ const UserManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {sortedUsers.length === 0 ? (
+                            {filteredUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-4">
                                         <EmptyState message="No users found" />
                                     </td>
                                 </tr>
                             ) : (
-                                sortedUsers.map((user) => (
+                                filteredUsers.map((user: UserDetails) => (
                                     <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50 dark:bg-gray-700' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
@@ -268,7 +251,7 @@ const UserManagement = () => {
                                             <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {user.roles.map(role => (
+                                            {user.roles.map((role: string) => (
                                                 <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                     {role}
                                                 </span>

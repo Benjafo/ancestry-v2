@@ -27,10 +27,9 @@ project:
     Project -> edit project: the status dropdown has not implemented dark mode
 other:
   active:
-    Manager dashboard: new project button should open the create project modal, but not redirect to the project page
     Manager dashboard: (TASK) pending tasks
     Manager dashboard: (TASK) add a quick actions button to create a task
-    User management: add pagination and limit to three rows of users in the select client card
+    User management: sorting only works for the current page in pagination
     Settings: add dropdown for state/province based on country
     General: (TASK) implement the task feature
     General: user events need to be logged in the backend
@@ -40,6 +39,7 @@ other:
     Dashboard: notifications
     Profile: form submission (NOTE Consolidated with settings page)
     Manager dashboard: recent activity should be accurate
+    Manager dashboard: new project button should open the create project modal, but not redirect to the project page
     User management -> create user: role form does not match dark mode
     User management -> create user: should close modal after creating user
     User management -> create user: validation for fields
@@ -48,6 +48,7 @@ other:
     User management: Add filtering for status and sorting by name, email, and last login
     Client assignment: assignment history
     Client assignment: replace back to dashboard with add user button
+    Client assignment: add pagination and limit to three rows of users in the select client card
     Settings: delete account form submission (NOTE Commented out section)
     Settings: validation for fields
     Settings: change password form submission

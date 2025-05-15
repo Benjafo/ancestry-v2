@@ -619,11 +619,20 @@ export const managerApi = {
     getUsers: async (
         filter: 'all' | 'clients' | 'managers' = 'all',
         page: number = 1,
-        limit: number = 10
+        limit: number = 10,
+        sortField?: string,
+        sortDirection?: 'asc' | 'desc'
     ): Promise<{ users: UserDetails[]; metadata: ApiMetadata }> => {
-        const response = await apiClient.get('manager/users', {
-            searchParams: { filter, page, limit }
-        });
+        const searchParams: Record<string, string | number> = { filter, page, limit };
+        
+        if (sortField) {
+            searchParams.sortField = sortField;
+            if (sortDirection) {
+                searchParams.sortDirection = sortDirection;
+            }
+        }
+        
+        const response = await apiClient.get('manager/users', { searchParams });
         return response.json();
     },
 
