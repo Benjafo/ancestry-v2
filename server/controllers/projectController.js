@@ -6,21 +6,37 @@ const projectService = require('../services/projectService');
 exports.getProjects = async (req, res) => {
     try {
         let projects;
+        const { search, sortBy = 'updated_at', sortOrder = 'desc' } = req.query;
+        
+        // Build query options
+        const queryOptions = {
+            attributes: { include: ['created_at', 'updated_at'] },
+            order: [[sortBy, sortOrder.toUpperCase()]]
+        };
+        
+        // Add search condition if provided
+        if (search) {
+            queryOptions.where = {
+                [Sequelize.Op.or]: [
+                    { title: { [Sequelize.Op.iLike]: `%${search}%` } },
+                    { description: { [Sequelize.Op.iLike]: `%${search}%` } }
+                ]
+            };
+        }
         
         // Check if user is a manager
         const isManager = req.user.roles.includes('manager');
         
         if (isManager) {
             // Managers can see all projects
-            projects = await Project.findAll({
-                attributes: { include: ['created_at', 'updated_at'] }
-            });
+            projects = await Project.findAll(queryOptions);
         } else {
             // Clients can only see projects they're assigned to
             const user = await User.findByPk(req.user.user_id, {
                 include: [{
                     model: Project,
-                    through: { attributes: ['access_level'] }
+                    through: { attributes: ['access_level'] },
+                    ...queryOptions
                 }]
             });
             
@@ -273,6 +289,15 @@ exports.updateProject = async (req, res) => {
             }
         }
         
+        // Check if project is completed - only allow status changes
+        if (project.status === 'completed' && 
+            ((title !== undefined && title !== project.title) || 
+             (description !== undefined && description !== project.description))) {
+            return res.status(403).json({ 
+                message: 'Completed projects cannot be modified. You can only change the status.' 
+            });
+        }
+        
         // Update fields
         if (title) project.title = title;
         if (description) project.description = description;
@@ -458,6 +483,20 @@ async function checkProjectAccess(req, projectId) {
 async function checkProjectEditAccess(req, projectId) {
     // Check if user is a manager
     const isManager = req.user.roles.includes('manager');
+    
+    // First, check if the project is completed
+    const project = await Project.findByPk(projectId);
+    
+    if (!project) {
+        throw new Error('Project not found');
+    }
+    
+    // If project is completed AND this is not a status change request, prevent edit operations
+    // We'll check req.body to see if this is a status-only change
+    if (project.status === 'completed' && req.body && 
+        (Object.keys(req.body).length > 1 || (Object.keys(req.body).length === 1 && !req.body.status))) {
+        throw new Error('Completed projects cannot be modified. You can only change the status.');
+    }
     
     if (isManager) {
         return true;

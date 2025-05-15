@@ -55,7 +55,12 @@ const EditProjectModal = <T extends Project = Project>({
         setIsSubmitting(true);
         
         try {
-            const response = await projectsApi.updateProject(project.id, formData);
+            // If project is completed, only send status
+            const dataToSend = project.status === 'completed' 
+                ? { status: formData.status } 
+                : formData;
+                
+            const response = await projectsApi.updateProject(project.id, dataToSend);
             // Cast the response to the same type as the input project
             onSuccess({ ...project, ...response.project } as T);
         } catch (err) {
@@ -84,6 +89,13 @@ const EditProjectModal = <T extends Project = Project>({
                 </div>
                 <form onSubmit={handleUpdateProject}>
                     <div className="space-y-4">
+                        {project.status === 'completed' && (
+                            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                                <p className="text-sm">
+                                    This project is marked as completed. You can only change its status.
+                                </p>
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Project Title
@@ -92,9 +104,10 @@ const EditProjectModal = <T extends Project = Project>({
                                 type="text"
                                 id="title"
                                 name="title"
-                                className={`form-input mt-1 block w-full rounded-md ${formErrors.title ? 'border-red-300' : ''}`}
+                                className={`form-input mt-1 block w-full rounded-md ${project.status === 'completed' ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-700'} text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 ${formErrors.title ? 'border-red-300 dark:border-red-500' : ''}`}
                                 value={formData.title}
                                 onChange={handleInputChange}
+                                disabled={project.status === 'completed'}
                             />
                             {formErrors.title && (
                                 <p className="mt-1 text-sm text-red-600">{formErrors.title}</p>
@@ -108,9 +121,10 @@ const EditProjectModal = <T extends Project = Project>({
                                 id="description"
                                 name="description"
                                 rows={4}
-                                className={`form-input mt-1 block w-full rounded-md ${formErrors.description ? 'border-red-300' : ''}`}
+                                className={`form-input mt-1 block w-full rounded-md ${project.status === 'completed' ? 'bg-gray-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-700'} text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 ${formErrors.description ? 'border-red-300 dark:border-red-500' : ''}`}
                                 value={formData.description}
                                 onChange={handleInputChange}
+                                disabled={project.status === 'completed'}
                             />
                             {formErrors.description && (
                                 <p className="mt-1 text-sm text-red-600">{formErrors.description}</p>
@@ -123,7 +137,7 @@ const EditProjectModal = <T extends Project = Project>({
                             <select
                                 id="status"
                                 name="status"
-                                className="form-select mt-1 block w-full rounded-md"
+                                className="form-select mt-1 block w-full rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                                 value={formData.status}
                                 onChange={handleInputChange}
                             >

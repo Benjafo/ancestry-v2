@@ -39,7 +39,10 @@ const Dashboard = () => {
 
         const fetchProjects = async () => {
             try {
-                const response = await projectsApi.getProjects();
+                const response = await projectsApi.getProjects({
+                    sortBy: 'updated_at',
+                    sortOrder: 'desc'
+                });
                 setProjects(response.projects);
                 setProjectsLoading(false);
             } catch (err) {
@@ -107,10 +110,17 @@ const Dashboard = () => {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white">Your Projects</h2>
                 </div>
                 <ProjectList
-                    projects={projects}
+                    projects={projects.slice(0, 3)}
                     isLoading={projectsLoading}
                     error={projectsError}
                 />
+                {projects.length > 3 && (
+                    <div className="mt-4 text-center">
+                        <Link to="/projects" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            View all {projects.length} projects
+                        </Link>
+                    </div>
+                )}
             </div>
 
 

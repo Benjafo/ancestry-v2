@@ -1,54 +1,79 @@
 project:
   active:
     Project: tree view
+    Project: there should be a page or modal to view all events in the timeline, even if they are duplicated
+    Project: the add document button does not open the modal
+    Project: events should trigger user events that appear in the activity feeds
     Project -> overview: recent activity should be accurate
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> timeline: there are duplicate events in the timeline, events should be listed as a family event if over three persons are attached to it, otherwise it should list the attached persons separated by commas. An event should only appear once on the timeline
+    Project -> family members: clients should not be able to edit family members in the view person modal
     Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
     Project -> family members: create and edit person modal should allow for creating and editing relationships
     Project -> family members: add and edit events in create and edit modal is broken
     Project -> family members: add and edit documents in create and edit modal is broken
     Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
-
   finished:
-    Projects: view project button is not aligned to bottom of card
+    Project: researcher should be able to create "research notes"
+    Project: implement research notes tab
+    Project: switching between tabs should change the "Add X" button, e.g. add document, add event, add person, add research note
     Project -> documents: no date on documents
     Project -> documents: type is blank
     Project -> documents: duplicate documents are shown
     Project -> timeline: fix capitalization of event type
     Project -> timeline: related person should appear before event in timeline view
+    Project -> family members: person cards should all be the same height
     Project -> family members: after canceling delete, view person modal appear
     Project -> family members: duplicate header with heading and "add person" button should be removed
     Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
     Project -> family members: edit button is obstructed by link to view person modal
-
+    Project -> new project: the description field does not implement dark mode
+    Project -> edit project: the status dropdown has not implemented dark mode
 other:
   active:
-    User management: Add filtering for status and sorting by name, email, and last login
-    Settings: change password form submission
     Manager dashboard: pending tasks
-    General: user events need to be logged in the backend
-    General: success and error messages are not displayed properly
-
+    General: implement the task feature
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
     Dashboard: notifications
+    Dashboard: your projects section should be limited to three and include a link to view all projects
     Profile: form submission (NOTE Consolidated with settings page)
+    Settings: delete account form submission (NOTE Commented out section)
+    Settings: validation for fields
+    Settings: change password form submission
+    Settings: add dropdown for state/province based on country
+    Settings: email preferences form submission
+    Projects: view project button is not aligned to bottom of card
+    Projects: projects should be sorted by last updated date, and there should be a search and sort by date created feature
+    Projects List: the date and status should be aligned to the bottom of the card
+    Projects List: the height of each card should be the same
     Manager dashboard: recent activity should be accurate
+    Manager dashboard: new project button should open the create project modal, but not redirect to the project page
+    Manager dashboard: add a quick actions button to create a task
+    Manager dashboard: view all system events, e.g. user profile edited
     User management -> create user: role form does not match dark mode
     User management -> create user: should close modal after creating user
     User management -> create user: validation for fields
     User management: bundle reset password and delete into the edit modal
     User management: dark mode issue for inactive users
+    User management: Add filtering for status and sorting by name, email, and last login
+    User management: sorting only works for the current page in pagination
+    User management: sorting should not consider case
     Client assignment: assignment history
     Client assignment: replace back to dashboard with add user button
-    Settings: delete account form submission (NOTE Commented out section)
-    Settings: validation for fields
+    Client assignment: add pagination and limit to three rows of users in the select client card
+    Client assignment: assignment history should be accurate
     General: move reused code into utility functions
-
+    General: success and error messages are not displayed properly
+    General: the default / route should redirect to the dashboard
+    General: user events need to be logged in the backend
+    General: once a project is "completed", it should not be editable
 future_functionality:
   active:
+    General: full codebase audit with gemini
     General: import GEDCOM file page
-    Settings: add dropdown for state/province based on country
+    General: links
+    General: payment processing
+    General: service purchasing

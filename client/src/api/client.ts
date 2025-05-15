@@ -334,8 +334,14 @@ export const dashboardApi = {
 };
 
 export const projectsApi = {
-    getProjects: async (): Promise<{ projects: Project[] }> => {
-        const response = await apiClient.get('projects');
+    getProjects: async (params?: { 
+        search?: string; 
+        sortBy?: string; 
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<{ projects: Project[] }> => {
+        const response = await apiClient.get('projects', { 
+            searchParams: params 
+        });
         return response.json();
     },
 
@@ -616,8 +622,28 @@ export const managerApi = {
     },
 
     // User Management
-    getUsers: async (filter: 'all' | 'clients' | 'managers' = 'all'): Promise<{ users: UserDetails[] }> => {
-        const response = await apiClient.get(`manager/users?filter=${filter}`);
+    getUsers: async (
+        filter: 'all' | 'clients' | 'managers' = 'all',
+        page: number = 1,
+        limit: number = 10,
+        sortField?: string,
+        sortDirection?: 'asc' | 'desc',
+        statusFilter?: 'all' | 'active' | 'inactive'
+    ): Promise<{ users: UserDetails[]; metadata: ApiMetadata }> => {
+        const searchParams: Record<string, string | number> = { filter, page, limit };
+        
+        if (sortField) {
+            searchParams.sortField = sortField;
+            if (sortDirection) {
+                searchParams.sortDirection = sortDirection;
+            }
+        }
+        
+        if (statusFilter && statusFilter !== 'all') {
+            searchParams.status = statusFilter;
+        }
+        
+        const response = await apiClient.get('manager/users', { searchParams });
         return response.json();
     },
 

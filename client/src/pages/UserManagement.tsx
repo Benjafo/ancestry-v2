@@ -2,39 +2,61 @@ import { useEffect, useState } from 'react';
 import { UserDetails, managerApi } from '../api/client';
 import CreateUserModal from '../components/CreateUserModal';
 import EditUserModal from '../components/EditUserModal';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import SuccessAlert from '../components/common/SuccessAlert';
+import EmptyState from '../components/common/EmptyState';
 import ErrorAlert from '../components/common/ErrorAlert';
 import InfoAlert from '../components/common/InfoAlert';
-import EmptyState from '../components/common/EmptyState';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import SuccessAlert from '../components/common/SuccessAlert';
 
 const UserManagement = () => {
     const [users, setUsers] = useState<UserDetails[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'clients' | 'managers'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortField, setSortField] = useState<'name' | 'email' | 'role' | 'status' | 'last_login' | ''>('');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(0);
+    const pageSize = 10; // Number of users per page
+
     useEffect(() => {
         fetchUsers();
-    }, [filter]);
+    }, [filter, currentPage, pageSize, sortField, sortDirection, statusFilter]);
 
     const fetchUsers = async () => {
         try {
             setIsLoading(true);
-            const response = await managerApi.getUsers(filter);
+            const response = await managerApi.getUsers(
+                filter,
+                currentPage,
+                pageSize,
+                sortField || undefined,
+                sortDirection,
+                statusFilter
+            );
             setUsers(response.users);
+            setTotalPages(response.metadata.totalPages);
+            setTotalUsers(response.metadata.total);
             setIsLoading(false);
         } catch (err) {
             console.error('Error fetching users:', err);
             setError('Failed to load users');
             setIsLoading(false);
         }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
     };
 
     const handleResetPassword = async (userId: string) => {
@@ -52,6 +74,17 @@ const UserManagement = () => {
         setIsEditModalOpen(true);
     };
 
+    const handleSort = (field: 'name' | 'email' | 'role' | 'status' | 'last_login') => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    // Apply client-side filtering for search only
+    // (Status filtering is now handled server-side)
     const filteredUsers = users.filter(user => {
         const searchTermLower = searchTerm.toLowerCase();
         return (
@@ -82,34 +115,45 @@ const UserManagement = () => {
             {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
             {temporaryPassword && (
-                <InfoAlert 
-                    message={`Temporary password: ${temporaryPassword}. Please save this password. It will not be shown again.`} 
-                    onDismiss={() => setTemporaryPassword(null)} 
+                <InfoAlert
+                    message={`Temporary password: ${temporaryPassword}. Please save this password. It will not be shown again.`}
+                    onDismiss={() => setTemporaryPassword(null)}
                 />
             )}
 
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                        <div className="flex space-x-2">
-                            <button
-                                className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                                onClick={() => setFilter('all')}
+                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <div className="flex space-x-2">
+                                <button
+                                    className={`px-4 py-2 rounded-md ${filter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                                    onClick={() => setFilter('all')}
+                                >
+                                    All Users
+                                </button>
+                                <button
+                                    className={`px-4 py-2 rounded-md ${filter === 'clients' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                                    onClick={() => setFilter('clients')}
+                                >
+                                    Clients
+                                </button>
+                                <button
+                                    className={`px-4 py-2 rounded-md ${filter === 'managers' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                                    onClick={() => setFilter('managers')}
+                                >
+                                    Managers
+                                </button>
+                            </div>
+                            <select
+                                className="form-select rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
                             >
-                                All Users
-                            </button>
-                            <button
-                                className={`px-4 py-2 rounded-md ${filter === 'clients' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                                onClick={() => setFilter('clients')}
-                            >
-                                Clients
-                            </button>
-                            <button
-                                className={`px-4 py-2 rounded-md ${filter === 'managers' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                                onClick={() => setFilter('managers')}
-                            >
-                                Managers
-                            </button>
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
                         </div>
                         <div className="relative">
                             <input
@@ -132,20 +176,40 @@ const UserManagement = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Name
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('name')}
+                                >
+                                    Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Email
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('email')}
+                                >
+                                    Email {sortField === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Role
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('role')}
+                                >
+                                    Role {sortField === 'role' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('status')}
+                                >
+                                    Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Last Login
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                    onClick={() => handleSort('last_login')}
+                                >
+                                    Last Login {sortField === 'last_login' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     {/* Action */}
@@ -160,7 +224,7 @@ const UserManagement = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredUsers.map((user) => (
+                                filteredUsers.map((user: UserDetails) => (
                                     <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50 dark:bg-gray-700' : ''}>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
@@ -180,7 +244,7 @@ const UserManagement = () => {
                                             <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            {user.roles.map(role => (
+                                            {user.roles.map((role: string) => (
                                                 <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                     {role}
                                                 </span>
@@ -216,6 +280,104 @@ const UserManagement = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
+                        <div className="flex-1 flex justify-between sm:hidden">
+                            <button
+                                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md ${currentPage === 1
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    }`}
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                                disabled={currentPage === totalPages}
+                                className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md ${currentPage === totalPages
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    }`}
+                            >
+                                Next
+                            </button>
+                        </div>
+                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                                    Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{' '}
+                                    <span className="font-medium">
+                                        {Math.min(currentPage * pageSize, totalUsers)}
+                                    </span>{' '}
+                                    of <span className="font-medium">{totalUsers}</span> results
+                                </p>
+                            </div>
+                            <div>
+                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <button
+                                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                                        disabled={currentPage === 1}
+                                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === 1
+                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                            : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                            }`}
+                                    >
+                                        <span className="sr-only">Previous</span>
+                                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Page Numbers */}
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                        // Calculate page numbers to show (centered around current page)
+                                        let pageNum;
+                                        if (totalPages <= 5) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage <= 3) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage >= totalPages - 2) {
+                                            pageNum = totalPages - 4 + i;
+                                        } else {
+                                            pageNum = currentPage - 2 + i;
+                                        }
+
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => handlePageChange(pageNum)}
+                                                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === pageNum
+                                                    ? 'z-10 bg-primary-50 dark:bg-primary-900 border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-200'
+                                                    : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                                    }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+
+                                    <button
+                                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === totalPages
+                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                            : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                            }`}
+                                    >
+                                        <span className="sr-only">Next</span>
+                                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Create User Modal */}

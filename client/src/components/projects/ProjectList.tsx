@@ -58,12 +58,13 @@ const ProjectList = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
                 <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
-                    <div className="p-5 flex-grow">
+                    {/* Card Header - Title and Edit Button */}
+                    <div className="p-5 pb-3">
                         <div className="flex justify-between items-start">
                             <Link
                                 to="/projects/$projectId"
                                 params={{ projectId: project.id }}
-                                className="text-lg font-medium text-gray-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-400"
+                                className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400"
                             >
                                 {project.title}
                             </Link>
@@ -79,7 +80,15 @@ const ProjectList = ({
                                 </button>
                             )}
                         </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{project.description}</p>
+                    </div>
+                    
+                    {/* Card Body - Description */}
+                    <div className="px-5 flex-grow min-h-[80px]">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">{project.description}</p>
+                    </div>
+                    
+                    {/* Card Metadata - Date and Status */}
+                    <div className="px-5 py-3 mt-auto">
                         <div className="flex justify-between items-center">
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {formatDate(project.created_at)}
@@ -98,7 +107,9 @@ const ProjectList = ({
                             </span>
                         </div>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3 mt-auto">
+                    
+                    {/* Card Footer - View Project Link */}
+                    <div className="bg-gray-50 dark:bg-gray-700 px-5 py-3">
                         <Link
                             to="/projects/$projectId"
                             params={{ projectId: project.id }}

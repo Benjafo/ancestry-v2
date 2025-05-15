@@ -1,5 +1,6 @@
 const { User, Role, Project, UserEvent } = require('../models');
-const { Op } = require('sequelize');
+const UserEventService = require('../services/userEventService');
+const { Op, Sequelize } = require('sequelize');
 
 // Get dashboard summary for managers
 exports.getDashboardSummary = async (req, res) => {
@@ -76,14 +77,32 @@ exports.getDashboardSummary = async (req, res) => {
     }
 };
 
-// Get all users with optional filtering
+// Get all users with optional filtering, pagination, and sorting
 exports.getUsers = async (req, res) => {
     try {
-        const { filter = 'all' } = req.query;
+        const { 
+            filter = 'all', 
+            page = 1, 
+            limit = 10,
+            sortField = 'created_at',
+            sortDirection = 'desc',
+            status
+        } = req.query;
+        
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        const direction = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
         let whereCondition = {};
         let includeCondition = [{ model: Role }];
 
+        // Apply status filter if provided
+        if (status === 'active') {
+            whereCondition.is_active = true;
+        } else if (status === 'inactive') {
+            whereCondition.is_active = false;
+        }
+
+        // Apply role filter
         if (filter === 'clients') {
             includeCondition = [{
                 model: Role,
@@ -96,9 +115,61 @@ exports.getUsers = async (req, res) => {
             }];
         }
 
+        // Get total count for pagination
+        const count = await User.count({
+            where: whereCondition,
+            include: includeCondition
+        });
+
+        // Define order based on sortField
+        let order = [];
+        
+        // Handle special case for name sorting (which combines first_name and last_name)
+        if (sortField === 'name') {
+            order = [
+                [Sequelize.fn('LOWER', Sequelize.col('first_name')), direction],
+                [Sequelize.fn('LOWER', Sequelize.col('last_name')), direction]
+            ];
+        } 
+        // Handle special case for role sorting (which is in a related model)
+        else if (sortField === 'role') {
+            order = [
+                [{ model: Role }, 'name', direction]
+            ];
+        }
+        // Handle special case for status sorting (which is based on is_active)
+        else if (sortField === 'status') {
+            order = [
+                ['is_active', direction]
+            ];
+        }
+        // Default case for other fields
+        else {
+            // Map frontend field names to database column names if needed
+            const fieldMap = {
+                'last_login': 'last_login',
+                'email': 'email',
+                // Add other mappings as needed
+            };
+            
+            const dbField = fieldMap[sortField] || 'created_at';
+            
+            // Use case-insensitive sorting for string fields
+            if (['email'].includes(sortField)) {
+                order = [[Sequelize.fn('LOWER', Sequelize.col(dbField)), direction]];
+            } else {
+                order = [[dbField, direction]];
+            }
+        }
+
+        // Get paginated and sorted users
         const users = await User.findAll({
+            where: whereCondition,
             include: includeCondition,
-            attributes: { exclude: ['password'] }
+            attributes: { exclude: ['password'] },
+            limit: parseInt(limit),
+            offset: offset,
+            order: order
         });
 
         // Format users to include roles
@@ -110,7 +181,15 @@ exports.getUsers = async (req, res) => {
             };
         });
 
-        res.status(200).json({ users: formattedUsers });
+        res.status(200).json({
+            users: formattedUsers,
+            metadata: {
+                total: count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(count / parseInt(limit))
+            }
+        });
     } catch (error) {
         console.error('Get users error:', error);
         res.status(500).json({ message: 'Server error retrieving users' });
@@ -186,6 +265,16 @@ exports.createUser = async (req, res) => {
             ...userData,
             roles: userData.Roles ? userData.Roles.map(role => role.name) : []
         };
+
+        // Create user event for the manager who created the user
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'user_created',
+            `Created new ${role} user: ${first_name} ${last_name}`,
+            user.user_id,
+            'user'
+        );
 
         res.status(201).json({
             message: 'User created successfully',
@@ -269,6 +358,16 @@ exports.deactivateUser = async (req, res) => {
         user.is_active = false;
         await user.save();
 
+        // Create user event for the manager who deactivated the user
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'user_deactivated',
+            `Deactivated user: ${user.first_name} ${user.last_name}`,
+            userId,
+            'user'
+        );
+
         res.status(200).json({ message: 'User deactivated successfully' });
     } catch (error) {
         console.error('Deactivate user error:', error);
@@ -290,6 +389,16 @@ exports.reactivateUser = async (req, res) => {
         // Reactivate user
         user.is_active = true;
         await user.save();
+
+        // Create user event for the manager who reactivated the user
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'user_reactivated',
+            `Reactivated user: ${user.first_name} ${user.last_name}`,
+            userId,
+            'user'
+        );
 
         res.status(200).json({ message: 'User reactivated successfully' });
     } catch (error) {
@@ -315,6 +424,16 @@ exports.resetUserPassword = async (req, res) => {
         // Update user password
         user.password = temporaryPassword; // Will be hashed by the model hook
         await user.save();
+
+        // Create user event for the manager who reset the password
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'password_reset',
+            `Reset password for user: ${user.first_name} ${user.last_name}`,
+            userId,
+            'user'
+        );
 
         res.status(200).json({
             message: 'Password reset successfully',
@@ -404,6 +523,26 @@ exports.assignClientToProject = async (req, res) => {
             through: { access_level: accessLevel }
         });
 
+        // Create user event for the client
+        await UserEventService.createEvent(
+            clientId,
+            req.user.user_id, // The manager doing the assignment
+            'project_assigned',
+            `You've been assigned to a new project: ${project.title}`,
+            projectId,
+            'project'
+        );
+
+        // Create user event for the manager
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'project_assigned',
+            `Assigned client to project: ${project.title}`,
+            projectId,
+            'project'
+        );
+
         res.status(200).json({ message: 'Client assigned to project successfully' });
     } catch (error) {
         console.error('Assign client to project error:', error);
@@ -436,6 +575,26 @@ exports.removeClientFromProject = async (req, res) => {
 
         // Remove client from project
         await project.removeUser(clientId);
+
+        // Create user event for the client
+        await UserEventService.createEvent(
+            clientId,
+            req.user.user_id, // The manager doing the removal
+            'project_removed',
+            `You've been removed from project: ${project.title}`,
+            projectId,
+            'project'
+        );
+
+        // Create user event for the manager
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'project_removed',
+            `Removed client from project: ${project.title}`,
+            projectId,
+            'project'
+        );
 
         res.status(200).json({ message: 'Client removed from project successfully' });
     } catch (error) {
