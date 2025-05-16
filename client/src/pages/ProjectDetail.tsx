@@ -232,20 +232,13 @@ const ProjectDetail = () => {
                     </Link>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
                 </div>
-                <div className="flex space-x-2">
+                <div>
                     <button
                         className="btn-secondary"
                         onClick={handleOpenEditModal}
                         title={project.status === 'completed' ? 'You can only change the status of completed projects' : 'Edit project'}
                     >
                         Edit Project
-                    </button>
-                    <button 
-                        className={`btn-primary ${project.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={project.status === 'completed'}
-                        title={project.status === 'completed' ? 'Completed projects cannot be modified' : 'Add document'}
-                    >
-                        Add Document
                     </button>
                 </div>
             </div>
@@ -338,15 +331,15 @@ const ProjectDetail = () => {
                                 <div className="flex space-x-2">
                                     <button
                                         className="btn-secondary"
-                                        onClick={handleCreatePerson}
-                                    >
-                                        Create New Person
-                                    </button>
-                                    <button
-                                        className="btn-primary"
                                         onClick={handleAddPerson}
                                     >
                                         Add Existing Person
+                                    </button>
+                                    <button
+                                        className="btn-primary"
+                                        onClick={handleCreatePerson}
+                                    >
+                                        Create New Person
                                     </button>
                                 </div>
                             )}

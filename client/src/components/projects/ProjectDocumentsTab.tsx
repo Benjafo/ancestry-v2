@@ -6,11 +6,62 @@ interface ProjectDocumentsTabProps {
     project: ProjectDetail;
 }
 
+// Placeholder for the AddDocumentModal component
+// This would be implemented in a separate file
+const AddDocumentModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    projectId: string;
+    onDocumentAdded: () => void;
+}> = ({ isOpen, onClose, projectId, onDocumentAdded }) => {
+    if (!isOpen) return null;
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h2 className="text-xl font-semibold mb-4">Add Document</h2>
+                <p className="mb-4 text-gray-600 dark:text-gray-300">
+                    This is a placeholder for the Add Document modal. In a real implementation, this would include a form to upload or link to a document.
+                </p>
+                <div className="flex justify-end space-x-2">
+                    <button 
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                        onClick={onClose}
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        onClick={() => {
+                            onDocumentAdded();
+                            onClose();
+                        }}
+                    >
+                        Add Document
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) => {
     // State to store unique documents and search term
     const [uniqueDocuments, setUniqueDocuments] = useState<ProjectDetail['documents']>([]);
     const [filteredDocuments, setFilteredDocuments] = useState<ProjectDetail['documents']>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
+    
+    // Handler for opening the add document modal
+    const handleAddDocument = () => {
+        setIsAddDocumentModalOpen(true);
+    };
+    
+    // Handler for document added
+    const handleDocumentAdded = () => {
+        // In a real implementation, this would refresh the documents list
+        console.log('Document added');
+    };
     
     // Remove duplicate documents based on ID
     useEffect(() => {
@@ -149,18 +200,29 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
         <div>
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search documents..."
-                        className="form-input py-2 pl-10 pr-4 rounded-md"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                    />
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                <div className="flex space-x-4">
+                    {project.access_level === 'edit' && project.status !== 'completed' && (
+                        <button
+                            className="btn-primary"
+                            onClick={handleAddDocument}
+                            title="Add a new document to this project"
+                        >
+                            Add Document
+                        </button>
+                    )}
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search documents..."
+                            className="form-input py-2 pl-10 pr-4 rounded-md"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                        />
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -198,6 +260,14 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                     </div>
                 )}
             </div>
+            
+            {/* Add Document Modal */}
+            <AddDocumentModal
+                isOpen={isAddDocumentModalOpen}
+                onClose={() => setIsAddDocumentModalOpen(false)}
+                projectId={project.id}
+                onDocumentAdded={handleDocumentAdded}
+            />
         </div>
     );
 };

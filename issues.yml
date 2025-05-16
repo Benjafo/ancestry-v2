@@ -1,12 +1,11 @@
 project:
   active:
     Project: tree view
-    Project: there should be a page or modal to view all events in the timeline, even if they are duplicated
     Project: the add document button does not open the modal
     Project: events should trigger user events that appear in the activity feeds
     Project: researcher should be able to create "research notes"
     Project: implement research notes tab
-    Project: switching between tabs should change the "Add X" button, e.g. add document, add event, add person, add research note
+    Project: move create document button to the documents tab
     Project -> overview: recent activity should be accurate
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
