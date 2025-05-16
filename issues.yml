@@ -2,7 +2,6 @@ project:
   active:
     Project: tree view
     Project: events should trigger user events that appear in the activity feeds
-    Project: implement research notes tab
     Project -> documents: add document modal
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
@@ -15,6 +14,7 @@ project:
     Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
   finished:
     Project: move create document button to the documents tab
+    Project: implement research notes tab
     Project -> overview: recent activity should be accurate
     Project -> documents: no date on documents
     Project -> documents: type is blank

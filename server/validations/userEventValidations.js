@@ -48,6 +48,26 @@ exports.userEventIdValidation = [
 ];
 
 /**
+ * Validation rules for updating a user event
+ */
+exports.updateUserEventValidation = [
+    param('id')
+        .isUUID().withMessage(errorMessages.uuid),
+    
+    body('message')
+        .notEmpty().withMessage(errorMessages.required('Message'))
+        .isString().withMessage('Message must be a string')
+];
+
+/**
+ * Validation rules for deleting a user event
+ */
+exports.deleteUserEventValidation = [
+    param('id')
+        .isUUID().withMessage(errorMessages.uuid)
+];
+
+/**
  * Validation for getting user events
  */
 exports.getUserEventsValidation = [

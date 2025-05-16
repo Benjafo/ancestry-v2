@@ -6,7 +6,9 @@ const { validate } = require('../middleware/validation');
 const { 
     createUserEventValidation,
     userEventIdValidation,
-    getUserEventsValidation
+    getUserEventsValidation,
+    updateUserEventValidation,
+    deleteUserEventValidation
 } = require('../validations/userEventValidations');
 
 // All routes require authentication
@@ -32,5 +34,19 @@ router.get('/:id', validate(userEventIdValidation), userEventController.getUserE
  * @access  Private
  */
 router.post('/', validate(createUserEventValidation), userEventController.createUserEvent);
+
+/**
+ * @route   PUT /api/user-events/:id
+ * @desc    Update a user event
+ * @access  Private
+ */
+router.put('/:id', validate(updateUserEventValidation), userEventController.updateUserEvent);
+
+/**
+ * @route   DELETE /api/user-events/:id
+ * @desc    Delete a user event
+ * @access  Private
+ */
+router.delete('/:id', validate(deleteUserEventValidation), userEventController.deleteUserEvent);
 
 module.exports = router;

@@ -448,6 +448,20 @@ export const projectsApi = {
             }
         });
         return response.json();
+    },
+    
+    // Update a research note
+    updateResearchNote: async (noteId: string, message: string): Promise<{ message: string; event: UserEvent }> => {
+        const response = await apiClient.put(`user-events/${noteId}`, {
+            json: { message }
+        });
+        return response.json();
+    },
+    
+    // Delete a research note
+    deleteResearchNote: async (noteId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`user-events/${noteId}`);
+        return response.json();
     }
 };
 
