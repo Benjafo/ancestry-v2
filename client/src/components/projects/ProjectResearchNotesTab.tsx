@@ -86,43 +86,38 @@ const ProjectResearchNotesTab: React.FC<ProjectResearchNotesTabProps> = ({ proje
                 </div>
             )}
             
-            {/* Add new note form */}
-            {project.access_level === 'edit' && project.status !== 'completed' && (
-                <form onSubmit={handleAddNote} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4">
-                    <div className="mb-4">
-                        <label htmlFor="newNote" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Add Research Note
-                        </label>
-                        <textarea
-                            id="newNote"
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                            placeholder="Enter your research findings, theories, or next steps..."
-                            value={newNote}
-                            onChange={(e) => setNewNote(e.target.value)}
-                            disabled={isSubmitting}
-                        ></textarea>
-                    </div>
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            className="btn-primary"
-                            disabled={isSubmitting || !newNote.trim()}
-                        >
-                            {isSubmitting ? 'Adding...' : 'Add Note'}
-                        </button>
-                    </div>
-                </form>
-            )}
-            
             {/* Research notes list */}
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Research Notes</h3>
+                <div className="px-4 py-5 sm:px-6">
+                    <h3 className="text-xl font-medium text-gray-900 dark:text-white">Research Notes</h3>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         A chronological record of research findings and milestones
                     </p>
                 </div>
+                
+                {/* Add new note form - inline version */}
+                {project.access_level === 'edit' && project.status !== 'completed' && (
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <form onSubmit={handleAddNote} className="flex items-center space-x-2">
+                            <input
+                                type="text"
+                                id="newNote"
+                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="Add a research note..."
+                                value={newNote}
+                                onChange={(e) => setNewNote(e.target.value)}
+                                disabled={isSubmitting}
+                            />
+                            <button
+                                type="submit"
+                                className="btn-primary whitespace-nowrap"
+                                disabled={isSubmitting || !newNote.trim()}
+                            >
+                                {isSubmitting ? 'Adding...' : 'Add Note'}
+                            </button>
+                        </form>
+                    </div>
+                )}
                 
                 <div className="px-4 py-5 sm:p-6">
                     {isLoading ? (
