@@ -13,6 +13,7 @@ import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectDocumentsTab from '../components/projects/ProjectDocumentsTab';
 import ProjectFamilyMembersTab from '../components/projects/ProjectFamilyMembersTab';
 import ProjectOverviewTab from '../components/projects/ProjectOverviewTab';
+import ProjectResearchNotesTab from '../components/projects/ProjectResearchNotesTab';
 import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { formatDate } from '../utils/dateUtils';
@@ -22,7 +23,7 @@ const ProjectDetail = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members' | 'research_notes'>('overview');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
     const [isCreatePersonModalOpen, setIsCreatePersonModalOpen] = useState(false);
@@ -304,6 +305,15 @@ const ProjectDetail = () => {
                         >
                             Family Members {project.persons && `(${project.persons.length})`}
                         </button>
+                        <button
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'research_notes'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
+                            onClick={() => setActiveTab('research_notes')}
+                        >
+                            Research Notes
+                        </button>
                     </nav>
                 </div>
 
@@ -358,6 +368,10 @@ const ProjectDetail = () => {
                             onViewPerson={handleViewPerson}
                             onRemovePerson={handleRemovePerson}
                         />
+                    )}
+
+                    {activeTab === 'research_notes' && (
+                        <ProjectResearchNotesTab project={project} />
                     )}
                 </div>
             </div>

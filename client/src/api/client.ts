@@ -435,6 +435,19 @@ export const projectsApi = {
             searchParams: params
         });
         return response.json();
+    },
+
+    // Add a research note to a project
+    addResearchNote: async (projectId: string, note: string): Promise<{ message: string; event: UserEvent }> => {
+        const response = await apiClient.post('events', {
+            json: {
+                event_type: 'research_milestone',
+                message: note,
+                entity_id: projectId,
+                entity_type: 'project'
+            }
+        });
+        return response.json();
     }
 };
 

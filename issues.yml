@@ -1,15 +1,12 @@
 project:
   active:
     Project: tree view
-    Project: the add document button does not open the modal
     Project: events should trigger user events that appear in the activity feeds
-    Project: researcher should be able to create "research notes"
     Project: implement research notes tab
-    Project: move create document button to the documents tab
-    Project -> overview: recent activity should be accurate
+    Project -> documents: add document modal
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
-    Project -> timeline: there are duplicate events in the timeline, events should be listed as a family event if over three persons are attached to it, otherwise it should list the attached persons separated by commas. An event should only appear once on the timeline
+    Project -> timeline: duplicate events in timeline
     Project -> family members: clients should not be able to edit family members in the view person modal
     Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
     Project -> family members: create and edit person modal should allow for creating and editing relationships
@@ -17,6 +14,8 @@ project:
     Project -> family members: add and edit documents in create and edit modal is broken
     Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
   finished:
+    Project: move create document button to the documents tab
+    Project -> overview: recent activity should be accurate
     Project -> documents: no date on documents
     Project -> documents: type is blank
     Project -> documents: duplicate documents are shown
