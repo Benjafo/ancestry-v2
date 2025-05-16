@@ -7,13 +7,13 @@ exports.getProjects = async (req, res) => {
     try {
         let projects;
         const { search, sortBy = 'updated_at', sortOrder = 'desc' } = req.query;
-        
+
         // Build query options
         const queryOptions = {
             attributes: { include: ['created_at', 'updated_at'] },
             order: [[sortBy, sortOrder.toUpperCase()]]
         };
-        
+
         // Add search condition if provided
         if (search) {
             queryOptions.where = {
@@ -23,10 +23,10 @@ exports.getProjects = async (req, res) => {
                 ]
             };
         }
-        
+
         // Check if user is a manager
         const isManager = req.user.roles.includes('manager');
-        
+
         if (isManager) {
             // Managers can see all projects
             projects = await Project.findAll(queryOptions);
@@ -39,15 +39,15 @@ exports.getProjects = async (req, res) => {
                     ...queryOptions
                 }]
             });
-            
+
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
-            
+
             // Extract projects from user
             projects = user.Projects || [];
         }
-        
+
         // Ensure timestamps are included in the response
         const projectsWithDates = projects.map(project => {
             const projectJson = project.toJSON();
@@ -59,7 +59,7 @@ exports.getProjects = async (req, res) => {
                 access_level: isManager ? 'edit' : (projectJson.project_users?.access_level || 'view')
             };
         });
-        
+
         res.json({ projects: projectsWithDates });
     } catch (error) {
         console.error('Get projects error:', error);
@@ -71,10 +71,10 @@ exports.getProjects = async (req, res) => {
 exports.getProjectById = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Check if user is a manager
         const isManager = req.user.roles.includes('manager');
-        
+
         // Find the project with basic information and researcher
         const project = await Project.findByPk(id, {
             attributes: { include: ['created_at', 'updated_at'] },
@@ -108,11 +108,11 @@ exports.getProjectById = async (req, res) => {
                 }
             ]
         });
-        
+
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        
+
         // Set access level based on user role
         if (isManager) {
             // Managers always have edit access
@@ -127,18 +127,18 @@ exports.getProjectById = async (req, res) => {
                     through: { attributes: ['access_level'] }
                 }]
             });
-            
+
             if (!userProject) {
                 return res.status(403).json({ message: 'You do not have access to this project' });
             }
-            
+
             // Add access level to the project
             project.access_level = userProject.Users[0].project_users.access_level;
         }
-        
+
         // Process the project data to match frontend expectations
         const projectJson = project.toJSON();
-        
+
         // Collect all documents from all persons in the project
         const documents = [];
         if (projectJson.persons && projectJson.persons.length > 0) {
@@ -158,10 +158,10 @@ exports.getProjectById = async (req, res) => {
                 }
             });
         }
-        
+
         // Collect all events (both from project and from persons)
         const timeline = [];
-        
+
         // Add events directly associated with the project
         if (projectJson.events && projectJson.events.length > 0) {
             projectJson.events.forEach(event => {
@@ -173,7 +173,7 @@ exports.getProjectById = async (req, res) => {
                 });
             });
         }
-        
+
         // Add events from persons in the project
         if (projectJson.persons && projectJson.persons.length > 0) {
             projectJson.persons.forEach(person => {
@@ -192,10 +192,10 @@ exports.getProjectById = async (req, res) => {
                 }
             });
         }
-        
+
         // Sort timeline by date
         timeline.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
+
         // Create the final project object
         const projectWithDates = {
             ...projectJson,
@@ -205,7 +205,7 @@ exports.getProjectById = async (req, res) => {
             documents: documents,
             timeline: timeline
         };
-        
+
         res.json(projectWithDates);
     } catch (error) {
         console.error('Get project error:', error);
@@ -217,23 +217,23 @@ exports.getProjectById = async (req, res) => {
 exports.createProject = async (req, res) => {
     try {
         const { title, description } = req.body;
-        
+
         // Check if user exists
         const user = await User.findByPk(req.user.user_id);
-        
+
         if (!user) {
-            return res.status(404).json({ 
-                message: 'User not found. Please log out and log in again.' 
+            return res.status(404).json({
+                message: 'User not found. Please log out and log in again.'
             });
         }
-        
+
         const project = await Project.create({
             title,
             description,
             status: 'active',
             researcher_id: req.user.user_id // Assign current user as researcher
         });
-        
+
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
         const projectWithDates = {
@@ -241,7 +241,7 @@ exports.createProject = async (req, res) => {
             created_at: projectJson.created_at,
             updated_at: projectJson.updated_at
         };
-        
+
         res.status(201).json({
             message: 'Project created successfully',
             project: projectWithDates
@@ -257,19 +257,19 @@ exports.updateProject = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, status } = req.body;
-        
+
         // Check if user is a manager
         const isManager = req.user.roles.includes('manager');
-        
+
         // Find the project
         const project = await Project.findByPk(id, {
             attributes: { include: ['created_at', 'updated_at'] }
         });
-        
+
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        
+
         // If user is not a manager, check if they have edit access to this project
         if (!isManager) {
             const userProject = await Project.findOne({
@@ -277,34 +277,34 @@ exports.updateProject = async (req, res) => {
                 include: [{
                     model: User,
                     where: { user_id: req.user.user_id },
-                    through: { 
+                    through: {
                         where: { access_level: 'edit' },
-                        attributes: ['access_level'] 
+                        attributes: ['access_level']
                     }
                 }]
             });
-            
+
             if (!userProject) {
                 return res.status(403).json({ message: 'You do not have edit access to this project' });
             }
         }
-        
+
         // Check if project is completed - only allow status changes
-        if (project.status === 'completed' && 
-            ((title !== undefined && title !== project.title) || 
-             (description !== undefined && description !== project.description))) {
-            return res.status(403).json({ 
-                message: 'Completed projects cannot be modified. You can only change the status.' 
+        if (project.status === 'completed' &&
+            ((title !== undefined && title !== project.title) ||
+                (description !== undefined && description !== project.description))) {
+            return res.status(403).json({
+                message: 'Completed projects cannot be modified. You can only change the status.'
             });
         }
-        
+
         // Update fields
         if (title) project.title = title;
         if (description) project.description = description;
         if (status) project.status = status;
-        
+
         await project.save();
-        
+
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
         const projectWithDates = {
@@ -312,7 +312,7 @@ exports.updateProject = async (req, res) => {
             created_at: projectJson.created_at,
             updated_at: projectJson.updated_at
         };
-        
+
         res.json({
             message: 'Project updated successfully',
             project: projectWithDates
@@ -327,27 +327,27 @@ exports.updateProject = async (req, res) => {
 exports.getProjectPersons = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Check if user has access to this project
         await checkProjectAccess(req, id);
-        
+
         const persons = await projectService.getProjectPersons(id);
-        
+
         res.json(persons);
     } catch (error) {
         console.error('Get project persons error:', error);
-        
+
         if (error.message.includes('not found')) {
             return res.status(404).json({ message: error.message });
         }
-        
+
         if (error.message.includes('access')) {
             return res.status(403).json({ message: error.message });
         }
-        
-        res.status(500).json({ 
+
+        res.status(500).json({
             message: 'Server error retrieving project persons',
-            error: error.message 
+            error: error.message
         });
     }
 };
@@ -357,34 +357,34 @@ exports.addPersonToProject = async (req, res) => {
     try {
         const { id } = req.params;
         const { person_id, notes } = req.body;
-        
+
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
-        
+
         const association = await projectService.addPersonToProject(id, person_id, { notes });
-        
+
         res.status(201).json({
             message: 'Person added to project successfully',
             association
         });
     } catch (error) {
         console.error('Add person to project error:', error);
-        
+
         if (error.message.includes('not found')) {
             return res.status(404).json({ message: error.message });
         }
-        
+
         if (error.message.includes('access')) {
             return res.status(403).json({ message: error.message });
         }
-        
+
         if (error.message.includes('already in project')) {
             return res.status(409).json({ message: error.message });
         }
-        
-        res.status(500).json({ 
+
+        res.status(500).json({
             message: 'Server error adding person to project',
-            error: error.message 
+            error: error.message
         });
     }
 };
@@ -394,30 +394,30 @@ exports.updateProjectPerson = async (req, res) => {
     try {
         const { id, personId } = req.params;
         const { notes } = req.body;
-        
+
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
-        
+
         const association = await projectService.updateProjectPerson(id, personId, { notes });
-        
+
         res.json({
             message: 'Project person updated successfully',
             association
         });
     } catch (error) {
         console.error('Update project person error:', error);
-        
+
         if (error.message.includes('not found') || error.message.includes('not in project')) {
             return res.status(404).json({ message: error.message });
         }
-        
+
         if (error.message.includes('access')) {
             return res.status(403).json({ message: error.message });
         }
-        
-        res.status(500).json({ 
+
+        res.status(500).json({
             message: 'Server error updating project person',
-            error: error.message 
+            error: error.message
         });
     }
 };
@@ -426,29 +426,98 @@ exports.updateProjectPerson = async (req, res) => {
 exports.removePersonFromProject = async (req, res) => {
     try {
         const { id, personId } = req.params;
-        
+
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
-        
+
         await projectService.removePersonFromProject(id, personId);
-        
+
         res.json({
             message: 'Person removed from project successfully'
         });
     } catch (error) {
         console.error('Remove person from project error:', error);
-        
+
         if (error.message.includes('not found') || error.message.includes('not in project')) {
             return res.status(404).json({ message: error.message });
         }
-        
+
         if (error.message.includes('access')) {
             return res.status(403).json({ message: error.message });
         }
-        
-        res.status(500).json({ 
+
+        res.status(500).json({
             message: 'Server error removing person from project',
-            error: error.message 
+            error: error.message
+        });
+    }
+};
+
+// Get user events for a specific project
+exports.getProjectEvents = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', eventType } = req.query;
+
+        // Check if user has access to this project
+        await checkProjectAccess(req, id);
+
+        // Import UserEvent model
+        const { UserEvent, User } = require('../models');
+
+        // Build query options
+        const queryOptions = {
+            where: {
+                entity_id: id,
+                entity_type: 'project'
+            },
+            order: [[sortBy, sortOrder.toUpperCase()]],
+            limit: parseInt(limit),
+            offset: (parseInt(page) - 1) * parseInt(limit),
+            include: [{
+                model: User,
+                as: 'actor',
+                attributes: ['first_name', 'last_name']
+            }]
+        };
+
+        // Add event type filter if provided
+        if (eventType && eventType !== 'all') {
+            queryOptions.where.event_type = eventType;
+        }
+
+        // Get events
+        const { count, rows: events } = await UserEvent.findAndCountAll(queryOptions);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(count / parseInt(limit));
+
+        // Log for debugging
+        console.log(`Found ${count} events for project ${id}`);
+
+        res.json({
+            events,
+            metadata: {
+                total: count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages
+            }
+        });
+    } catch (error) {
+        console.error('Get project events error:', error);
+
+        if (error.message.includes('not found')) {
+            return res.status(404).json({ message: error.message });
+        }
+
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+
+        res.status(500).json({
+            message: 'Server error retrieving project events',
+            error: error.message
         });
     }
 };
@@ -457,11 +526,11 @@ exports.removePersonFromProject = async (req, res) => {
 async function checkProjectAccess(req, projectId) {
     // Check if user is a manager
     const isManager = req.user.roles.includes('manager');
-    
+
     if (isManager) {
         return true;
     }
-    
+
     // Check if user has access to this project
     const userProject = await Project.findOne({
         where: { id: projectId },
@@ -471,11 +540,11 @@ async function checkProjectAccess(req, projectId) {
             through: { attributes: ['access_level'] }
         }]
     });
-    
+
     if (!userProject) {
         throw new Error('You do not have access to this project');
     }
-    
+
     return true;
 }
 
@@ -483,41 +552,41 @@ async function checkProjectAccess(req, projectId) {
 async function checkProjectEditAccess(req, projectId) {
     // Check if user is a manager
     const isManager = req.user.roles.includes('manager');
-    
+
     // First, check if the project is completed
     const project = await Project.findByPk(projectId);
-    
+
     if (!project) {
         throw new Error('Project not found');
     }
-    
+
     // If project is completed AND this is not a status change request, prevent edit operations
     // We'll check req.body to see if this is a status-only change
-    if (project.status === 'completed' && req.body && 
+    if (project.status === 'completed' && req.body &&
         (Object.keys(req.body).length > 1 || (Object.keys(req.body).length === 1 && !req.body.status))) {
         throw new Error('Completed projects cannot be modified. You can only change the status.');
     }
-    
+
     if (isManager) {
         return true;
     }
-    
+
     // Check if user has edit access to this project
     const userProject = await Project.findOne({
         where: { id: projectId },
         include: [{
             model: User,
             where: { user_id: req.user.user_id },
-            through: { 
+            through: {
                 where: { access_level: 'edit' },
-                attributes: ['access_level'] 
+                attributes: ['access_level']
             }
         }]
     });
-    
+
     if (!userProject) {
         throw new Error('You do not have edit access to this project');
     }
-    
+
     return true;
 }

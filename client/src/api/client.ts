@@ -334,13 +334,13 @@ export const dashboardApi = {
 };
 
 export const projectsApi = {
-    getProjects: async (params?: { 
-        search?: string; 
-        sortBy?: string; 
+    getProjects: async (params?: {
+        search?: string;
+        sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     }): Promise<{ projects: Project[] }> => {
-        const response = await apiClient.get('projects', { 
-            searchParams: params 
+        const response = await apiClient.get('projects', {
+            searchParams: params
         });
         return response.json();
     },
@@ -417,6 +417,23 @@ export const projectsApi = {
 
     updatePerson: async (personId: string, personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
         const response = await apiClient.put(`persons/${personId}`, { json: personData });
+        return response.json();
+    },
+
+    // Get project events
+    getProjectEvents: async (
+        projectId: string,
+        params?: {
+            page?: number;
+            limit?: number;
+            sortBy?: string;
+            sortOrder?: 'asc' | 'desc';
+            eventType?: string;
+        }
+    ): Promise<{ events: UserEvent[]; metadata: ApiMetadata }> => {
+        const response = await apiClient.get(`projects/${projectId}/events`, {
+            searchParams: params
+        });
         return response.json();
     }
 };
@@ -631,18 +648,18 @@ export const managerApi = {
         statusFilter?: 'all' | 'active' | 'inactive'
     ): Promise<{ users: UserDetails[]; metadata: ApiMetadata }> => {
         const searchParams: Record<string, string | number> = { filter, page, limit };
-        
+
         if (sortField) {
             searchParams.sortField = sortField;
             if (sortDirection) {
                 searchParams.sortDirection = sortDirection;
             }
         }
-        
+
         if (statusFilter && statusFilter !== 'all') {
             searchParams.status = statusFilter;
         }
-        
+
         const response = await apiClient.get('manager/users', { searchParams });
         return response.json();
     },

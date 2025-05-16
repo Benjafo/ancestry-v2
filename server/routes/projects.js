@@ -71,4 +71,11 @@ router.put('/:id/persons/:personId', validate(updateProjectPersonValidation), pr
  */
 router.delete('/:id/persons/:personId', validate(projectPersonIdValidation), projectController.removePersonFromProject);
 
+/**
+ * @route   GET /api/projects/:id/events
+ * @desc    Get user events for a specific project
+ * @access  Private
+ */
+router.get('/:id/events', validate(projectIdValidation), projectController.getProjectEvents);
+
 module.exports = router;
