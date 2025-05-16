@@ -439,7 +439,7 @@ export const projectsApi = {
 
     // Add a research note to a project
     addResearchNote: async (projectId: string, note: string): Promise<{ message: string; event: UserEvent }> => {
-        const response = await apiClient.post('events', {
+        const response = await apiClient.post('user-events', {
             json: {
                 event_type: 'research_milestone',
                 message: note,

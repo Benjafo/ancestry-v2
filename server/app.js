@@ -18,6 +18,7 @@ var personsRouter = require('./routes/persons');
 var relationshipsRouter = require('./routes/relationships');
 var eventsRouter = require('./routes/events');
 var documentsRouter = require('./routes/documents');
+var userEventsRouter = require('./routes/userEvents');
 
 var app = express();
 
@@ -72,6 +73,7 @@ app.use('/api/persons', personsRouter);
 app.use('/api/relationships', relationshipsRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/documents', documentsRouter);
+app.use('/api/user-events', userEventsRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);
