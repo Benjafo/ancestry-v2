@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Person, projectsApi } from '../../api/client';
+import { Person, Relationship, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 
 interface ViewPersonModalProps {
@@ -37,6 +37,62 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
         }
     }, [personId, isOpen]);
 
+    // Function to organize relationships from relationshipsAsSubject and relationshipsAsObject
+    const organizeRelationships = (personData: Person) => {
+        const organizedRelationships = {
+            parents: [] as Relationship[],
+            children: [] as Relationship[],
+            spouses: [] as Relationship[],
+            siblings: [] as Relationship[]
+        };
+
+        // Process relationships where this person is the subject (person1)
+        if (personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) {
+            personData.relationshipsAsSubject.forEach(rel => {
+                const person = {
+                    person_id: rel.person2.person_id,
+                    first_name: rel.person2.first_name,
+                    last_name: rel.person2.last_name,
+                    relationship_qualifier: rel.relationship_qualifier,
+                    start_date: rel.start_date,
+                    end_date: rel.end_date
+                };
+
+                if (rel.relationship_type === 'parent') {
+                    organizedRelationships.children.push(person);
+                } else if (rel.relationship_type === 'spouse') {
+                    organizedRelationships.spouses.push(person);
+                } else if (rel.relationship_type === 'sibling') {
+                    organizedRelationships.siblings.push(person);
+                }
+            });
+        }
+
+        // Process relationships where this person is the object (person2)
+        if (personData.relationshipsAsObject && personData.relationshipsAsObject.length > 0) {
+            personData.relationshipsAsObject.forEach(rel => {
+                const person = {
+                    person_id: rel.person1.person_id,
+                    first_name: rel.person1.first_name,
+                    last_name: rel.person1.last_name,
+                    relationship_qualifier: rel.relationship_qualifier,
+                    start_date: rel.start_date,
+                    end_date: rel.end_date
+                };
+
+                if (rel.relationship_type === 'parent') {
+                    organizedRelationships.parents.push(person);
+                } else if (rel.relationship_type === 'spouse') {
+                    organizedRelationships.spouses.push(person);
+                } else if (rel.relationship_type === 'sibling') {
+                    organizedRelationships.siblings.push(person);
+                }
+            });
+        }
+
+        return organizedRelationships;
+    };
+
     const fetchPersonDetails = async () => {
         setLoading(true);
         try {
@@ -46,7 +102,19 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                 includeDocuments: true,
                 includeRelationships: true
             });
+
+            // Process relationships if they exist in the new format
+            if ((personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) || 
+                (personData.relationshipsAsObject && personData.relationshipsAsObject.length > 0)) {
+                
+                const organizedRelationships = organizeRelationships(personData);
+                
+                // Update the person data with the organized relationships
+                personData.relationships = organizedRelationships;
+            }
+            
             setPerson(personData);
+            console.log('Fetched person details:', personData);
         } catch (err) {
             console.error('Error fetching person details:', err);
             setError('Failed to load person details');

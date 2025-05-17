@@ -224,6 +224,8 @@ export interface Person {
         spouses?: Relationship[];
         siblings?: Relationship[];
     };
+    relationshipsAsSubject?: any[];
+    relationshipsAsObject?: any[];
 }
 
 export interface ProjectDetail extends Project {
