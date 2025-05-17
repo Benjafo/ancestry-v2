@@ -345,8 +345,14 @@ export const projectsApi = {
         return response.json();
     },
 
-    getProjectById: async (id: string): Promise<ProjectDetail> => {
-        const response = await apiClient.get(`projects/${id}`);
+    getProjectById: async (id: string, options?: {
+        includeRelationships?: boolean
+    }): Promise<ProjectDetail> => {
+        const queryParams = new URLSearchParams();
+        if (options?.includeRelationships) queryParams.append('includeRelationships', 'true');
+
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await apiClient.get(`projects/${id}${queryString}`);
         return response.json();
     },
 
@@ -654,6 +660,68 @@ export const documentsApi = {
 
     getDocumentPersonAssociation: async (documentId: string, personId: string): Promise<DocumentPersonAssociation> => {
         const response = await apiClient.get(`documents/association/${documentId}/${personId}`);
+        return response.json();
+    }
+};
+
+// Relationship API service
+export const relationshipsApi = {
+    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: any[]; metadata: ApiMetadata }> => {
+        const response = await apiClient.get('relationships', { searchParams: params });
+        return response.json();
+    },
+
+    getRelationshipById: async (relationshipId: string): Promise<any> => {
+        const response = await apiClient.get(`relationships/${relationshipId}`);
+        return response.json();
+    },
+
+    createRelationship: async (relationshipData: {
+        person1_id: string;
+        person2_id: string;
+        relationship_type: string;
+        relationship_qualifier?: string;
+        start_date?: string;
+        end_date?: string;
+        notes?: string;
+    }): Promise<{ message: string; relationship: any }> => {
+        const response = await apiClient.post('relationships', { json: relationshipData });
+        return response.json();
+    },
+
+    updateRelationship: async (relationshipId: string, relationshipData: Partial<{
+        relationship_type: string;
+        relationship_qualifier?: string;
+        start_date?: string;
+        end_date?: string;
+        notes?: string;
+    }>): Promise<{ message: string; relationship: any }> => {
+        const response = await apiClient.put(`relationships/${relationshipId}`, { json: relationshipData });
+        return response.json();
+    },
+
+    deleteRelationship: async (relationshipId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`relationships/${relationshipId}`);
+        return response.json();
+    },
+
+    getRelationshipsByPersonId: async (personId: string): Promise<any[]> => {
+        const response = await apiClient.get(`relationships/person/${personId}`);
+        return response.json();
+    },
+
+    getRelationshipsByType: async (type: string): Promise<any[]> => {
+        const response = await apiClient.get(`relationships/type/${type}`);
+        return response.json();
+    },
+
+    getRelationshipsBetweenPersons: async (person1Id: string, person2Id: string): Promise<any[]> => {
+        const response = await apiClient.get(`relationships/between/${person1Id}/${person2Id}`);
+        return response.json();
+    },
+
+    getRelationshipsByProjectId: async (projectId: string): Promise<any[]> => {
+        const response = await apiClient.get(`projects/${projectId}/relationships`);
         return response.json();
     }
 };
