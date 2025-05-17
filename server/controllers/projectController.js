@@ -548,6 +548,86 @@ async function checkProjectAccess(req, projectId) {
     return true;
 }
 
+// Get relationships for a specific project
+exports.getProjectRelationships = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if user has access to this project
+        await checkProjectAccess(req, id);
+
+        // Import necessary models
+        const { Relationship, Person } = require('../models');
+        const { Op } = require('sequelize');
+
+        // Get all persons in the project
+        const persons = await projectService.getProjectPersons(id);
+        
+        if (!persons || persons.length === 0) {
+            return res.json([]);
+        }
+
+        // Extract person IDs
+        const personIds = persons.map(person => person.person_id);
+
+        // Find all relationships where either person1 or person2 is in the project
+        const relationships = await Relationship.findAll({
+            where: {
+                [Op.or]: [
+                    { person1_id: { [Op.in]: personIds } },
+                    { person2_id: { [Op.in]: personIds } }
+                ]
+            },
+            include: [
+                {
+                    model: Person,
+                    as: 'person1',
+                    attributes: ['person_id', 'first_name', 'last_name']
+                },
+                {
+                    model: Person,
+                    as: 'person2',
+                    attributes: ['person_id', 'first_name', 'last_name']
+                }
+            ]
+        });
+
+        // Transform relationships to match frontend expectations
+        const formattedRelationships = relationships.map(rel => {
+            const relationship = rel.toJSON();
+            return {
+                id: relationship.relationship_id,
+                person1Id: relationship.person1_id,
+                person2Id: relationship.person2_id,
+                person1Name: `${relationship.person1.first_name} ${relationship.person1.last_name}`,
+                person2Name: `${relationship.person2.first_name} ${relationship.person2.last_name}`,
+                type: relationship.relationship_type,
+                qualifier: relationship.relationship_qualifier,
+                startDate: relationship.start_date,
+                endDate: relationship.end_date,
+                notes: relationship.notes
+            };
+        });
+
+        res.json(formattedRelationships);
+    } catch (error) {
+        console.error('Get project relationships error:', error);
+
+        if (error.message.includes('not found')) {
+            return res.status(404).json({ message: error.message });
+        }
+
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+
+        res.status(500).json({
+            message: 'Server error retrieving project relationships',
+            error: error.message
+        });
+    }
+};
+
 // Helper function to check if user has edit access to a project
 async function checkProjectEditAccess(req, projectId) {
     // Check if user is a manager
