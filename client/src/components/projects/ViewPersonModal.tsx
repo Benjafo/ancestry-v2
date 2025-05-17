@@ -7,10 +7,11 @@ interface ViewPersonModalProps {
     isOpen: boolean;
     onClose: () => void;
     onEdit?: (person: Person) => void; // Optional callback for edit button
-    projectStatus?: 'active' | 'completed' | 'on_hold'; // Add project status prop
+    projectStatus?: 'active' | 'completed' | 'on_hold';
+    isManager?: boolean;
 }
 
-const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit, projectStatus }) => {
+const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit, projectStatus, isManager }) => {
     const [person, setPerson] = useState<Person | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -65,7 +66,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                         {loading ? 'Loading...' : person ? `${person.first_name} ${person.last_name}` : 'Person Details'}
                     </h2>
                     <div className="flex items-center space-x-2">
-                        {!loading && person && onEdit && projectStatus !== 'completed' && (
+                        {!loading && person && onEdit && projectStatus !== 'completed' && isManager && (
                             <button
                                 onClick={() => {
                                     onEdit(person);

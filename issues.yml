@@ -6,7 +6,6 @@ project:
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> timeline: duplicate events in timeline
-    Project -> family members: clients should not be able to edit family members in the view person modal
     Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
     Project -> family members: create and edit person modal should allow for creating and editing relationships
     Project -> family members: add and edit events in create and edit modal is broken
@@ -26,10 +25,12 @@ project:
     Project -> family members: duplicate header with heading and "add person" button should be removed
     Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
     Project -> family members: edit button is obstructed by link to view person modal
+    Project -> family members: clients should not be able to edit family members in the view person modal
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
 other:
   active:
+    Client assignment: add search bar
     Manager dashboard: pending tasks
     General: implement the task feature
   finished:

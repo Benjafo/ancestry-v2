@@ -16,6 +16,7 @@ import ProjectOverviewTab from '../components/projects/ProjectOverviewTab';
 import ProjectResearchNotesTab from '../components/projects/ProjectResearchNotesTab';
 import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
+import { User } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
 
 const ProjectDetail = () => {
@@ -32,6 +33,10 @@ const ProjectDetail = () => {
     const [viewingPersonId, setViewingPersonId] = useState<string | null>(null);
     const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    // Get current user from localStorage to check if they are a manager
+    const currentUser: User = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const isManager = currentUser?.roles?.includes('manager');
 
     const handleOpenEditModal = () => {
         if (project) {
@@ -435,6 +440,7 @@ const ProjectDetail = () => {
                     onClose={() => setViewingPersonId(null)}
                     onEdit={handleEditPersonDetails}
                     projectStatus={project.status}
+                    isManager={isManager}
                 />
             )}
 
