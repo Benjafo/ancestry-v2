@@ -10,15 +10,15 @@ interface CreatePersonModalProps {
     onPersonCreated: (person: Person) => void;
 }
 
-const CreatePersonModal: React.FC<CreatePersonModalProps> = ({ 
-    projectId, 
-    isOpen, 
-    onClose, 
-    onPersonCreated 
+const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
+    projectId,
+    isOpen,
+    onClose,
+    onPersonCreated
 }) => {
     // Tab state
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
-    
+
     // Basic person info state
     const [formData, setFormData] = useState({
         first_name: '',
@@ -32,20 +32,20 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
         death_location: '',
         notes: ''
     });
-    
+
     // Project-specific notes (if adding to a project)
     const [projectNotes, setProjectNotes] = useState('');
-    
+
     // Events state
     const [events, setEvents] = useState<Partial<Event>[]>([]);
     const [isAddingEvent, setIsAddingEvent] = useState(false);
     const [editingEventIndex, setEditingEventIndex] = useState<number | null>(null);
-    
+
     // Documents state
     const [documents, setDocuments] = useState<Partial<Document>[]>([]);
     const [isAddingDocument, setIsAddingDocument] = useState(false);
     const [editingDocumentIndex, setEditingDocumentIndex] = useState<number | null>(null);
-    
+
     // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -60,40 +60,65 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
             setError('First name is required');
             return false;
         }
-        
+
         if (!formData.last_name.trim()) {
             setError('Last name is required');
             return false;
         }
-        
+
+        if (!formData.gender) {
+            setError('Gender is required');
+            return false;
+        }
+
+        if (!formData.birth_date) {
+            setError('Birth date is required');
+            return false;
+        }
+
         // Check if death date is after birth date if both are provided
         if (formData.birth_date && formData.death_date) {
             const birthDate = new Date(formData.birth_date);
             const deathDate = new Date(formData.death_date);
-            
+
             if (deathDate < birthDate) {
                 setError('Death date cannot be before birth date');
                 return false;
             }
         }
-        
+
         return true;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
-        
+
         setLoading(true);
         setError(null);
 
         try {
+            // Prepare form data - only include fields with values to avoid validation errors
+            const cleanedFormData = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                gender: formData.gender,
+                birth_date: formData.birth_date,
+                // Only include optional fields if they have values
+                ...(formData.middle_name ? { middle_name: formData.middle_name } : {}),
+                ...(formData.maiden_name ? { maiden_name: formData.maiden_name } : {}),
+                ...(formData.birth_location ? { birth_location: formData.birth_location } : {}),
+                ...(formData.death_date ? { death_date: formData.death_date } : {}),
+                ...(formData.death_location ? { death_location: formData.death_location } : {}),
+                ...(formData.notes ? { notes: formData.notes } : {})
+            };
+
             // Step 1: Create the person
-            const { person } = await projectsApi.createPerson(formData);
-            
+            const { person } = await projectsApi.createPerson(cleanedFormData);
+
             // Step 2: Create events for this person
             for (const eventData of events) {
                 await eventsApi.createEvent({
@@ -101,28 +126,28 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                     person_id: person.person_id
                 });
             }
-            
+
             // Step 3: Create documents and associate them
             for (const docData of documents) {
                 const { document } = await documentsApi.createDocument(docData);
                 await documentsApi.associateDocumentWithPerson(
-                    document.document_id, 
+                    document.document_id,
                     person.person_id
                 );
             }
-            
+
             // Step 4: If projectId is provided, add the person to the project
             if (projectId) {
                 await projectsApi.addPersonToProject(projectId, person.person_id, projectNotes);
             }
-            
+
             // Fetch the updated person with all related data
             const refreshedPerson = await projectsApi.getPersonById(person.person_id, {
                 includeEvents: true,
                 includeDocuments: true,
                 includeRelationships: true
             });
-            
+
             onPersonCreated(refreshedPerson);
             onClose();
         } catch (err: unknown) {
@@ -329,53 +354,49 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </svg>
                     </button>
                 </div>
-                
+
                 {/* Tabs */}
                 <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
                     <nav className="flex -mb-px">
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'info'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('info')}
                         >
                             Biographical Info
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'events'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('events')}
                         >
                             Events
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'documents'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('documents')}
                         >
                             Documents
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'relationships'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('relationships')}
                         >
                             Relationships
                         </button>
                     </nav>
                 </div>
-                
+
                 {/* Error state */}
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
@@ -391,7 +412,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </div>
                     </div>
                 )}
-                
+
                 {/* Tab content */}
                 <div>
                     {/* Biographical Info Tab */}
@@ -411,7 +432,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         required
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Middle Name
@@ -424,7 +445,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         onChange={handleChange}
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Last Name *
@@ -438,7 +459,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         required
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Maiden Name
@@ -451,27 +472,29 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         onChange={handleChange}
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Gender
+                                        Gender *
                                     </label>
                                     <select
                                         name="gender"
                                         className="form-select w-full dark:bg-gray-700 dark:text-white"
                                         value={formData.gender}
                                         onChange={handleChange}
+                                        required
                                     >
-                                        <option value="">Select Gender</option>
+                                        <option value="" disabled>Select Gender</option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
                                         <option value="other">Other</option>
+                                        <option value="unknown">Unknown</option>
                                     </select>
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Birth Date
+                                        Birth Date *
                                     </label>
                                     <input
                                         type="date"
@@ -479,9 +502,10 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         className="form-input w-full dark:bg-gray-700 dark:text-white"
                                         value={formData.birth_date}
                                         onChange={handleChange}
+                                        required
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Birth Location
@@ -494,7 +518,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         onChange={handleChange}
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Death Date
@@ -507,7 +531,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                         onChange={handleChange}
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Death Location
@@ -521,7 +545,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                     />
                                 </div>
                             </div>
-                            
+
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Notes
@@ -535,7 +559,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                     placeholder="Add any additional notes about this person..."
                                 />
                             </div>
-                            
+
                             {projectId && (
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -576,7 +600,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                             Add Event
                                         </button>
                                     </div>
-                                    
+
                                     <NewEventsList />
                                 </div>
                             )}
@@ -606,7 +630,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                             Add Document
                                         </button>
                                     </div>
-                                    
+
                                     <NewDocumentsList />
                                 </div>
                             )}
@@ -626,7 +650,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </div>
                     )}
                 </div>
-                
+
                 {/* Footer with action buttons */}
                 <div className="mt-6 flex justify-end space-x-2">
                     <button

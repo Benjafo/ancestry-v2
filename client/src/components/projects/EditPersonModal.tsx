@@ -110,6 +110,16 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             return false;
         }
         
+        if (!formData.gender) {
+            setError('Gender is required');
+            return false;
+        }
+        
+        if (!formData.birth_date) {
+            setError('Birth date is required');
+            return false;
+        }
+        
         // Check if death date is after birth date if both are provided
         if (formData.birth_date && formData.death_date) {
             const birthDate = new Date(formData.birth_date);
@@ -135,8 +145,23 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
         setError(null);
 
         try {
+            // Prepare form data - only include fields with values to avoid validation errors
+            const cleanedFormData = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                gender: formData.gender,
+                birth_date: formData.birth_date,
+                // Only include optional fields if they have values
+                ...(formData.middle_name ? { middle_name: formData.middle_name } : {}),
+                ...(formData.maiden_name ? { maiden_name: formData.maiden_name } : {}),
+                ...(formData.birth_location ? { birth_location: formData.birth_location } : {}),
+                ...(formData.death_date ? { death_date: formData.death_date } : {}),
+                ...(formData.death_location ? { death_location: formData.death_location } : {}),
+                ...(formData.notes ? { notes: formData.notes } : {})
+            };
+            
             // Step 1: Update the person's basic info
-            await projectsApi.updatePerson(person.person_id, formData);
+            await projectsApi.updatePerson(person.person_id, cleanedFormData);
             
             // Step 2: Handle events
             // For new events (no event_id)
@@ -416,24 +441,26 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                     
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Gender
+                                            Gender *
                                         </label>
                                         <select
                                             name="gender"
                                             className="form-select w-full dark:bg-gray-700 dark:text-white"
                                             value={formData.gender}
                                             onChange={handleChange}
+                                            required
                                         >
-                                            <option value="">Select Gender</option>
+                                            <option value="" disabled>Select Gender</option>
                                             <option value="male">Male</option>
                                             <option value="female">Female</option>
                                             <option value="other">Other</option>
+                                            <option value="unknown">Unknown</option>
                                         </select>
                                     </div>
                                     
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Birth Date
+                                            Birth Date *
                                         </label>
                                         <input
                                             type="date"
@@ -441,6 +468,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             className="form-input w-full dark:bg-gray-700 dark:text-white"
                                             value={formData.birth_date}
                                             onChange={handleChange}
+                                            required
                                         />
                                     </div>
                                     

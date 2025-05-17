@@ -57,9 +57,9 @@ const ProjectDetail = () => {
         }, 3000);
     };
 
-    const handleAddPerson = () => {
-        setIsAddPersonModalOpen(true);
-    };
+    // const handleAddPerson = () => {
+    //     setIsAddPersonModalOpen(true);
+    // };
 
     const handleCreatePerson = () => {
         setIsCreatePersonModalOpen(true);
@@ -344,12 +344,12 @@ const ProjectDetail = () => {
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
                             {project.access_level === 'edit' && project.status !== 'completed' && (
                                 <div className="flex space-x-2">
-                                    <button
+                                    { /* <button
                                         className="btn-secondary"
                                         onClick={handleAddPerson}
                                     >
                                         Add Existing Person
-                                    </button>
+                                    </button> */ }
                                     <button
                                         className="btn-primary"
                                         onClick={handleCreatePerson}
