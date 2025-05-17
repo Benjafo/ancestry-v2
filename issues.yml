@@ -6,11 +6,10 @@ project:
     Project -> documents: there should be some sort of view functionality for records
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> timeline: duplicate events in timeline
-    Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
-    Project -> family members: create and edit person modal should allow for creating and editing relationships
+    # Project -> family members: create and edit person modal should allow for creating and editing relationships
     Project -> family members: add and edit events in create and edit modal is broken
     Project -> family members: add and edit documents in create and edit modal is broken
-    Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
+    # Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
   finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
@@ -26,6 +25,7 @@ project:
     Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
     Project -> family members: edit button is obstructed by link to view person modal
     Project -> family members: clients should not be able to edit family members in the view person modal
+    Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
 other:

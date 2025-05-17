@@ -4,7 +4,6 @@ import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
-import AddPersonModal from '../components/projects/AddPersonModal';
 import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
 import CreatePersonModal from '../components/projects/CreatePersonModal';
 import EditPersonModal from '../components/projects/EditPersonModal';
@@ -26,7 +25,7 @@ const ProjectDetail = () => {
     const [project, setProject] = useState<ProjectDetailType | null>(null);
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members' | 'research_notes'>('overview');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+    // const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
     const [isCreatePersonModalOpen, setIsCreatePersonModalOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Person | null>(null);
     const [editingPersonDetails, setEditingPersonDetails] = useState<Person | null>(null);
@@ -109,19 +108,19 @@ const ProjectDetail = () => {
         }
     };
 
-    const handlePersonAdded = async () => {
-        // Show success message
-        setSuccessMessage('Person added to project successfully');
+    // const handlePersonAdded = async () => {
+    //     // Show success message
+    //     setSuccessMessage('Person added to project successfully');
 
-        // Refresh project data
-        const updatedProject = await projectsApi.getProjectById(projectId);
-        setProject(updatedProject);
+    //     // Refresh project data
+    //     const updatedProject = await projectsApi.getProjectById(projectId);
+    //     setProject(updatedProject);
 
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-            setSuccessMessage(null);
-        }, 3000);
-    };
+    //     // Clear success message after 3 seconds
+    //     setTimeout(() => {
+    //         setSuccessMessage(null);
+    //     }, 3000);
+    // };
 
     const handlePersonCreated = async () => {
         // Show success message
@@ -391,7 +390,7 @@ const ProjectDetail = () => {
                 />
             )}
 
-            {/* Add Person Modal */}
+            {/* Add Person Modal
             {isAddPersonModalOpen && (
                 <AddPersonModal
                     projectId={projectId}
@@ -399,7 +398,7 @@ const ProjectDetail = () => {
                     onClose={() => setIsAddPersonModalOpen(false)}
                     onPersonAdded={handlePersonAdded}
                 />
-            )}
+            )} */}
 
             {/* Create Person Modal */}
             {isCreatePersonModalOpen && (
