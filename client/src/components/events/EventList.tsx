@@ -9,13 +9,14 @@ const getErrorMessage = (error: unknown): string => {
 
 interface EventListProps {
     personId?: string;
+    eventsData?: Event[]; // New prop to receive events directly
     onEditEvent?: (eventId: string) => void;
     onDeleteEvent?: (eventId: string) => void;
     onSelectEvent?: (event: Event) => void;
     readOnly?: boolean;
 }
 
-const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOnly = false }: EventListProps) => {
+const EventList = ({ personId, eventsData, onEditEvent, onDeleteEvent, onSelectEvent, readOnly = false }: EventListProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<Event[]>([]);
@@ -32,26 +33,38 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
         { value: 'immigration', label: 'Immigration' },
         { value: 'emigration', label: 'Emigration' },
         { value: 'naturalization', label: 'Naturalization' },
+        { value: 'graduation', label: 'Graduation' },
         { value: 'military_service', label: 'Military Service' },
+        { value: 'retirement', label: 'Retirement' },
+        { value: 'religious', label: 'Religious Event' },
+        { value: 'medical', label: 'Medical Event' },
+        { value: 'residence', label: 'Residence' },
         { value: 'census', label: 'Census' },
         { value: 'other', label: 'Other' }
     ];
 
     useEffect(() => {
-        const fetchEvents = async () => {
+        const loadEvents = async () => {
             setIsLoading(true);
             try {
-                let eventsData;
-                
-                if (personId) {
-                    eventsData = await eventsApi.getEventsByPersonId(personId);
+                let eventsToSet: Event[];
+
+                if (eventsData) {
+                    // Use data from prop if provided
+                    eventsToSet = eventsData;
+                } else if (personId) {
+                    // Otherwise, fetch data if personId is provided
+                    eventsToSet = await eventsApi.getEventsByPersonId(personId);
                 } else {
+                    // If neither prop is provided, fetch all events (or handle as needed)
                     const response = await eventsApi.getEvents();
-                    eventsData = response.events;
+                    eventsToSet = response.events;
                 }
-                
-                setEvents(eventsData);
-                setFilteredEvents(eventsData);
+
+                setEvents(eventsToSet);
+                setFilteredEvents(eventsToSet);
+
+                console.log('Events loaded:', eventsToSet);
             } catch (err: unknown) {
                 setError(getErrorMessage(err) || 'Failed to load events');
                 console.error(err);
@@ -59,28 +72,30 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                 setIsLoading(false);
             }
         };
-        
-        fetchEvents();
-    }, [personId]);
+
+        loadEvents();
+    }, [personId, eventsData]); // Add eventsData to dependency array
 
     useEffect(() => {
+        console.log('Events list loaded')
+
         // Apply filters whenever events, searchTerm, or filterType changes
         let result = [...events];
-        
+
         // Filter by type
         if (filterType !== 'all') {
             result = result.filter(event => event.event_type === filterType);
         }
-        
+
         // Filter by search term
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            result = result.filter(event => 
+            result = result.filter(event =>
                 (event.event_location && event.event_location.toLowerCase().includes(term)) ||
                 (event.description && event.description.toLowerCase().includes(term))
             );
         }
-        
+
         setFilteredEvents(result);
     }, [events, searchTerm, filterType]);
 
@@ -99,10 +114,11 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
 
     const handleDelete = async (eventId: string) => {
         if (!onDeleteEvent) return;
-        
+
         if (window.confirm('Are you sure you want to delete this event?')) {
             try {
                 await eventsApi.deleteEvent(eventId);
+                // Update local state after successful deletion
                 setEvents(events.filter(event => event.event_id !== eventId));
                 onDeleteEvent(eventId);
             } catch (err: unknown) {
@@ -143,6 +159,14 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
         );
     }
 
+    if (filteredEvents.length === 0) {
+        return (
+            <div className="text-center py-8">
+                <p className="text-gray-500">No events found.</p>
+            </div>
+        );
+    }
+
     return (
         <div>
             <div className="mb-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
@@ -164,7 +188,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                         />
                     </div>
                 </div>
-                
+
                 <div>
                     <label htmlFor="event-type-filter" className="sr-only">Filter by type</label>
                     <select
@@ -181,7 +205,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                     </select>
                 </div>
             </div>
-            
+
             {filteredEvents.length === 0 ? (
                 <div className="text-center py-8">
                     <p className="text-gray-500">No events found.</p>
@@ -191,7 +215,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                     <ul className="divide-y divide-gray-200">
                         {filteredEvents.map(event => (
                             <li key={event.event_id}>
-                                <div 
+                                <div
                                     className={`px-4 py-4 sm:px-6 ${onSelectEvent ? 'cursor-pointer hover:bg-gray-50' : ''}`}
                                     onClick={() => onSelectEvent && handleSelect(event)}
                                 >
@@ -204,7 +228,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                                                 {event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Unknown date'}
                                             </p>
                                         </div>
-                                        
+
                                         {!readOnly && (
                                             <div className="flex space-x-2">
                                                 {onEditEvent && (
@@ -220,7 +244,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                                                         </svg>
                                                     </button>
                                                 )}
-                                                
+
                                                 {onDeleteEvent && (
                                                     <button
                                                         onClick={(e) => {
@@ -237,7 +261,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     <div className="mt-2 sm:flex sm:justify-between">
                                         <div className="sm:flex">
                                             {event.event_location && (
@@ -251,7 +275,7 @@ const EventList = ({ personId, onEditEvent, onDeleteEvent, onSelectEvent, readOn
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     {event.description && (
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 line-clamp-2">

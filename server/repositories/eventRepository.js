@@ -155,17 +155,51 @@ class EventRepository extends BaseRepository {
      * @returns {Promise<Array>} Array of events
      */
     async findEventsByPersonId(personId, options = {}) {
+        const { Op } = require('sequelize');
+        const PersonEvent = require('../models/personEvent');
+
+        // First, find all event IDs associated with this person
+        const personEvents = await PersonEvent.findAll({
+            where: { person_id: personId },
+            attributes: ['event_id'],
+            raw: true
+        });
+
+        // Extract event IDs
+        const eventIds = personEvents.map(pe => pe.event_id);
+
+        // If no events found, return empty array
+        if (eventIds.length === 0) {
+            return [];
+        }
+
+        // Query for events with these IDs
         const queryOptions = {
-            include: [{
-                model: Person,
-                as: 'persons', // Specify the alias here
-                where: { person_id: personId },
-                through: { attributes: [] } // Exclude join table attributes from the result
-            }],
+            where: {
+                event_id: {
+                    [Op.in]: eventIds
+                }
+            },
             ...options
         };
 
-        return await this.findAll(queryOptions);
+        // Include person data if requested
+        if (options.includePerson) {
+            queryOptions.include = [{
+                model: Person,
+                as: 'persons',
+                through: { attributes: [] }
+            }];
+        }
+
+        const events = await this.findAll(queryOptions);
+
+        // Add person_id to each event
+        events.forEach(event => {
+            event.dataValues.person_id = personId;
+        });
+
+        return events;
     }
 
     /**
@@ -234,13 +268,43 @@ class EventRepository extends BaseRepository {
      * @returns {Promise<Array>} Array of events
      */
     async findEventsByPersonAndType(personId, eventType, options = {}) {
+        const { Op } = require('sequelize');
+        const PersonEvent = require('../models/personEvent');
+
+        // First, find all event IDs associated with this person
+        const personEvents = await PersonEvent.findAll({
+            where: { person_id: personId },
+            attributes: ['event_id'],
+            raw: true
+        });
+
+        // Extract event IDs
+        const eventIds = personEvents.map(pe => pe.event_id);
+
+        // If no events found, return empty array
+        if (eventIds.length === 0) {
+            return [];
+        }
+
+        // Query for events with these IDs and the specified type
         const queryOptions = {
             where: {
-                person_id: personId,
+                event_id: {
+                    [Op.in]: eventIds
+                },
                 event_type: eventType
             },
             ...options
         };
+
+        // Include person data if requested
+        if (options.includePerson) {
+            queryOptions.include = [{
+                model: Person,
+                as: 'persons',
+                through: { attributes: [] }
+            }];
+        }
 
         return await this.findAll(queryOptions);
     }

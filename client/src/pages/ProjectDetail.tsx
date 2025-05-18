@@ -87,12 +87,13 @@ const ProjectDetail = () => {
             // Show success message
             setSuccessMessage('Person removed from project successfully');
 
-            // Refresh project data
-            const updatedProject = await projectsApi.getProjectById(projectId);
-            setProject(updatedProject);
+        // Refresh project data
+        const updatedProject = await projectsApi.getProjectById(projectId, { includeEvents: true, includeDocuments: true, includeRelationships: true }); // Ensure all related data is included
+        console.log('Refreshed project data after person update:', updatedProject); // Log the data
+        setProject(updatedProject);
 
-            // Clear success message after 3 seconds
-            setTimeout(() => {
+        // Clear success message after 3 seconds
+        setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
         } catch (err) {
@@ -142,7 +143,8 @@ const ProjectDetail = () => {
         setSuccessMessage('Person updated successfully');
 
         // Refresh project data
-        const updatedProject = await projectsApi.getProjectById(projectId);
+        const updatedProject = await projectsApi.getProjectById(projectId, { includeEvents: true, includeDocuments: true, includeRelationships: true }); // Ensure all related data is included
+        console.log('Refreshed project data after person update:', updatedProject); // Log the data
         setProject(updatedProject);
 
         // Clear success message after 3 seconds

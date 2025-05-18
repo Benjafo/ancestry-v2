@@ -13,15 +13,15 @@ interface EditPersonModalProps {
     onPersonUpdated: (updatedPerson: Person) => void;
 }
 
-const EditPersonModal: React.FC<EditPersonModalProps> = ({ 
-    person, 
-    isOpen, 
-    onClose, 
-    onPersonUpdated 
+const EditPersonModal: React.FC<EditPersonModalProps> = ({
+    person,
+    isOpen,
+    onClose,
+    onPersonUpdated
 }) => {
     // Tab state
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
-    
+
     // Basic person info state
     const [formData, setFormData] = useState({
         first_name: person.first_name || '',
@@ -35,22 +35,22 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
         death_location: person.death_location || '',
         notes: person.notes || ''
     });
-    
+
     // Events state
     const [events, setEvents] = useState<Event[]>([]);
     const [deletedEventIds, setDeletedEventIds] = useState<string[]>([]);
     const [isAddingEvent, setIsAddingEvent] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
-    
+
     // Documents state
     const [documents, setDocuments] = useState<Document[]>([]);
     const [deletedDocumentIds, setDeletedDocumentIds] = useState<string[]>([]);
     const [isAddingDocument, setIsAddingDocument] = useState(false);
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
-    
+
     // Relationships state (read-only)
     const [relationships, setRelationships] = useState<Person['relationships']>({});
-    
+
     // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -67,17 +67,17 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         includeDocuments: true,
                         includeRelationships: true
                     });
-                    
+
                     // Set events
                     if (personData.events) {
                         setEvents(personData.events);
                     }
-                    
+
                     // Set documents
                     if (personData.documents) {
                         setDocuments(personData.documents);
                     }
-                    
+
                     // Set relationships
                     if (personData.relationships) {
                         setRelationships(personData.relationships);
@@ -89,7 +89,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                     setIsFetchingData(false);
                 }
             };
-            
+
             fetchPersonDetails();
         }
     }, [isOpen, person.person_id]);
@@ -104,43 +104,43 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             setError('First name is required');
             return false;
         }
-        
+
         if (!formData.last_name.trim()) {
             setError('Last name is required');
             return false;
         }
-        
+
         if (!formData.gender) {
             setError('Gender is required');
             return false;
         }
-        
+
         if (!formData.birth_date) {
             setError('Birth date is required');
             return false;
         }
-        
+
         // Check if death date is after birth date if both are provided
         if (formData.birth_date && formData.death_date) {
             const birthDate = new Date(formData.birth_date);
             const deathDate = new Date(formData.death_date);
-            
+
             if (deathDate < birthDate) {
                 setError('Death date cannot be before birth date');
                 return false;
             }
         }
-        
+
         return true;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
-        
+
         setLoading(true);
         setError(null);
 
@@ -159,10 +159,10 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                 ...(formData.death_location ? { death_location: formData.death_location } : {}),
                 ...(formData.notes ? { notes: formData.notes } : {})
             };
-            
+
             // Step 1: Update the person's basic info
             await projectsApi.updatePerson(person.person_id, cleanedFormData);
-            
+
             // Step 2: Handle events
             // For new events (no event_id)
             const newEvents = events.filter(event => !event.event_id);
@@ -172,47 +172,47 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                     person_id: person.person_id
                 });
             }
-            
+
             // For updated events (have event_id)
             const existingEvents = events.filter(event => event.event_id);
             for (const eventData of existingEvents) {
                 await eventsApi.updateEvent(eventData.event_id, eventData);
             }
-            
+
             // For deleted events
             for (const eventId of deletedEventIds) {
                 await eventsApi.deleteEvent(eventId);
             }
-            
+
             // Step 3: Handle documents
             // For new documents (no document_id)
             const newDocuments = documents.filter(doc => !doc.document_id);
             for (const docData of newDocuments) {
                 const { document } = await documentsApi.createDocument(docData);
                 await documentsApi.associateDocumentWithPerson(
-                    document.document_id, 
+                    document.document_id,
                     person.person_id
                 );
             }
-            
+
             // For updated documents (have document_id)
             const existingDocuments = documents.filter(doc => doc.document_id);
             for (const docData of existingDocuments) {
                 await documentsApi.updateDocument(docData.document_id, docData);
             }
-            
+
             // For deleted documents
             for (const docId of deletedDocumentIds) {
                 await documentsApi.removeDocumentPersonAssociation(docId, person.person_id);
             }
-            
+
             // Fetch the updated person with all related data
             const refreshedPerson = await projectsApi.getPersonById(person.person_id, {
                 includeEvents: true,
                 includeDocuments: true,
                 includeRelationships: true
             });
-            
+
             onPersonUpdated(refreshedPerson);
             onClose();
         } catch (err: unknown) {
@@ -239,7 +239,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             setEvents(events.filter(event => event.event_id !== eventId));
             return;
         }
-        
+
         // Otherwise, mark it for deletion on save
         setDeletedEventIds([...deletedEventIds, eventId]);
         setEvents(events.filter(event => event.event_id !== eventId));
@@ -272,7 +272,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             setDocuments(documents.filter(doc => doc.document_id !== documentId));
             return;
         }
-        
+
         // Otherwise, mark it for deletion on save
         setDeletedDocumentIds([...deletedDocumentIds, documentId]);
         setDocuments(documents.filter(doc => doc.document_id !== documentId));
@@ -308,60 +308,56 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         </svg>
                     </button>
                 </div>
-                
+
                 {/* Tabs */}
                 <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
                     <nav className="flex -mb-px">
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'info'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('info')}
                         >
                             Biographical Info
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'events'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('events')}
                         >
                             Events
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'documents'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('documents')}
                         >
                             Documents
                         </button>
                         <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
-                                activeTab === 'relationships'
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
                                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                            }`}
+                                }`}
                             onClick={() => setActiveTab('relationships')}
                         >
                             Relationships
                         </button>
                     </nav>
                 </div>
-                
+
                 {/* Loading state */}
                 {isFetchingData && (
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
                     </div>
                 )}
-                
+
                 {/* Error state */}
                 {error && !isFetchingData && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
@@ -377,7 +373,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         </div>
                     </div>
                 )}
-                
+
                 {/* Tab content */}
                 {!isFetchingData && (
                     <div>
@@ -398,7 +394,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Middle Name
@@ -411,7 +407,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Last Name *
@@ -425,7 +421,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Maiden Name
@@ -438,7 +434,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Gender *
@@ -457,7 +453,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             <option value="unknown">Unknown</option>
                                         </select>
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Birth Date *
@@ -471,7 +467,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Birth Location
@@ -484,7 +480,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Death Date
@@ -497,7 +493,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Death Location
@@ -511,7 +507,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Notes
@@ -553,7 +549,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 Add Event
                                             </button>
                                         </div>
-                                        
+
                                         <EventList
                                             personId={person.person_id}
                                             onEditEvent={handleEditEvent}
@@ -588,7 +584,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 Add Document
                                             </button>
                                         </div>
-                                        
+
                                         <DocumentList
                                             personId={person.person_id}
                                             onEditDocument={handleEditDocument}
@@ -620,7 +616,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         {relationships.children && relationships.children.length > 0 && (
                                             <div>
                                                 <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Children</h4>
@@ -636,7 +632,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         {relationships.spouses && relationships.spouses.length > 0 && (
                                             <div>
                                                 <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Spouses</h4>
@@ -655,7 +651,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         {relationships.siblings && relationships.siblings.length > 0 && (
                                             <div>
                                                 <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Siblings</h4>
@@ -684,7 +680,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         )}
                     </div>
                 )}
-                
+
                 {/* Footer with action buttons */}
                 <div className="mt-6 flex justify-end space-x-2">
                     <button

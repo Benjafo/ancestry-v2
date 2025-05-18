@@ -27,7 +27,29 @@ class EventService {
      * @returns {Promise<Object>} Event with related data
      */
     async getEventById(id, options = {}) {
-        return await eventRepository.findEventById(id, options);
+        const event = await eventRepository.findEventById(id, options);
+        
+        if (!event) {
+            return null;
+        }
+        
+        // If we need to include the person_id in the response
+        if (!options.includePerson) {
+            // Find the associated person_id from the PersonEvent junction table
+            const PersonEvent = require('../models/personEvent');
+            const personEvent = await PersonEvent.findOne({
+                where: { event_id: id },
+                attributes: ['person_id'],
+                raw: true
+            });
+            
+            if (personEvent) {
+                // Add the person_id to the event object
+                event.dataValues.person_id = personEvent.person_id;
+            }
+        }
+        
+        return event;
     }
 
     /**
@@ -38,12 +60,15 @@ class EventService {
      */
     async createEvent(eventData) {
         return await TransactionManager.executeTransaction(async (transaction) => {
+            // Extract person_id from eventData
+            const { person_id, ...eventDataWithoutPersonId } = eventData;
+            
             // Validate event data against person's birth/death dates
-            if (eventData.person_id) {
-                const person = await personRepository.findById(eventData.person_id, { transaction });
+            if (person_id) {
+                const person = await personRepository.findById(person_id, { transaction });
                 
                 if (!person) {
-                    throw new Error(`Person with id ${eventData.person_id} not found`);
+                    throw new Error(`Person with id ${person_id} not found`);
                 }
                 
                 // Validate event chronology
@@ -65,8 +90,21 @@ class EventService {
                 }
             }
             
-            // Create the event
-            const event = await eventRepository.create(eventData, { transaction });
+            // Create the event (without person_id as it's not a field in the Event model)
+            const event = await eventRepository.create(eventDataWithoutPersonId, { transaction });
+            
+            // Create the association in the PersonEvent junction table
+            if (person_id) {
+                const PersonEvent = require('../models/personEvent');
+                await PersonEvent.create({
+                    person_id: person_id,
+                    event_id: event.event_id,
+                    role: 'primary' // Default role for the person associated with the event
+                }, { transaction });
+                
+                // Add the person_id to the event object for the response
+                event.dataValues.person_id = person_id;
+            }
             
             return event;
         });
@@ -87,23 +125,35 @@ class EventService {
                 throw new Error(`Event with id ${id} not found`);
             }
             
-            // Merge current data with updates
+            // Extract person_id from eventData
+            const { person_id, ...eventDataWithoutPersonId } = eventData;
+            
+            // Merge current data with updates (excluding person_id)
             const updatedData = {
                 ...currentEvent.toJSON(),
-                ...eventData
+                ...eventDataWithoutPersonId
             };
             
+            // Get the PersonEvent model
+            const PersonEvent = require('../models/personEvent');
+            
+            // Check if there's an existing association
+            const existingAssociation = await PersonEvent.findOne({
+                where: { event_id: id },
+                transaction
+            });
+            
             // Validate event data against person's birth/death dates
-            if (updatedData.person_id) {
-                const person = await personRepository.findById(updatedData.person_id, { transaction });
+            if (person_id) {
+                const person = await personRepository.findById(person_id, { transaction });
                 
                 if (!person) {
-                    throw new Error(`Person with id ${updatedData.person_id} not found`);
+                    throw new Error(`Person with id ${person_id} not found`);
                 }
                 
                 // Validate event chronology
                 try {
-                    validateEventChronology(updatedData, person);
+                    validateEventChronology({...updatedData, person_id}, person);
                 } catch (error) {
                     throw new Error(`Event chronology validation failed: ${error.message}`);
                 }
@@ -118,10 +168,36 @@ class EventService {
                 if (!historyValidation.isValid) {
                     throw new Error(`Historical consistency validation failed: ${historyValidation.warnings.join(', ')}`);
                 }
+                
+                // Update or create the person-event association
+                if (existingAssociation) {
+                    // Update the existing association if person_id has changed
+                    if (existingAssociation.person_id !== person_id) {
+                        await existingAssociation.update({
+                            person_id: person_id
+                        }, { transaction });
+                    }
+                } else {
+                    // Create a new association if none exists
+                    await PersonEvent.create({
+                        person_id: person_id,
+                        event_id: id,
+                        role: 'primary' // Default role for the person associated with the event
+                    }, { transaction });
+                }
             }
             
-            // Update the event
-            const event = await eventRepository.update(id, eventData, { transaction });
+            // Update the event (without person_id as it's not a field in the Event model)
+            const event = await eventRepository.update(id, eventDataWithoutPersonId, { transaction });
+            
+            // Add the person_id to the event object for the response
+            if (person_id) {
+                event.dataValues.person_id = person_id;
+            } else if (existingAssociation) {
+                // If person_id wasn't provided in the update but there's an existing association,
+                // include the existing person_id in the response
+                event.dataValues.person_id = existingAssociation.person_id;
+            }
             
             return event;
         });
@@ -140,6 +216,13 @@ class EventService {
             if (!event) {
                 throw new Error(`Event with id ${id} not found`);
             }
+            
+            // Delete the association in the PersonEvent junction table
+            const PersonEvent = require('../models/personEvent');
+            await PersonEvent.destroy({
+                where: { event_id: id },
+                transaction
+            });
             
             // Delete the event
             return await eventRepository.delete(id, { transaction });

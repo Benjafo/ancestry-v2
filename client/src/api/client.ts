@@ -348,9 +348,13 @@ export const projectsApi = {
     },
 
     getProjectById: async (id: string, options?: {
-        includeRelationships?: boolean
+        includeEvents?: boolean;
+        includeDocuments?: boolean;
+        includeRelationships?: boolean;
     }): Promise<ProjectDetail> => {
         const queryParams = new URLSearchParams();
+        if (options?.includeEvents) queryParams.append('includeEvents', 'true');
+        if (options?.includeDocuments) queryParams.append('includeDocuments', 'true');
         if (options?.includeRelationships) queryParams.append('includeRelationships', 'true');
 
         const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';

@@ -89,25 +89,74 @@ class ProjectRepository extends BaseRepository {
      */
     async findProjectById(id, options = {}) {
         const include = [];
-        
+
+        // Always include persons if requested, and nest includes for person-related data
         if (options.includePersons) {
-            include.push({
+            const personInclude = {
                 model: Person,
                 as: 'persons',
                 through: { attributes: ['notes'] },
-                required: false
-            });
+                required: false,
+                include: [] // Nested includes for person-related data
+            };
+
+            if (options.includeEvents) {
+                personInclude.include.push({
+                    model: Event,
+                    as: 'events', // Use the alias defined in models/index.js
+                    through: { attributes: [] }, // Exclude join table attributes
+                    required: false
+                });
+            }
+
+            // Add other person-related includes here if needed (e.g., documents, relationships)
+            if (options.includeDocuments) {
+                 personInclude.include.push({
+                    model: Document,
+                    as: 'documents', // Use the alias defined in models/index.js
+                    through: { attributes: [] }, // Exclude join table attributes
+                    required: false
+                });
+            }
+
+             if (options.includeRelationships) {
+                 personInclude.include.push({
+                    model: Relationship,
+                    as: 'relationshipsAsSubject', // Use the alias defined in models/index.js
+                    required: false,
+                     include: [{
+                         model: Person,
+                         as: 'person2',
+                         attributes: ['person_id', 'first_name', 'last_name', 'middle_name', 'gender', 'birth_date', 'death_date']
+                     }]
+                });
+                 personInclude.include.push({
+                    model: Relationship,
+                    as: 'relationshipsAsObject', // Use the alias defined in models/index.js
+                    required: false,
+                     include: [{
+                         model: Person,
+                         as: 'person1',
+                         attributes: ['person_id', 'first_name', 'last_name', 'middle_name', 'gender', 'birth_date', 'death_date']
+                     }]
+                });
+            }
+
+
+            include.push(personInclude);
         }
-        
-        if (options.includeEvents) {
-            include.push({
-                model: Event,
-                as: 'events',
-                through: { attributes: [] },
-                required: false
-            });
-        }
-        
+
+        // Include project-level events if needed (currently not used in frontend ProjectDetail)
+        // if (options.includeEvents) {
+        //     include.push({
+        //         model: Event,
+        //         as: 'events', // Use the alias defined in models/index.js
+        //         through: { attributes: [] },
+        //         required: false
+        //     });
+        // }
+
+
         return await this.findById(id, { include });
     }
 
