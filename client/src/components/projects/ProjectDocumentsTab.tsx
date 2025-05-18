@@ -1,46 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { ProjectDetail } from '../../api/client';
+import { Document, ProjectDetail } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import ViewDocumentModal from '../documents/ViewDocumentModal';
+import DocumentForm from '../documents/DocumentForm';
 
 interface ProjectDocumentsTabProps {
     project: ProjectDetail;
 }
 
-// Placeholder for the AddDocumentModal component
-// This would be implemented in a separate file
+// Real implementation of AddDocumentModal using DocumentForm
 const AddDocumentModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     projectId: string;
-    onDocumentAdded: () => void;
+    onDocumentAdded: (document: Document) => void;
 }> = ({ isOpen, onClose, projectId, onDocumentAdded }) => {
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">Add Document</h2>
-                <p className="mb-4 text-gray-600 dark:text-gray-300">
-                    This is a placeholder for the Add Document modal. In a real implementation, this would include a form to upload or link to a document.
-                </p>
-                <div className="flex justify-end space-x-2">
-                    <button
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        onClick={() => {
-                            onDocumentAdded();
-                            onClose();
-                        }}
-                    >
-                        Add Document
-                    </button>
-                </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
+                <DocumentForm 
+                    onSuccess={(document) => {
+                        onDocumentAdded(document);
+                        onClose();
+                    }}
+                    onCancel={onClose}
+                    initialData={{ project_id: projectId }}
+                />
             </div>
         </div>
     );
@@ -63,9 +50,19 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
     };
 
     // Handler for document added
-    const handleDocumentAdded = () => {
-        // In a real implementation, this would refresh the documents list
-        console.log('Document added');
+    const handleDocumentAdded = (document: Document) => {
+        // Refresh the documents list
+        // In a real implementation, we would fetch the updated list from the server
+        // For now, we'll just add the new document to our local state
+        const newDocument = {
+            id: document.document_id,
+            title: document.title,
+            type: document.document_type,
+            uploaded_at: document.upload_date
+        };
+        
+        setUniqueDocuments(prev => [...prev, newDocument]);
+        console.log('Document added:', document);
     };
     
     // Handler for viewing a document

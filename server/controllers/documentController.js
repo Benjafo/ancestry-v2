@@ -558,3 +558,42 @@ exports.getDocumentFile = async (req, res) => {
         });
     }
 };
+
+/**
+ * Upload a document file
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.uploadDocumentFile = async (req, res) => {
+    try {
+        // Check if file was uploaded
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Get file details from multer
+        const { filename, originalname, mimetype, size, path: filePath } = req.file;
+        
+        // Extract relative path from absolute path
+        const relativePath = filename;
+        
+        // Return file details to client
+        res.status(200).json({
+            message: 'File uploaded successfully',
+            file: {
+                originalname,
+                filename,
+                mimetype,
+                size,
+                path: relativePath
+            }
+        });
+    } catch (error) {
+        console.error('Upload document file error:', error);
+        res.status(500).json({
+            message: 'Server error uploading document file',
+            error: error.message
+        });
+    }
+};

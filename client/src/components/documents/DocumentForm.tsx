@@ -13,9 +13,10 @@ interface DocumentFormProps {
     documentId?: string;
     onSuccess: (document: Document) => void;
     onCancel: () => void;
+    initialData?: Partial<Document>;
 }
 
-const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) => {
+const DocumentForm = ({ documentId, onSuccess, onCancel, initialData }: DocumentFormProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Document>>({
@@ -24,7 +25,8 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
         file_path: '',
         description: '',
         source: '',
-        date_of_original: ''
+        date_of_original: '',
+        ...initialData
     });
     // We need this state to hold the file, even though we don't directly use the variable
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -98,20 +100,35 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
         setError(null);
 
         try {
-            // In a real implementation, you would upload the file to a server first
-            // and then create/update the document record with the file path
-
             let result;
 
             if (documentId) {
                 // Update existing document
                 result = await documentsApi.updateDocument(documentId, formData);
+                onSuccess(result.document);
             } else {
-                // Create new document
-                result = await documentsApi.createDocument(formData);
+                // For new documents, we need to upload the file first
+                const selectedFile = _file;
+                
+                if (!selectedFile) {
+                    throw new Error('Please select a file to upload');
+                }
+                
+                // First upload the file
+                const uploadResponse = await documentsApi.uploadFile(selectedFile);
+                
+                // Then create the document with the file details
+                const documentData = {
+                    ...formData,
+                    file_path: uploadResponse.file.path,
+                    file_size: uploadResponse.file.size,
+                    mime_type: uploadResponse.file.mimetype
+                };
+                
+                // Create the document record
+                result = await documentsApi.createDocument(documentData);
+                onSuccess(result.document);
             }
-
-            onSuccess(result.document);
         } catch (err: unknown) {
             setError(getErrorMessage(err) || 'An error occurred');
             console.error(err);

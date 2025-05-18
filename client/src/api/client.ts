@@ -186,6 +186,7 @@ export interface Document {
     description?: string;
     source?: string;
     date_of_original?: string;
+    project_id?: string;
     created_at: string;
     updated_at: string;
 }
@@ -599,6 +600,14 @@ export const documentsApi = {
 
     getDocumentById: async (documentId: string): Promise<Document> => {
         const response = await apiClient.get(`documents/${documentId}`);
+        return response.json();
+    },
+
+    uploadFile: async (file: File): Promise<{ message: string; file: { originalname: string; filename: string; mimetype: string; size: number; path: string } }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await apiClient.post('documents/upload', { body: formData });
         return response.json();
     },
 
