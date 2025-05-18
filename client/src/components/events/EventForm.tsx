@@ -52,13 +52,13 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                 setIsLoading(true);
                 try {
                     const event = await eventsApi.getEventById(eventId);
-                    
+
                     // Format date for input field (YYYY-MM-DD)
                     const formattedEvent = {
                         ...event,
                         event_date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : ''
                     };
-                    
+
                     setFormData(formattedEvent);
                 } catch (err: unknown) {
                     setError(getErrorMessage(err) || 'Failed to load event data');
@@ -67,7 +67,7 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                     setIsLoading(false);
                 }
             };
-            
+
             fetchEvent();
         }
     }, [eventId]);
@@ -81,10 +81,10 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
         e.preventDefault();
         setIsLoading(true);
         setError(null);
-        
+
         try {
             let result;
-            
+
             if (eventId) {
                 // Update existing event
                 result = await eventsApi.updateEvent(eventId, formData);
@@ -92,7 +92,7 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                 // Create new event
                 result = await eventsApi.createEvent(formData);
             }
-            
+
             onSuccess(result.event);
         } catch (err: unknown) {
             setError(getErrorMessage(err) || 'An error occurred');
@@ -107,16 +107,16 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
     }
 
     return (
-        <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
                 {eventId ? 'Edit Event' : 'Add New Event'}
             </h2>
-            
+
             {error && <ErrorAlert message={error} />}
-            
+
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                    <label htmlFor="event_type" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="event_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Event Type <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -125,7 +125,7 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                         value={formData.event_type}
                         onChange={handleChange}
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                     >
                         {eventTypes.map(type => (
                             <option key={type.value} value={type.value}>
@@ -134,9 +134,9 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                         ))}
                     </select>
                 </div>
-                
+
                 <div className="mb-4">
-                    <label htmlFor="event_date" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="event_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Date {(formData.event_type === 'birth' || formData.event_type === 'death') && <span className="text-red-500">*</span>}
                     </label>
                     <input
@@ -146,12 +146,12 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                         value={formData.event_date}
                         onChange={handleChange}
                         required={formData.event_type === 'birth' || formData.event_type === 'death'}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                     />
                 </div>
-                
+
                 <div className="mb-4">
-                    <label htmlFor="event_location" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="event_location" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Location {(formData.event_type === 'marriage' || formData.event_type === 'divorce') && <span className="text-red-500">*</span>}
                     </label>
                     <input
@@ -161,13 +161,13 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                         value={formData.event_location || ''}
                         onChange={handleChange}
                         required={formData.event_type === 'marriage' || formData.event_type === 'divorce'}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                         placeholder="e.g., New York, NY, USA"
                     />
                 </div>
-                
+
                 <div className="mb-4">
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Description
                     </label>
                     <textarea
@@ -176,16 +176,16 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                         value={formData.description || ''}
                         onChange={handleChange}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                         placeholder="Additional details about this event..."
                     />
                 </div>
-                
+
                 <div className="flex justify-end space-x-3">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     >
                         Cancel
                     </button>

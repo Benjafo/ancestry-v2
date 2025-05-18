@@ -104,17 +104,16 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
             });
 
             // Process relationships if they exist in the new format
-            if ((personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) || 
+            if ((personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) ||
                 (personData.relationshipsAsObject && personData.relationshipsAsObject.length > 0)) {
-                
+
                 const organizedRelationships = organizeRelationships(personData);
-                
+
                 // Update the person data with the organized relationships
                 personData.relationships = organizedRelationships;
             }
-            
+
             setPerson(personData);
-            console.log('Fetched person details:', personData);
         } catch (err) {
             console.error('Error fetching person details:', err);
             setError('Failed to load person details');

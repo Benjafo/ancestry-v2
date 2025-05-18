@@ -52,13 +52,13 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                 setIsLoading(true);
                 try {
                     const document = await documentsApi.getDocumentById(documentId);
-                    
+
                     // Format date for input field (YYYY-MM-DD)
                     const formattedDocument = {
                         ...document,
                         date_of_original: document.date_of_original ? new Date(document.date_of_original).toISOString().split('T')[0] : ''
                     };
-                    
+
                     setFormData(formattedDocument);
                 } catch (err: unknown) {
                     setError(getErrorMessage(err) || 'Failed to load document data');
@@ -67,7 +67,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                     setIsLoading(false);
                 }
             };
-            
+
             fetchDocument();
         }
     }, [documentId]);
@@ -81,7 +81,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
             setFile(selectedFile);
-            
+
             // Update form data with file information
             setFormData(prev => ({
                 ...prev,
@@ -96,13 +96,13 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
         e.preventDefault();
         setIsLoading(true);
         setError(null);
-        
+
         try {
             // In a real implementation, you would upload the file to a server first
             // and then create/update the document record with the file path
-            
+
             let result;
-            
+
             if (documentId) {
                 // Update existing document
                 result = await documentsApi.updateDocument(documentId, formData);
@@ -110,7 +110,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                 // Create new document
                 result = await documentsApi.createDocument(formData);
             }
-            
+
             onSuccess(result.document);
         } catch (err: unknown) {
             setError(getErrorMessage(err) || 'An error occurred');
@@ -125,16 +125,16 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
     }
 
     return (
-        <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
                 {documentId ? 'Edit Document' : 'Add New Document'}
             </h2>
-            
+
             {error && <ErrorAlert message={error} />}
-            
+
             <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Title <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -144,13 +144,13 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         value={formData.title || ''}
                         onChange={handleChange}
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                         placeholder="Document title"
                     />
                 </div>
-                
+
                 <div className="mb-4">
-                    <label htmlFor="document_type" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="document_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Document Type <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -159,7 +159,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         value={formData.document_type}
                         onChange={handleChange}
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                     >
                         {documentTypes.map(type => (
                             <option key={type.value} value={type.value}>
@@ -168,10 +168,10 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         ))}
                     </select>
                 </div>
-                
+
                 {!documentId && (
                     <div className="mb-4">
-                        <label htmlFor="file" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="file" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             File <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -179,15 +179,15 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                             id="file"
                             onChange={handleFileChange}
                             required={!documentId}
-                            className="mt-1 block w-full text-sm text-gray-500
+                            className="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-md file:border-0
                                 file:text-sm file:font-medium
-                                file:bg-primary-50 file:text-primary-700
-                                hover:file:bg-primary-100"
+                                file:bg-primary-50 dark:file:bg-primary-900 file:text-primary-700 dark:file:text-primary-200
+                                hover:file:bg-primary-100 dark:hover:file:bg-primary-800"
                         />
-                        <p className="mt-1 text-xs text-gray-500">
-                            Accepted file types depend on document type. For {formData.document_type}, common formats include: 
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Accepted file types depend on document type. For {formData.document_type}, common formats include:
                             {formData.document_type === 'photo' && ' JPG, PNG, GIF, TIFF'}
                             {formData.document_type === 'certificate' && ' PDF, JPG, PNG'}
                             {formData.document_type === 'letter' && ' PDF, DOC, DOCX, TXT'}
@@ -197,9 +197,9 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         </p>
                     </div>
                 )}
-                
+
                 <div className="mb-4">
-                    <label htmlFor="source" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="source" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Source
                     </label>
                     <input
@@ -208,13 +208,13 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         name="source"
                         value={formData.source || ''}
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                         placeholder="e.g., National Archives, Family Collection"
                     />
                 </div>
-                
+
                 <div className="mb-4">
-                    <label htmlFor="date_of_original" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="date_of_original" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Date of Original
                     </label>
                     <input
@@ -223,12 +223,12 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         name="date_of_original"
                         value={formData.date_of_original || ''}
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                     />
                 </div>
-                
+
                 <div className="mb-4">
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Description
                     </label>
                     <textarea
@@ -237,16 +237,16 @@ const DocumentForm = ({ documentId, onSuccess, onCancel }: DocumentFormProps) =>
                         value={formData.description || ''}
                         onChange={handleChange}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                         placeholder="Additional details about this document..."
                     />
                 </div>
-                
+
                 <div className="flex justify-end space-x-3">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     >
                         Cancel
                     </button>
