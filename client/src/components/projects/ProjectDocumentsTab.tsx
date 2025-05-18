@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ProjectDetail } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import ViewDocumentModal from '../documents/ViewDocumentModal';
 
 interface ProjectDocumentsTabProps {
     project: ProjectDetail;
@@ -15,7 +16,7 @@ const AddDocumentModal: React.FC<{
     onDocumentAdded: () => void;
 }> = ({ isOpen, onClose, projectId, onDocumentAdded }) => {
     if (!isOpen) return null;
-    
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
@@ -24,13 +25,13 @@ const AddDocumentModal: React.FC<{
                     This is a placeholder for the Add Document modal. In a real implementation, this would include a form to upload or link to a document.
                 </p>
                 <div className="flex justify-end space-x-2">
-                    <button 
+                    <button
                         className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
                         onClick={onClose}
                     >
                         Cancel
                     </button>
-                    <button 
+                    <button
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                         onClick={() => {
                             onDocumentAdded();
@@ -52,17 +53,27 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
     
+    // State for document viewing modal
+    const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
+    const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
+
     // Handler for opening the add document modal
     const handleAddDocument = () => {
         setIsAddDocumentModalOpen(true);
     };
-    
+
     // Handler for document added
     const handleDocumentAdded = () => {
         // In a real implementation, this would refresh the documents list
         console.log('Document added');
     };
     
+    // Handler for viewing a document
+    const handleViewDocument = (documentId: string) => {
+        setViewingDocumentId(documentId);
+        setIsViewDocumentModalOpen(true);
+    };
+
     // Remove duplicate documents based on ID
     useEffect(() => {
         if (project.documents && project.documents.length > 0) {
@@ -81,45 +92,45 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
             setFilteredDocuments([]);
         }
     }, [project.documents]);
-    
+
     // Filter documents based on search term
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredDocuments(uniqueDocuments);
         } else {
             const lowerSearchTerm = searchTerm.toLowerCase();
-            const filtered = uniqueDocuments.filter(doc => 
-                doc.title.toLowerCase().includes(lowerSearchTerm) || 
-                (doc.type && doc.type.toLowerCase().includes(lowerSearchTerm)) 
+            const filtered = uniqueDocuments.filter(doc =>
+                doc.title.toLowerCase().includes(lowerSearchTerm) ||
+                (doc.type && doc.type.toLowerCase().includes(lowerSearchTerm))
                 // ||
                 // (doc.person_name && doc.person_name.toLowerCase().includes(lowerSearchTerm))
             );
             setFilteredDocuments(filtered);
         }
     }, [searchTerm, uniqueDocuments]);
-    
+
     // Handle search input change
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
-    
+
     // Format document type for display
     const formatDocumentType = (type?: string): string => {
         if (!type) return 'Unknown';
-        
+
         // Convert snake_case or kebab-case to spaces
         const formatted = type.replace(/[_-]/g, ' ');
-        
+
         // Capitalize each word
         return formatted
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
     };
-    
+
     const getDocumentTypeIcon = (type?: string) => {
         if (!type) type = 'other';
-        
+
         switch (type.toLowerCase()) {
             case 'certificate':
                 return (
@@ -231,7 +242,10 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredDocuments.map((document) => (
                             <li key={document.id || document.id}>
-                                <a href="#" className="block hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <div 
+                                    className="block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                                    onClick={() => handleViewDocument(document.id)}
+                                >
                                     <div className="flex items-center px-4 py-4 sm:px-6">
                                         <div className="flex-shrink-0">
                                             {getDocumentTypeIcon(document.type)}
@@ -250,7 +264,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                                             </p>
                                         </div>
                                     </div>
-                                </a>
+                                </div>
                             </li>
                         ))}
                     </ul>
@@ -268,6 +282,15 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
                 projectId={project.id}
                 onDocumentAdded={handleDocumentAdded}
             />
+            
+            {/* View Document Modal */}
+            {viewingDocumentId && (
+                <ViewDocumentModal
+                    isOpen={isViewDocumentModalOpen}
+                    onClose={() => setIsViewDocumentModalOpen(false)}
+                    documentId={viewingDocumentId}
+                />
+            )}
         </div>
     );
 };

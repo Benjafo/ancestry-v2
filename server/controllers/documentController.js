@@ -1,6 +1,8 @@
 const documentService = require('../services/documentService');
 const UserEventService = require('../services/userEventService');
 const { Project, ProjectUser } = require('../models');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * Document Controller
@@ -497,6 +499,61 @@ exports.getDocumentPersonAssociation = async (req, res) => {
 
         res.status(500).json({
             message: 'Server error retrieving document-person association',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Get document file for viewing or downloading
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.getDocumentFile = async (req, res) => {
+    try {
+        const { documentId } = req.params;
+        
+        // Get document details from database
+        const document = await documentService.getDocumentById(documentId);
+        
+        if (!document) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+        
+        // Ensure uploads directory exists
+        const uploadsDir = path.join(__dirname, '../uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        
+        // Construct file path
+        const filePath = path.join(uploadsDir, document.file_path);
+        
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: 'File not found on server' });
+        }
+        
+        // Set content type
+        const contentType = document.mime_type || 'application/octet-stream';
+        res.setHeader('Content-Type', contentType);
+        
+        // Set content disposition based on query parameter
+        if (req.query.download === 'true') {
+            // For downloading
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(document.file_path)}"`);
+        } else {
+            // For viewing in browser
+            res.setHeader('Content-Disposition', 'inline');
+        }
+        
+        // Send the file
+        res.sendFile(filePath);
+    } catch (error) {
+        console.error('Get document file error:', error);
+        res.status(500).json({
+            message: 'Server error retrieving document file',
             error: error.message
         });
     }

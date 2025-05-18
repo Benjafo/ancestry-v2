@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Person, Relationship, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import ViewDocumentModal from '../documents/ViewDocumentModal';
 
 interface ViewPersonModalProps {
     personId: string;
@@ -16,6 +17,10 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
+    
+    // State for document viewing modal
+    const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
+    const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
 
     // Function to format event type for display
     const formatEventType = (eventType: string): string => {
@@ -357,8 +362,15 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                     {person.documents && person.documents.length > 0 ? (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {person.documents.map(document => (
-                                                <div key={document.document_id} className="border dark:border-gray-700 rounded-lg p-4">
-                                                    <div className="flex items-start">
+                                            <div 
+                                                key={document.document_id} 
+                                                className="border dark:border-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                onClick={() => {
+                                                    setViewingDocumentId(document.document_id);
+                                                    setIsViewDocumentModalOpen(true);
+                                                }}
+                                            >
+                                                <div className="flex items-start">
                                                         <div className="flex-shrink-0 mr-4">
                                                             {/* Document type icon would go here */}
                                                         </div>
@@ -472,6 +484,15 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                     </>
                 )}
             </div>
+            
+            {/* View Document Modal */}
+            {viewingDocumentId && (
+                <ViewDocumentModal
+                    isOpen={isViewDocumentModalOpen}
+                    onClose={() => setIsViewDocumentModalOpen(false)}
+                    documentId={viewingDocumentId}
+                />
+            )}
         </div>
     );
 };

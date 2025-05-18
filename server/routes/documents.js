@@ -3,7 +3,9 @@ const router = express.Router();
 const documentController = require('../controllers/documentController');
 const { verifyToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
-const { 
+const path = require('path');
+const fs = require('fs');
+const {
     createDocumentValidation,
     updateDocumentValidation,
     documentIdValidation,
@@ -97,5 +99,12 @@ router.delete('/association/:documentId/:personId', documentController.removeDoc
  * @access  Private
  */
 router.get('/association/:documentId/:personId', documentController.getDocumentPersonAssociation);
+
+/**
+ * @route   GET /api/documents/:documentId/file
+ * @desc    Get document file for viewing or downloading
+ * @access  Private
+ */
+router.get('/:documentId/file', documentController.getDocumentFile);
 
 module.exports = router;
