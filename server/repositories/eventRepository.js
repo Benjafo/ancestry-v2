@@ -38,30 +38,30 @@ class EventRepository extends BaseRepository {
             eventDateEnd: 'event_date',
             location: 'event_location'
         };
-        
+
         // Define allowed sort fields
         const allowedSortFields = [
             'event_type', 'event_date', 'event_location', 'created_at', 'updated_at'
         ];
-        
+
         // Define search fields
         const searchFields = ['description', 'event_location'];
-        
+
         // Build date range filters
         const dateFilters = {};
-        
+
         if (params.eventDateStart || params.eventDateEnd) {
             dateFilters.event_date = {};
-            
+
             if (params.eventDateStart) {
                 dateFilters.event_date[Op.gte] = new Date(params.eventDateStart);
             }
-            
+
             if (params.eventDateEnd) {
                 dateFilters.event_date[Op.lte] = new Date(params.eventDateEnd);
             }
         }
-        
+
         // Build query options
         const queryOptions = QueryBuilder.buildQueryOptions(
             {
@@ -80,7 +80,7 @@ class EventRepository extends BaseRepository {
                 searchFields
             }
         );
-        
+
         // Add date filters
         if (Object.keys(dateFilters).length > 0) {
             queryOptions.where = {
@@ -88,7 +88,7 @@ class EventRepository extends BaseRepository {
                 ...dateFilters
             };
         }
-        
+
         // Add location filter if provided
         if (params.location) {
             queryOptions.where = {
@@ -96,7 +96,7 @@ class EventRepository extends BaseRepository {
                 event_location: { [Op.iLike]: `%${params.location}%` }
             };
         }
-        
+
         // Add include for person data if requested
         if (params.includePerson) {
             queryOptions.include = [
@@ -106,15 +106,15 @@ class EventRepository extends BaseRepository {
                 }
             ];
         }
-        
+
         // Execute query
         const result = await this.findAndCountAll(queryOptions);
-        
+
         // Calculate pagination metadata
         const page = parseInt(params.page, 10) || 1;
         const pageSize = parseInt(params.pageSize, 10) || 10;
         const totalPages = Math.ceil(result.count / pageSize);
-        
+
         return {
             events: result.rows,
             metadata: {
@@ -136,14 +136,14 @@ class EventRepository extends BaseRepository {
      */
     async findEventById(id, options = {}) {
         const include = [];
-        
+
         if (options.includePerson) {
             include.push({
                 model: Person,
                 attributes: ['person_id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'death_date']
             });
         }
-        
+
         return await this.findById(id, { include });
     }
 
@@ -156,12 +156,15 @@ class EventRepository extends BaseRepository {
      */
     async findEventsByPersonId(personId, options = {}) {
         const queryOptions = {
-            where: {
-                person_id: personId
-            },
+            include: [{
+                model: Person,
+                as: 'persons', // Specify the alias here
+                where: { person_id: personId },
+                through: { attributes: [] } // Exclude join table attributes from the result
+            }],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -179,7 +182,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -200,7 +203,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -218,7 +221,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -238,7 +241,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 }
