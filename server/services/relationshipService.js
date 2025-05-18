@@ -52,6 +52,27 @@ class RelationshipService {
                 throw new Error(`Person with id ${relationshipData.person2_id} not found`);
             }
             
+            // Check for existing relationships between these two people
+            const existingRelationships = await relationshipRepository.findBetweenPersons(
+                relationshipData.person1_id, 
+                relationshipData.person2_id,
+                { transaction }
+            );
+            
+            // If there's an existing relationship of the same type, prevent duplication
+            const duplicateRelationship = existingRelationships.find(rel => 
+                (rel.relationship_type === relationshipData.relationship_type) ||
+                // Also check for inverse relationships (parent-child, child-parent)
+                (rel.relationship_type === 'parent' && relationshipData.relationship_type === 'child' && 
+                 rel.person1_id === relationshipData.person2_id && rel.person2_id === relationshipData.person1_id) ||
+                (rel.relationship_type === 'child' && relationshipData.relationship_type === 'parent' && 
+                 rel.person1_id === relationshipData.person2_id && rel.person2_id === relationshipData.person1_id)
+            );
+            
+            if (duplicateRelationship) {
+                throw new Error(`A relationship of type '${relationshipData.relationship_type}' already exists between these people`);
+            }
+            
             // Validate relationship based on type
             if (relationshipData.relationship_type === 'spouse') {
                 const marriageValidation = validateMarriage(person1, person2, relationshipData);

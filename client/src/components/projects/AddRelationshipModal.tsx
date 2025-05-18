@@ -45,6 +45,7 @@ interface AddRelationshipModalProps {
     onRelationshipAdded: () => void;
     projectId: string;
     persons: Person[];
+    relationships?: any[]; // Existing relationships in the project
 }
 
 const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
@@ -52,7 +53,8 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
     onClose,
     onRelationshipAdded,
     projectId,
-    persons
+    persons,
+    relationships = []
 }) => {
     // Form state
     const [formData, setFormData] = useState({
@@ -84,6 +86,38 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
         setFormData((prev) => ({ ...prev, person2Id: personId }));
     };
 
+    // Check for duplicate relationships
+    const checkForDuplicateRelationship = () => {
+        if (!formData.person1Id || !formData.person2Id || !formData.relationshipType) {
+            return false; // Not enough data to check
+        }
+
+        // Check if a relationship of the same type already exists between these people
+        return relationships.find(rel =>
+            // Check direct match (person1 -> person2)
+            ((rel.person1Id === formData.person1Id && rel.person2Id === formData.person2Id &&
+                rel.type === formData.relationshipType) ||
+                // Check reverse match (person2 -> person1)
+                (rel.person1Id === formData.person2Id && rel.person2Id === formData.person1Id &&
+                    rel.type === formData.relationshipType)) ||
+            // Check for inverse relationships (parent-child, child-parent)
+            (formData.relationshipType === 'parent' && rel.type === 'child' &&
+                rel.person1Id === formData.person2Id && rel.person2Id === formData.person1Id) ||
+            (formData.relationshipType === 'child' && rel.type === 'parent' &&
+                rel.person1Id === formData.person2Id && rel.person2Id === formData.person1Id)
+        );
+    };
+
+    // Check for duplicates when form data changes
+    React.useEffect(() => {
+        const duplicateRelationship = checkForDuplicateRelationship();
+        if (duplicateRelationship) {
+            setError(`A relationship of type '${formData.relationshipType}' already exists between these people`);
+        } else {
+            setError(null);
+        }
+    }, [formData.person1Id, formData.person2Id, formData.relationshipType]);
+
     // Form validation
     const validateForm = () => {
         if (!formData.person1Id) {
@@ -106,11 +140,18 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
             return false;
         }
 
+        // Check for duplicate relationships
+        const duplicateRelationship = checkForDuplicateRelationship();
+        if (duplicateRelationship) {
+            setError(`A relationship of type '${formData.relationshipType}' already exists between these people`);
+            return false;
+        }
+
         // Validate dates if both are provided
         if (formData.startDate && formData.endDate) {
             const startDate = new Date(formData.startDate);
             const endDate = new Date(formData.endDate);
-            
+
             if (endDate < startDate) {
                 setError('End date cannot be before start date');
                 return false;
@@ -129,11 +170,11 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
-        
+
         setIsSubmitting(true);
         setError(null);
 
@@ -147,15 +188,74 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                 end_date: formData.endDate || undefined,
                 notes: formData.notes || undefined
             });
-            
+
             // Call the callback to refresh relationships
             onRelationshipAdded();
-            
+
             // Close the modal
             onClose();
         } catch (err: any) {
             console.error('Error creating relationship:', err);
-            setError(err.message || 'Failed to create relationship');
+            
+            // Extract and format the error message from the server response
+            let errorMessage = 'Failed to create relationship';
+            
+            try {
+                // For Ky errors, the response is available in err.response
+                if (err.response) {
+                    // Clone the response to read it multiple times if needed
+                    const clonedResponse = err.response.clone();
+                    
+                    try {
+                        // Try to parse as JSON first
+                        const jsonData = await clonedResponse.json();
+                        if (jsonData && jsonData.message) {
+                            errorMessage = jsonData.message;
+                        }
+                    } catch (jsonError) {
+                        // If JSON parsing fails, try to get the text
+                        const textData = await err.response.text();
+                        if (textData) {
+                            // Try to extract a message from the text
+                            const messageMatch = textData.match(/"message"\s*:\s*"([^"]+)"/);
+                            if (messageMatch && messageMatch[1]) {
+                                errorMessage = messageMatch[1];
+                            } else {
+                                errorMessage = textData;
+                            }
+                        }
+                    }
+                } else if (err.name === 'HTTPError') {
+                    // For Ky HTTPError, try to extract the message from the error object
+                    const errorText = err.toString();
+                    // Extract the specific error message if possible
+                    const messageMatch = errorText.match(/message":"([^"]+)"/);
+                    if (messageMatch && messageMatch[1]) {
+                        errorMessage = messageMatch[1];
+                    } else {
+                        errorMessage = errorText;
+                    }
+                } else if (err.message) {
+                    errorMessage = err.message;
+                }
+            } catch (extractError) {
+                console.error('Error extracting error message:', extractError);
+                // If all else fails, use the original error message
+                errorMessage = err.message || errorMessage;
+            }
+            
+            // Format specific error messages to be more user-friendly
+            if (errorMessage.includes('already exists between these people')) {
+                errorMessage = `A relationship of this type already exists between these people. Please choose different people or a different relationship type.`;
+            } else if (errorMessage.includes('validation failed')) {
+                errorMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
+            } else if (errorMessage.includes('not found')) {
+                errorMessage = `One or both of the selected people could not be found. Please refresh and try again.`;
+            } else if (errorMessage.includes('Circular relationship')) {
+                errorMessage = `This relationship would create a circular family tree, which is not allowed.`;
+            }
+            
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -182,15 +282,18 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
 
                 {/* Error message */}
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                    <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-500 p-4 mb-4 rounded-md shadow-sm">
                         <div className="flex">
                             <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <svg className="h-5 w-5 text-red-400 dark:text-red-500" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
                             </div>
                             <div className="ml-3">
-                                <p className="text-sm text-red-700">{error}</p>
+                                <h3 className="text-sm font-medium text-red-800 dark:text-red-400">Validation Error</h3>
+                                <div className="mt-1 text-sm text-red-700 dark:text-red-300">
+                                    {error}
+                                </div>
                             </div>
                         </div>
                     </div>

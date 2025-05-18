@@ -174,6 +174,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                     }}
                     projectId={project.id}
                     persons={project.persons || []}
+                    relationships={relationships}
                 />
             )}
 

@@ -113,7 +113,68 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
             onClose();
         } catch (err: any) {
             console.error('Error updating relationship:', err);
-            setError(err.message || 'Failed to update relationship');
+            
+            // Extract and format the error message from the server response
+            let errorMessage = 'Failed to update relationship';
+            
+            try {
+                // For Ky errors, the response is available in err.response
+                if (err.response) {
+                    // Clone the response to read it multiple times if needed
+                    const clonedResponse = err.response.clone();
+                    
+                    try {
+                        // Try to parse as JSON first
+                        const jsonData = await clonedResponse.json();
+                        if (jsonData && jsonData.message) {
+                            errorMessage = jsonData.message;
+                        }
+                    } catch (jsonError) {
+                        // If JSON parsing fails, try to get the text
+                        const textData = await err.response.text();
+                        if (textData) {
+                            // Try to extract a message from the text
+                            const messageMatch = textData.match(/"message"\s*:\s*"([^"]+)"/);
+                            if (messageMatch && messageMatch[1]) {
+                                errorMessage = messageMatch[1];
+                            } else {
+                                errorMessage = textData;
+                            }
+                        }
+                    }
+                } else if (err.name === 'HTTPError') {
+                    // For Ky HTTPError, try to extract the message from the error object
+                    const errorText = err.toString();
+                    // Extract the specific error message if possible
+                    const messageMatch = errorText.match(/message":"([^"]+)"/);
+                    if (messageMatch && messageMatch[1]) {
+                        errorMessage = messageMatch[1];
+                    } else {
+                        errorMessage = errorText;
+                    }
+                } else if (err.message) {
+                    errorMessage = err.message;
+                }
+            } catch (extractError) {
+                console.error('Error extracting error message:', extractError);
+                // If all else fails, use the original error message
+                errorMessage = err.message || errorMessage;
+            }
+            
+            // Format specific error messages to be more user-friendly
+            if (errorMessage.includes('validation failed')) {
+                errorMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
+            } else if (errorMessage.includes('not found')) {
+                errorMessage = `The relationship could not be found. It may have been deleted. Please refresh and try again.`;
+            } else if (errorMessage.includes('Marriage validation failed')) {
+                errorMessage = `Marriage validation error: ${errorMessage.split('Marriage validation failed:')[1]?.trim() || 'Please check the marriage details.'}`;
+            } else if (errorMessage.includes('Circular relationship')) {
+                errorMessage = `This relationship would create a circular family tree, which is not allowed.`;
+            } else if (errorMessage.includes('is not a valid qualifier')) {
+                errorMessage = `The selected qualifier is not valid for this relationship type. Please choose a different qualifier.`;
+            }
+            
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -140,15 +201,18 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
 
                 {/* Error message */}
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                    <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-400 dark:border-red-500 p-4 mb-4 rounded-md shadow-sm">
                         <div className="flex">
                             <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <svg className="h-5 w-5 text-red-400 dark:text-red-500" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
                             </div>
                             <div className="ml-3">
-                                <p className="text-sm text-red-700">{error}</p>
+                                <h3 className="text-sm font-medium text-red-800 dark:text-red-400">Validation Error</h3>
+                                <div className="mt-1 text-sm text-red-700 dark:text-red-300">
+                                    {error}
+                                </div>
                             </div>
                         </div>
                     </div>
