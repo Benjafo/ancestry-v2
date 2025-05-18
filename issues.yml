@@ -2,8 +2,8 @@ project:
   active:
     Project: tree view
     Project: all events should trigger user events that appear in the activity feeds
-    Project -> documents: add document modal functionality
-    Project -> documents: there should be some sort of view functionality for records
+    Project -> documents: (TEST THIS) add document modal functionality
+    Project -> documents: view preview of documents or download if not available
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> timeline: duplicate events in timeline
     Project -> family members: add and edit documents in create and edit modal is broken

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
-import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface ViewDocumentModalProps {
     isOpen: boolean;
@@ -37,10 +37,10 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({ isOpen, onClose, 
     // Format document type for display
     const formatDocumentType = (documentType: string): string => {
         if (!documentType) return 'Unknown';
-        
+
         // Convert snake_case or kebab-case to spaces
         const formatted = documentType.replace(/[_-]/g, ' ');
-        
+
         // Capitalize each word
         return formatted
             .split(' ')
@@ -51,16 +51,16 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({ isOpen, onClose, 
     // Render different viewers based on mime_type
     const renderDocumentViewer = () => {
         if (!document) return null;
-        
+
         const fileUrl = `/api/documents/${documentId}/file`;
         const downloadUrl = `/api/documents/${documentId}/file?download=true`;
-        
+
         if (document.mime_type?.startsWith('image/')) {
             return (
                 <div className="document-viewer">
-                    <img 
-                        src={fileUrl} 
-                        alt={document.title} 
+                    <img
+                        src={fileUrl}
+                        alt={document.title}
                         className="max-w-full h-auto mx-auto rounded-md shadow-md"
                     />
                 </div>
@@ -68,9 +68,9 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({ isOpen, onClose, 
         } else if (document.mime_type === 'application/pdf') {
             return (
                 <div className="document-viewer h-96">
-                    <iframe 
-                        src={fileUrl} 
-                        className="w-full h-full border-0 rounded-md shadow-md" 
+                    <iframe
+                        src={fileUrl}
+                        className="w-full h-full border-0 rounded-md shadow-md"
                         title={document.title}
                     />
                 </div>

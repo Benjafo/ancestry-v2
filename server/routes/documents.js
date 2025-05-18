@@ -32,7 +32,7 @@ const fileFilter = function (req, file, cb) {
 };
 
 // Initialize multer with the storage configuration
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
