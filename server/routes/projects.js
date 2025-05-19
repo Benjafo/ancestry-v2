@@ -85,4 +85,11 @@ router.get('/:id/events', validate(projectIdValidation), projectController.getPr
  */
 router.get('/:id/relationships', validate(projectIdValidation), projectController.getProjectRelationships);
 
+/**
+ * @route   GET /api/projects/:projectId/documents
+ * @desc    Get documents for a specific project
+ * @access  Private
+ */
+router.get('/:projectId/documents', validate(projectIdValidation), require('../controllers/documentController').getProjectDocuments);
+
 module.exports = router;

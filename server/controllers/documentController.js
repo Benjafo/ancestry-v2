@@ -321,6 +321,38 @@ exports.getDocumentsByDateRange = async (req, res) => {
 };
 
 /**
+ * Get documents by project ID
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.getProjectDocuments = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const options = {
+            includePersons: req.query.includePersons === 'true'
+        };
+
+        const documents = await documentService.getDocumentsByProjectId(projectId, options);
+
+        res.json(documents);
+    } catch (error) {
+        console.error('Get project documents error:', error);
+
+        if (error.message.includes('not found')) {
+            return res.status(404).json({
+                message: error.message
+            });
+        }
+
+        res.status(500).json({
+            message: 'Server error retrieving project documents',
+            error: error.message
+        });
+    }
+};
+
+/**
  * Associate a document with a person
  * 
  * @param {Object} req - Express request object

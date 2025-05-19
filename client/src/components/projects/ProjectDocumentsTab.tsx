@@ -135,25 +135,48 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
         }
     };
 
-    // Remove duplicate documents based on ID
+    // Fetch documents directly associated with the project
     useEffect(() => {
-        if (project.documents && project.documents.length > 0) {
-            // Use a Map to deduplicate documents by ID
-            const uniqueDocsMap = new Map();
-            project.documents.forEach(doc => {
-                if (!uniqueDocsMap.has(doc.id)) {
-                    uniqueDocsMap.set(doc.id, doc);
+        const fetchProjectDocuments = async () => {
+            try {
+                // Fetch documents directly associated with the project
+                const documents = await documentsApi.getDocumentsByProjectId(project.id, { includePersons: true });
+                
+                // Transform documents to match the expected format
+                const formattedDocs = documents.map(doc => ({
+                    id: doc.document_id,
+                    title: doc.title,
+                    type: doc.document_type,
+                    uploaded_at: doc.upload_date,
+                    persons: doc.persons
+                }));
+                
+                console.log('Project Documents:', formattedDocs);
+                setUniqueDocuments(formattedDocs);
+                setFilteredDocuments(formattedDocs);
+            } catch (error) {
+                console.error('Error fetching project documents:', error);
+                // Fallback to documents from project if direct fetch fails
+                if (project.documents && project.documents.length > 0) {
+                    // Use a Map to deduplicate documents by ID
+                    const uniqueDocsMap = new Map();
+                    project.documents.forEach(doc => {
+                        if (!uniqueDocsMap.has(doc.id)) {
+                            uniqueDocsMap.set(doc.id, doc);
+                        }
+                    });
+                    const uniqueDocs = Array.from(uniqueDocsMap.values());
+                    setUniqueDocuments(uniqueDocs);
+                    setFilteredDocuments(uniqueDocs);
+                } else {
+                    setUniqueDocuments([]);
+                    setFilteredDocuments([]);
                 }
-            });
-            const uniqueDocs = Array.from(uniqueDocsMap.values());
-            console.log('Documents:', uniqueDocs);
-            setUniqueDocuments(uniqueDocs);
-            setFilteredDocuments(uniqueDocs);
-        } else {
-            setUniqueDocuments([]);
-            setFilteredDocuments([]);
-        }
-    }, [project.documents]);
+            }
+        };
+        
+        fetchProjectDocuments();
+    }, [project.id]);
 
     // Filter documents based on search term
     useEffect(() => {

@@ -222,6 +222,36 @@ class DocumentRepository extends BaseRepository {
     }
 
     /**
+     * Find documents by project ID
+     * 
+     * @param {String} projectId - Project ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Array>} Array of documents
+     */
+    async findDocumentsByProjectId(projectId, options = {}) {
+        const queryOptions = {
+            where: {
+                project_id: projectId
+            },
+            ...options
+        };
+        
+        // Include persons if requested
+        if (options.includePersons) {
+            queryOptions.include = [
+                {
+                    model: Person,
+                    as: 'persons',
+                    attributes: ['person_id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'death_date'],
+                    through: { attributes: ['relevance', 'notes'] }
+                }
+            ];
+        }
+        
+        return await this.findAll(queryOptions);
+    }
+
+    /**
      * Associate a document with a person
      * 
      * @param {String} documentId - Document ID

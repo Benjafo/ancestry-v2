@@ -139,6 +139,17 @@ Person.belongsToMany(Project, {
     as: 'projects'
 });
 
+// Define Project-Document direct association
+Project.hasMany(Document, {
+    foreignKey: 'project_id',
+    as: 'documents'
+});
+
+Document.belongsTo(Project, {
+    foreignKey: 'project_id',
+    as: 'project'
+});
+
 // Define relationship associations
 // Note: We need to define both directions for relationships
 Person.hasMany(Relationship, {

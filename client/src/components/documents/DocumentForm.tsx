@@ -110,6 +110,7 @@ const DocumentForm = ({ documentId, onSuccess, onCancel, initialData }: Document
                 ...(formData.description ? { description: formData.description } : {}),
                 ...(formData.source ? { source: formData.source } : {}),
                 ...(formData.date_of_original ? { date_of_original: formData.date_of_original } : {}),
+                ...(formData.project_id ? { project_id: formData.project_id } : {}),
             };
 
             // Handle file_size separately as 0 is a valid value, but undefined/null should be omitted

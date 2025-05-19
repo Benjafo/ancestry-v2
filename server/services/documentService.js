@@ -65,6 +65,16 @@ class DocumentService {
                 }
             }
             
+            // If project_id is provided, verify the project exists
+            if (documentData.project_id) {
+                const projectRepository = require('../repositories/projectRepository');
+                const projectExists = await projectRepository.exists(documentData.project_id, { transaction });
+                
+                if (!projectExists) {
+                    throw new Error(`Project with id ${documentData.project_id} not found`);
+                }
+            }
+            
             // Create the document
             const document = await documentRepository.create(documentData, { transaction });
             
@@ -185,6 +195,25 @@ class DocumentService {
      */
     async getDocumentsByDateRange(startDate, endDate, dateField = 'upload_date', options = {}) {
         return await documentRepository.findDocumentsByDateRange(startDate, endDate, dateField, options);
+    }
+
+    /**
+     * Get documents by project ID
+     * 
+     * @param {String} projectId - Project ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Array>} Array of documents
+     */
+    async getDocumentsByProjectId(projectId, options = {}) {
+        // Check if project exists
+        const projectRepository = require('../repositories/projectRepository');
+        const projectExists = await projectRepository.exists(projectId);
+        
+        if (!projectExists) {
+            throw new Error(`Project with id ${projectId} not found`);
+        }
+        
+        return await documentRepository.findDocumentsByProjectId(projectId, options);
     }
 
     /**

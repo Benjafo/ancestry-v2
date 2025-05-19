@@ -90,6 +90,7 @@ CREATE TABLE
         description TEXT,
         source VARCHAR(255),
         date_of_original DATE,
+        project_id UUID REFERENCES projects(id), -- Direct association with a project
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );

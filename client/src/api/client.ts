@@ -189,6 +189,15 @@ export interface Document {
     project_id?: string;
     created_at: string;
     updated_at: string;
+    persons?: {
+        person_id: string;
+        first_name: string;
+        last_name: string;
+        middle_name?: string;
+        gender?: string;
+        birth_date?: string;
+        death_date?: string;
+    }[];
 }
 
 export interface Relationship {
@@ -495,21 +504,7 @@ export interface Event {
     updated_at: string;
 }
 
-// Document types
-export interface Document {
-    document_id: string;
-    title: string;
-    document_type: string;
-    file_path: string;
-    upload_date: string;
-    file_size?: number;
-    mime_type?: string;
-    description?: string;
-    source?: string;
-    date_of_original?: string;
-    created_at: string;
-    updated_at: string;
-}
+// Document types (interface already defined above)
 
 export interface DocumentPersonAssociation {
     document_id: string;
@@ -617,6 +612,17 @@ export const documentsApi = {
 
     createDocument: async (documentData: Partial<Document>): Promise<{ message: string; document: Document }> => {
         const response = await apiClient.post('documents', { json: documentData });
+        return response.json();
+    },
+    
+    getDocumentsByProjectId: async (projectId: string, options?: { includePersons?: boolean }): Promise<Document[]> => {
+        const params = new URLSearchParams();
+        if (options?.includePersons) {
+            params.append('includePersons', 'true');
+        }
+        
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`projects/${projectId}/documents${queryString}`);
         return response.json();
     },
 

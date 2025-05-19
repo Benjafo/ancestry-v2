@@ -90,6 +90,15 @@ class ProjectRepository extends BaseRepository {
     async findProjectById(id, options = {}) {
         const include = [];
 
+        // Include documents directly associated with the project
+        if (options.includeDocuments) {
+            include.push({
+                model: Document,
+                as: 'documents',
+                required: false
+            });
+        }
+
         // Always include persons if requested, and nest includes for person-related data
         if (options.includePersons) {
             const personInclude = {
@@ -109,7 +118,7 @@ class ProjectRepository extends BaseRepository {
                 });
             }
 
-            // Add other person-related includes here if needed (e.g., documents, relationships)
+            // Add person-related documents if requested
             if (options.includeDocuments) {
                  personInclude.include.push({
                     model: Document,
