@@ -412,7 +412,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.parents.map(parent => (
                                                             <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{parent.first_name} {parent.last_name}</p>
+                                                                <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
                                                                 </p>
@@ -428,7 +428,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.children.map(child => (
                                                             <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{child.first_name} {child.last_name}</p>
+                                                                <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {child.relationship_qualifier && `${child.relationship_qualifier} child`}
                                                                 </p>
@@ -444,7 +444,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.spouses.map(spouse => (
                                                             <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{spouse.first_name} {spouse.last_name}</p>
+                                                                <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
                                                                 {spouse.start_date && (
                                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                         Married: {formatDate(spouse.start_date)}
@@ -463,7 +463,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.siblings.map(sibling => (
                                                             <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{sibling.first_name} {sibling.last_name}</p>
+                                                                <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
                                                                 </p>
