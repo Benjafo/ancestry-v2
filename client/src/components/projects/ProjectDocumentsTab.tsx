@@ -71,11 +71,11 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
     // State for document viewing modal
     const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
     const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
-    
+
     // State for document editing modal
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
     const [isEditDocumentModalOpen, setIsEditDocumentModalOpen] = useState(false);
-    
+
     // State to track which document is being hovered
     const [hoveredDocumentId, setHoveredDocumentId] = useState<string | null>(null);
 
@@ -107,14 +107,14 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
         setViewingDocumentId(documentId);
         setIsViewDocumentModalOpen(true);
     };
-    
+
     // Handler for editing a document
     const handleEditDocument = (documentId: string) => {
         setEditingDocumentId(documentId);
         setIsEditDocumentModalOpen(true);
         setIsViewDocumentModalOpen(false); // Close the view modal when opening edit
     };
-    
+
     // Handler for deleting a document
     const handleDeleteDocument = async (documentId: string) => {
         if (window.confirm('Are you sure you want to delete this document?')) {
@@ -123,7 +123,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                 // Update local state to remove the deleted document
                 setUniqueDocuments(prev => prev.filter(doc => doc.id !== documentId));
                 setFilteredDocuments(prev => prev.filter(doc => doc.id !== documentId));
-                
+
                 // If the document was being viewed, close the modal
                 if (viewingDocumentId === documentId) {
                     setIsViewDocumentModalOpen(false);
@@ -141,7 +141,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
             try {
                 // Fetch documents directly associated with the project
                 const documents = await documentsApi.getDocumentsByProjectId(project.id, { includePersons: true });
-                
+
                 // Transform documents to match the expected format
                 const formattedDocs = documents.map(doc => ({
                     id: doc.document_id,
@@ -150,7 +150,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                     uploaded_at: doc.upload_date,
                     persons: doc.persons
                 }));
-                
+
                 console.log('Project Documents:', formattedDocs);
                 setUniqueDocuments(formattedDocs);
                 setFilteredDocuments(formattedDocs);
@@ -174,7 +174,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                 }
             }
         };
-        
+
         fetchProjectDocuments();
     }, [project.id]);
 
@@ -333,82 +333,75 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                                     onMouseEnter={() => setHoveredDocumentId(document.id)}
                                     onMouseLeave={() => setHoveredDocumentId(null)}
                                 >
-                                        <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    {getDocumentTypeIcon(document.type)}
-                                                </div>
-                                                <div className="min-w-0 flex-1 px-4">
-                                                    <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
-                                                    {/* Display associated person(s) or "Family Document" */}
-                                                    {document.persons && document.persons.length > 0 ? (
-                                                        document.persons.length === 1 && document.persons[0] ? ( // Added check for document.persons[0]
-                                                            <p
-                                                                className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation(); // Prevent the link click from triggering the document item click
-                                                                    document.persons && onViewPerson && onViewPerson(document.persons[0].person_id);
-                                                                }}
-                                                            >
-                                                                Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
-                                                            </p>
-                                                        ) : (
-                                                            <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                                Family Document ({document.persons ? document.persons.length : 0} people) {/* Added check for document.persons */}
-                                                            </p>
-                                                        )
-                                                    ) : (
-                                                        <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                            No associated persons
-                                                        </p>
-                                                    )}
-                                                    <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                        <span className="truncate">Type: {formatDocumentType(document.type)}</span>
-                                                    </p>
-                                                </div>
+                                    <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0">
+                                                {getDocumentTypeIcon(document.type)}
                                             </div>
-                                            
-                                            <div className="flex items-center">
-                                                {/* Action buttons - only visible on hover */}
-                                                {project.access_level === 'edit' && project.status !== 'completed' && (
-                                                    <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${
-                                                        hoveredDocumentId === document.id ? 'opacity-100' : 'opacity-0'
-                                                    }`}>
-                                                        <button
-                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation(); // Prevent document view from opening
-                                                                handleEditDocument(document.id);
-                                                            }}
-                                                            title="Edit document"
-                                                        >
-                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                        </button>
-                                                        <button
-                                                            className="text-red-500 hover:text-red-700"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation(); // Prevent document view from opening
-                                                                handleDeleteDocument(document.id);
-                                                            }}
-                                                            title="Delete document"
-                                                        >
-                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
+                                            <div className="min-w-0 flex-1 px-4">
+                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
+                                                {/* Display associated person(s) or "Family Document" */}
+                                                {document.persons && document.persons.length === 1 ? (
+                                                    <p
+                                                        className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent the link click from triggering the document item click
+                                                            document.persons && onViewPerson && onViewPerson(document.persons[0].person_id);
+                                                        }}
+                                                    >
+                                                        Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
+                                                    </p>
+                                                ) : (
+                                                    <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                        Family Document ({document.persons ? document.persons.length : 0} people)
+                                                    </p>
                                                 )}
-                                                
-                                                {/* Date display */}
-                                                <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                    <time dateTime={document.uploaded_at}>
-                                                        {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
-                                                    </time>
-                                                </div>
+                                                <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                    <span className="truncate">Type: {formatDocumentType(document.type)}</span>
+                                                </p>
                                             </div>
                                         </div>
+
+                                        <div className="flex items-center">
+                                            {/* Action buttons - only visible on hover */}
+                                            {project.access_level === 'edit' && project.status !== 'completed' && (
+                                                <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredDocumentId === document.id ? 'opacity-100' : 'opacity-0'
+                                                    }`}>
+                                                    <button
+                                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent document view from opening
+                                                            handleEditDocument(document.id);
+                                                        }}
+                                                        title="Edit document"
+                                                    >
+                                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button
+                                                        className="text-red-500 hover:text-red-700"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent document view from opening
+                                                            handleDeleteDocument(document.id);
+                                                        }}
+                                                        title="Delete document"
+                                                    >
+                                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Date display */}
+                                            <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                <time dateTime={document.uploaded_at}>
+                                                    {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
+                                                </time>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </li>
                         ))}
@@ -440,7 +433,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                     projectStatus={project.status}
                 />
             )}
-            
+
             {/* Edit Document Modal */}
             {editingDocumentId && (
                 <EditDocumentModal

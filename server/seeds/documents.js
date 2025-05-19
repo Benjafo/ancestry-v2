@@ -6,7 +6,7 @@ const { Document, DocumentPerson } = require('../models');
  * @param {Object} params - Parameters containing persons, events, and project
  * @param {Object} params.persons - Object containing all person entities
  * @param {Object} params.events - Object containing all event entities
- * @param {Object} params.project1 - The main project (not directly used but included for consistency)
+ * @param {Object} params.project1 - The main project used to associate documents with the project
  * @returns {Promise<Object>} Created documents
  */
 async function seedDocuments(transaction, { persons, events, project1 }) {
@@ -26,7 +26,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         file_path: '/documents/smith_immigration_1925.pdf',
         description: 'Ship manifest and immigration records for John and Mary Smith',
         source: 'National Archives',
-        date_of_original: new Date('1925-04-15')
+        date_of_original: new Date('1925-04-15'),
+        project_id: project1.id
     }, { transaction });
     
     // Birth certificates
@@ -36,7 +37,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         file_path: '/documents/john_sr_birth_certificate.pdf',
         description: 'Birth certificate from Dublin, Ireland',
         source: 'Dublin Registry Office',
-        date_of_original: new Date('1905-03-15')
+        date_of_original: new Date('1905-03-15'),
+        project_id: project1.id
     }, { transaction });
     
     const johnJrBirthCert = await Document.create({
@@ -45,7 +47,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         file_path: '/documents/john_jr_birth_certificate.pdf',
         description: 'Birth certificate from Boston, Massachusetts',
         source: 'Massachusetts Department of Public Health',
-        date_of_original: new Date('1935-08-12')
+        date_of_original: new Date('1935-08-12'),
+        project_id: project1.id
     }, { transaction });
     
     // Marriage certificates
@@ -55,7 +58,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         file_path: '/documents/john_mary_marriage_certificate.pdf',
         description: 'Marriage certificate from Boston, Massachusetts',
         source: 'Massachusetts Registry of Vital Records',
-        date_of_original: new Date('1925-06-15')
+        date_of_original: new Date('1925-06-15'),
+        project_id: project1.id
     }, { transaction });
     
     // Census records
@@ -65,7 +69,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         file_path: '/documents/1930_census_smith.pdf',
         description: '1930 United States Federal Census record for the Smith family',
         source: 'National Archives',
-        date_of_original: new Date('1930-04-01')
+        date_of_original: new Date('1930-04-01'),
+        project_id: project1.id
     }, { transaction });
     
     // Military records
@@ -75,7 +80,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         file_path: '/documents/john_sr_military_record.pdf',
         description: 'World War II service record for John Smith Sr.',
         source: 'U.S. Department of Defense',
-        date_of_original: new Date('1945-12-20')
+        date_of_original: new Date('1945-12-20'),
+        project_id: project1.id
     }, { transaction });
     
     // Family photos
@@ -84,7 +90,8 @@ async function seedDocuments(transaction, { persons, events, project1 }) {
         document_type: 'photo',
         file_path: '/documents/smith_family_1950.jpg',
         description: 'Family photograph taken at Christmas 1950',
-        date_of_original: new Date('1950-12-25')
+        date_of_original: new Date('1950-12-25'),
+        project_id: project1.id
     }, { transaction });
     
     // ===== DOCUMENT-PERSON ASSOCIATIONS =====
