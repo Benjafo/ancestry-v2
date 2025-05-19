@@ -83,14 +83,24 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
         setError(null);
 
         try {
+            // Create a clean copy of the form data and omit empty optional fields
+            const cleanedFormData: Partial<Event> = {
+                person_id: formData.person_id,
+                event_type: formData.event_type,
+                // Conditionally include optional fields if they are not empty strings
+                ...(formData.event_date ? { event_date: formData.event_date } : {}), // Assuming event_date is optional based on type
+                ...(formData.event_location ? { event_location: formData.event_location } : {}),
+                ...(formData.description ? { description: formData.description } : {}),
+            };
+
             let result;
 
             if (eventId) {
                 // Update existing event
-                result = await eventsApi.updateEvent(eventId, formData);
+                result = await eventsApi.updateEvent(eventId, cleanedFormData);
             } else {
                 // Create new event
-                result = await eventsApi.createEvent(formData);
+                result = await eventsApi.createEvent(cleanedFormData);
             }
 
             onSuccess(result.event);

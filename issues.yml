@@ -3,7 +3,7 @@ project:
     Project: tree view
     Project: all events should trigger user events that appear in the activity feeds
     Project -> documents: documents should list associated family members with links to their profiles
-    Project -> documents: view preview of documents or download if not available
+    Project -> documents: preview and download document modal functionality
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> documents: send optional fields as null rather than empty string for backend validation
     Project -> family members: should be able to add existing documents to family member

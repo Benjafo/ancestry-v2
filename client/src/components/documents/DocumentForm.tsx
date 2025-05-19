@@ -100,13 +100,23 @@ const DocumentForm = ({ documentId, onSuccess, onCancel, initialData }: Document
         setError(null);
 
         try {
-            // Create a clean copy of the form data
-            const cleanedFormData = { ...formData };
+            // Create a clean copy of the form data and omit empty optional fields
+            const cleanedFormData: Partial<Document> = {
+                title: formData.title,
+                document_type: formData.document_type,
+                // Conditionally include optional fields if they are not empty strings
+                ...(formData.file_path ? { file_path: formData.file_path } : {}),
+                ...(formData.mime_type ? { mime_type: formData.mime_type } : {}),
+                ...(formData.description ? { description: formData.description } : {}),
+                ...(formData.source ? { source: formData.source } : {}),
+                ...(formData.date_of_original ? { date_of_original: formData.date_of_original } : {}),
+            };
 
-            // Handle empty date field - if it's an empty string, remove it from the data
-            if (cleanedFormData.date_of_original === '') {
-                delete cleanedFormData.date_of_original;
+            // Handle file_size separately as 0 is a valid value, but undefined/null should be omitted
+            if (formData.file_size !== undefined && formData.file_size !== null) {
+                 cleanedFormData.file_size = formData.file_size;
             }
+
 
             let result;
 
