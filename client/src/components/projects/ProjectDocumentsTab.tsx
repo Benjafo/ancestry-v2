@@ -247,43 +247,45 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                                     className="block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                                     onClick={() => handleViewDocument(document.id)}
                                 >
-                                    <div className="flex items-center px-4 py-4 sm:px-6">
-                                        <div className="flex-shrink-0">
-                                            {getDocumentTypeIcon(document.type)}
-                                        </div>
-                                        <div className="min-w-0 flex-1 px-4">
-                                            <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
-                                            {/* Display associated person(s) or "Family Document" */}
-                                            {document.persons && document.persons.length > 0 ? (
-                                                document.persons.length === 1 && document.persons[0] ? ( // Added check for document.persons[0]
-                                                    <p
-                                                        className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent the link click from triggering the document item click
-                                                            document.persons && onViewPerson && onViewPerson(document.persons[0].person_id);
-                                                        }}
-                                                    >
-                                                        Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
-                                                    </p>
+                                    <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0">
+                                                {getDocumentTypeIcon(document.type)}
+                                            </div>
+                                            <div className="min-w-0 flex-1 px-4">
+                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
+                                                {/* Display associated person(s) or "Family Document" */}
+                                                {document.persons && document.persons.length > 0 ? (
+                                                    document.persons.length === 1 && document.persons[0] ? ( // Added check for document.persons[0]
+                                                        <p
+                                                            className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Prevent the link click from triggering the document item click
+                                                                document.persons && onViewPerson && onViewPerson(document.persons[0].person_id);
+                                                            }}
+                                                        >
+                                                            Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                            Family Document ({document.persons ? document.persons.length : 0} people) {/* Added check for document.persons */}
+                                                        </p>
+                                                    )
                                                 ) : (
                                                     <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                        Family Document ({document.persons ? document.persons.length : 0} people) {/* Added check for document.persons */}
+                                                        No associated persons
                                                     </p>
-                                                )
-                                            ) : (
+                                                )}
                                                 <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                    No associated persons
+                                                    <span className="truncate">Type: {formatDocumentType(document.type)}</span>
                                                 </p>
-                                            )}
-                                            <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                <span className="truncate">Type: {formatDocumentType(document.type)}</span>
-                                            </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
-                                        </p>
+                                        <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                            <time dateTime={document.uploaded_at}>
+                                                {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
+                                            </time>
+                                        </div>
                                     </div>
                                 </div>
                             </li>

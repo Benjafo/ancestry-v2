@@ -2,7 +2,6 @@ project:
   active:
     Project: tree view
     Project: all events should trigger user events that appear in the activity feeds
-    Project -> documents: documents should list associated family members with links to their profiles
     Project -> documents: preview and download document modal functionality
     Project -> documents: implement add document button for family documents
     Project -> documents: edit documents from documents tab view
@@ -19,6 +18,7 @@ project:
     Project -> documents: edit modal should populate with existing data
     Project -> documents: send optional fields as null rather than empty string for backend validation
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
+    Project -> documents: documents should list associated family members with links to their profiles
     Project -> timeline: fix capitalization of event type
     Project -> timeline: related person should appear before event in timeline view
     Project -> family members: person cards should all be the same height
