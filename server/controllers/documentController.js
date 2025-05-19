@@ -327,6 +327,7 @@ exports.getDocumentsByDateRange = async (req, res) => {
  * @param {Object} res - Express response object
  */
 exports.associateDocumentWithPerson = async (req, res) => {
+    console.log('Associate Document with Person Request Body:', req.body);
     try {
         const { documentId, personId } = req.body;
 

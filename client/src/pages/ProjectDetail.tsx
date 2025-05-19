@@ -153,6 +153,23 @@ const ProjectDetail = () => {
         }, 3000);
     };
 
+    const handleDocumentAdded = async () => {
+        // Show success message
+        setSuccessMessage('Document added successfully');
+
+        // Refresh project data with documents included
+        const updatedProject = await projectsApi.getProjectById(projectId, { 
+            includeDocuments: true 
+        });
+        console.log('Refreshed project data after document added:', updatedProject);
+        setProject(updatedProject);
+
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
+
     const handleNotesUpdated = async () => {
         // Show success message
         setSuccessMessage('Person notes updated successfully');
@@ -170,9 +187,10 @@ const ProjectDetail = () => {
     useEffect(() => {
         const fetchProjectDetails = async () => {
             try {
-                // Include relationships when fetching project data
+                // Include relationships and documents when fetching project data
                 const projectData = await projectsApi.getProjectById(projectId, {
-                    includeRelationships: true
+                    includeRelationships: true,
+                    includeDocuments: true
                 });
                 setProject(projectData);
                 setIsLoading(false);
@@ -343,7 +361,10 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'documents' && (
-                        <ProjectDocumentsTab project={project} />
+                        <ProjectDocumentsTab 
+                            project={project} 
+                            onDocumentAdded={handleDocumentAdded}
+                        />
                     )}
 
                     {activeTab === 'timeline' && (

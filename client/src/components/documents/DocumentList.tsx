@@ -4,6 +4,7 @@ import { capitalizeWords } from '../../utils/formatUtils';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
+import ViewDocumentModal from './ViewDocumentModal';
 
 // Helper function to extract error message safely
 const getErrorMessage = (error: unknown): string => {
@@ -26,6 +27,10 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
     const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
+    
+    // State for document viewing modal
+    const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
+    const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
 
     const documentTypes = [
         { value: 'all', label: 'All Types' },
@@ -170,6 +175,10 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
     const handleSelect = (document: Document) => {
         if (onSelectDocument) {
             onSelectDocument(document);
+        } else {
+            // If no onSelectDocument is provided, open the document viewer
+            setViewingDocumentId(document.document_id);
+            setIsViewDocumentModalOpen(true);
         }
     };
 
@@ -223,13 +232,13 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
             {filteredDocuments.length === 0 ? (
                 <EmptyState message="No documents found." />
             ) : (
-                <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                    <ul className="divide-y divide-gray-200">
+                <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredDocuments.map(document => (
                             <li key={document.document_id}>
                                 <div 
-                                    className={`px-4 py-4 sm:px-6 ${onSelectDocument ? 'cursor-pointer hover:bg-gray-50' : ''}`}
-                                    onClick={() => onSelectDocument && handleSelect(document)}
+                                    className="px-4 py-4 sm:px-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    onClick={() => handleSelect(document)}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center">
@@ -237,17 +246,17 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                                 {getDocumentTypeIcon(document.document_type)}
                                             </div>
                                             <div className="ml-4">
-                                                <p className="text-sm font-medium text-primary-600 truncate">
+                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">
                                                     {document.title}
                                                 </p>
-                                                <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                                     {capitalizeWords(document.document_type)}
                                                 </p>
                                             </div>
                                         </div>
                                         
                                         <div className="flex flex-col items-end">
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                                 {document.upload_date ? new Date(document.upload_date).toLocaleDateString() : 'Unknown date'}
                                             </p>
                                             
@@ -298,9 +307,9 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
-                                            <span>Source: {document.source}</span>
+                                            <span className="text-gray-600 dark:text-gray-300">Source: {document.source}</span>
                                             {document.date_of_original && (
-                                                <span className="ml-2">({new Date(document.date_of_original).toLocaleDateString()})</span>
+                                                <span className="ml-2 text-gray-600 dark:text-gray-300">({new Date(document.date_of_original).toLocaleDateString()})</span>
                                             )}
                                         </div>
                                     )}
@@ -309,6 +318,15 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                         ))}
                     </ul>
                 </div>
+            )}
+            
+            {/* View Document Modal */}
+            {viewingDocumentId && (
+                <ViewDocumentModal
+                    isOpen={isViewDocumentModalOpen}
+                    onClose={() => setIsViewDocumentModalOpen(false)}
+                    documentId={viewingDocumentId}
+                />
             )}
         </div>
     );

@@ -6,9 +6,9 @@ import DocumentForm from '../documents/DocumentForm';
 
 interface ProjectDocumentsTabProps {
     project: ProjectDetail;
+    onDocumentAdded?: (document: Document) => void;
 }
 
-// Real implementation of AddDocumentModal using DocumentForm
 const AddDocumentModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
@@ -33,7 +33,7 @@ const AddDocumentModal: React.FC<{
     );
 };
 
-const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) => {
+const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDocumentAdded }) => {
     // State to store unique documents and search term
     const [uniqueDocuments, setUniqueDocuments] = useState<ProjectDetail['documents']>([]);
     const [filteredDocuments, setFilteredDocuments] = useState<ProjectDetail['documents']>([]);
@@ -51,9 +51,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
 
     // Handler for document added
     const handleDocumentAdded = (document: Document) => {
-        // Refresh the documents list
-        // In a real implementation, we would fetch the updated list from the server
-        // For now, we'll just add the new document to our local state
+        // Add the document to local state for immediate UI update
         const newDocument = {
             id: document.document_id,
             title: document.title,
@@ -63,6 +61,11 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project }) =>
         
         setUniqueDocuments(prev => [...prev, newDocument]);
         console.log('Document added:', document);
+        
+        // Call the parent callback to refresh project data
+        if (onDocumentAdded) {
+            onDocumentAdded(document);
+        }
     };
     
     // Handler for viewing a document

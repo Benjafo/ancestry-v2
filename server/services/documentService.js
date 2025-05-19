@@ -196,6 +196,7 @@ class DocumentService {
      * @returns {Promise<Object>} Created association
      */
     async associateDocumentWithPerson(documentId, personId, data = {}) {
+        console.log('Attempting to associate document', documentId, 'with person', personId);
         return await TransactionManager.executeTransaction(async (transaction) => {
             // Check if document exists
             const document = await documentRepository.findById(documentId, { transaction });
@@ -234,8 +235,12 @@ class DocumentService {
                 { transaction }
             );
             
+            console.log('Document-person association created successfully:', association.document_id, association.person_id);
             return association;
         });
+    } catch (error) {
+        console.error('Error during document-person association transaction:', error);
+        throw error; // Re-throw the error
     }
 
     /**

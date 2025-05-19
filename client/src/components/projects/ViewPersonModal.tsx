@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Person, Relationship, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
-import ViewDocumentModal from '../documents/ViewDocumentModal';
+import DocumentList from '../documents/DocumentList';
 
 interface ViewPersonModalProps {
     personId: string;
@@ -18,9 +18,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
     
-    // State for document viewing modal
-    const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
-    const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
+    // No need for document viewing state as DocumentList handles this internally
 
     // Function to format event type for display
     const formatEventType = (eventType: string): string => {
@@ -360,38 +358,10 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Documents</h3>
                                     {person.documents && person.documents.length > 0 ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {person.documents.map(document => (
-                                            <div 
-                                                key={document.document_id} 
-                                                className="border dark:border-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                                                onClick={() => {
-                                                    setViewingDocumentId(document.document_id);
-                                                    setIsViewDocumentModalOpen(true);
-                                                }}
-                                            >
-                                                <div className="flex items-start">
-                                                        <div className="flex-shrink-0 mr-4">
-                                                            {/* Document type icon would go here */}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-base font-medium text-gray-900 dark:text-white">{document.title}</h4>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Type: {formatEventType(document.document_type)}</p>
-                                                            {document.date_of_original && (
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Date: {formatDate(document.date_of_original)}
-                                                                </p>
-                                                            )}
-                                                            {document.source && (
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Source: {document.source}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <DocumentList 
+                                            personId={person.person_id}
+                                            readOnly={true}
+                                        />
                                     ) : (
                                         <div className="text-center py-8">
                                             <p className="text-gray-500 dark:text-gray-400">No documents found for this person.</p>
@@ -484,15 +454,6 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                     </>
                 )}
             </div>
-            
-            {/* View Document Modal */}
-            {viewingDocumentId && (
-                <ViewDocumentModal
-                    isOpen={isViewDocumentModalOpen}
-                    onClose={() => setIsViewDocumentModalOpen(false)}
-                    documentId={viewingDocumentId}
-                />
-            )}
         </div>
     );
 };

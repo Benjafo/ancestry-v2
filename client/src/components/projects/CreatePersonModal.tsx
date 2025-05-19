@@ -360,8 +360,8 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                     <nav className="flex -mb-px">
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('info')}
                         >
@@ -369,8 +369,8 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('events')}
                         >
@@ -378,8 +378,8 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('documents')}
                         >
@@ -387,8 +387,8 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('relationships')}
                         >

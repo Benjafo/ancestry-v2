@@ -44,6 +44,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
 
     // Documents state
     const [documents, setDocuments] = useState<Document[]>([]);
+    const [documentsToAssociate, setDocumentsToAssociate] = useState<Document[]>([]);
     const [deletedDocumentIds, setDeletedDocumentIds] = useState<string[]>([]);
     const [isAddingDocument, setIsAddingDocument] = useState(false);
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
@@ -135,6 +136,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
+        console.log('handleSubmit called');
         e.preventDefault();
 
         if (!validateForm()) {
@@ -185,20 +187,31 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             }
 
             // Step 3: Handle documents
-            // For new documents (no document_id)
-            const newDocuments = documents.filter(doc => !doc.document_id);
-            for (const docData of newDocuments) {
-                const { document } = await documentsApi.createDocument(docData);
+            // Handle documents that were newly created in the DocumentForm and need association
+            console.log('Documents to associate:', documentsToAssociate);
+            for (const document of documentsToAssociate) {
+                console.log('Calling associateDocumentWithPerson for document', document.document_id, 'and person', person.person_id);
                 await documentsApi.associateDocumentWithPerson(
                     document.document_id,
                     person.person_id
                 );
             }
+            // Clear the list of documents to associate after processing
+            setDocumentsToAssociate([]);
 
-            // For updated documents (have document_id)
-            const existingDocuments = documents.filter(doc => doc.document_id);
-            for (const docData of existingDocuments) {
-                await documentsApi.updateDocument(docData.document_id, docData);
+            // Handle documents that were already associated and might have been updated or deleted
+            // For updated documents (have document_id and are still in the documents state)
+            const updatedDocuments = documents.filter(doc => doc.document_id && !deletedDocumentIds.includes(doc.document_id));
+            for (const _ of updatedDocuments) {
+                 // Note: The DocumentForm handles updating existing documents directly.
+                 // This loop might be redundant if the form updates immediately,
+                 // but keeping it for robustness if there's a different workflow.
+                 // In this specific case (EditPersonModal), the form updates immediately,
+                 // so this loop won't do anything for documents that were edited via the form.
+                 // It would only apply if documents were edited in the list directly (which is not the current UI).
+                 // We can potentially remove this loop if the DocumentForm always handles updates.
+                 // For now, let's keep it but be aware it might not be actively used in this modal's workflow.
+                 // await documentsApi.updateDocument(docData.document_id, docData);
             }
 
             // For deleted documents
@@ -280,12 +293,13 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
 
     const handleDocumentSaved = (document: Document) => {
         if (editingDocumentId) {
-            // Update existing document
+            // Update existing document in the main documents list
             setDocuments(documents.map(d => d.document_id === editingDocumentId ? document : d));
             setEditingDocumentId(null);
         } else {
-            // Add new document
-            setDocuments([...documents, document]);
+            // Add new document to the list to associate later AND to the main list for immediate display
+            setDocumentsToAssociate([...documentsToAssociate, document]);
+            setDocuments([...documents, document]); // Add to main list
             setIsAddingDocument(false);
         }
     };
@@ -314,8 +328,8 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                     <nav className="flex -mb-px">
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('info')}
                         >
@@ -323,8 +337,8 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('events')}
                         >
@@ -332,8 +346,8 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('documents')}
                         >
@@ -341,8 +355,8 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
-                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                                 }`}
                             onClick={() => setActiveTab('relationships')}
                         >
@@ -607,7 +621,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {relationships.parents.map(parent => (
                                                         <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium">{parent.first_name} {parent.last_name}</p>
+                                                            <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
                                                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                 {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
                                                             </p>
@@ -623,7 +637,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {relationships.children.map(child => (
                                                         <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium">{child.first_name} {child.last_name}</p>
+                                                            <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
                                                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                 {child.relationship_qualifier && `${child.relationship_qualifier} child`}
                                                             </p>
@@ -639,7 +653,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {relationships.spouses.map(spouse => (
                                                         <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium">{spouse.first_name} {spouse.last_name}</p>
+                                                            <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
                                                             {spouse.start_date && (
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     Married: {formatDate(spouse.start_date)}
@@ -658,7 +672,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {relationships.siblings.map(sibling => (
                                                         <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium">{sibling.first_name} {sibling.last_name}</p>
+                                                            <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
                                                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                 {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
                                                             </p>
