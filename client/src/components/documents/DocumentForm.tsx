@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
-import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 // Helper function to extract error message safely
 const getErrorMessage = (error: unknown): string => {
@@ -100,31 +100,39 @@ const DocumentForm = ({ documentId, onSuccess, onCancel, initialData }: Document
         setError(null);
 
         try {
+            // Create a clean copy of the form data
+            const cleanedFormData = { ...formData };
+
+            // Handle empty date field - if it's an empty string, remove it from the data
+            if (cleanedFormData.date_of_original === '') {
+                delete cleanedFormData.date_of_original;
+            }
+
             let result;
 
             if (documentId) {
                 // Update existing document
-                result = await documentsApi.updateDocument(documentId, formData);
+                result = await documentsApi.updateDocument(documentId, cleanedFormData);
                 onSuccess(result.document);
             } else {
                 // For new documents, we need to upload the file first
                 const selectedFile = _file;
-                
+
                 if (!selectedFile) {
                     throw new Error('Please select a file to upload');
                 }
-                
+
                 // First upload the file
                 const uploadResponse = await documentsApi.uploadFile(selectedFile);
-                
+
                 // Then create the document with the file details
                 const documentData = {
-                    ...formData,
+                    ...cleanedFormData,
                     file_path: uploadResponse.file.path,
                     file_size: uploadResponse.file.size,
                     mime_type: uploadResponse.file.mimetype
                 };
-                
+
                 // Create the document record
                 result = await documentsApi.createDocument(documentData);
                 onSuccess(result.document);
