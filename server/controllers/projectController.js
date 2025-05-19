@@ -1,4 +1,4 @@
-const { Project, User, Person, Event, Document } = require('../models');
+const { Project, User, Person, Event, Document, DocumentPerson } = require('../models');
 const { Sequelize } = require('sequelize');
 const projectService = require('../services/projectService');
 
@@ -139,25 +139,43 @@ exports.getProjectById = async (req, res) => {
         // Process the project data to match frontend expectations
         const projectJson = project.toJSON();
 
-        // Collect all documents from all persons in the project
-        const documents = [];
+        // Collect all documents from all persons in the project and include associated persons
+        const documentsMap = new Map(); // Use a map to store unique documents by ID
+
         if (projectJson.persons && projectJson.persons.length > 0) {
-            projectJson.persons.forEach(person => {
+            for (const person of projectJson.persons) {
                 if (person.documents && person.documents.length > 0) {
-                    person.documents.forEach(doc => {
-                        // Transform document properties to match ProjectDetail interface
-                        documents.push({
-                            id: doc.document_id,
-                            title: doc.title,
-                            type: doc.document_type,
-                            uploaded_at: doc.upload_date,
-                            person_name: `${person.first_name} ${person.last_name}`,
-                            person_id: person.person_id
-                        });
-                    });
+                    for (const doc of person.documents) {
+                        // If the document is not already in the map, add it
+                        if (!documentsMap.has(doc.document_id)) {
+                            documentsMap.set(doc.document_id, {
+                                id: doc.document_id,
+                                title: doc.title,
+                                type: doc.document_type,
+                                uploaded_at: doc.upload_date,
+                                // Initialize persons array
+                                persons: []
+                            });
+                        }
+
+                        // Add the current person to the document's persons array in the map
+                        const documentInMap = documentsMap.get(doc.document_id);
+                        if (documentInMap && !documentInMap.persons.some(p => p.person_id === person.person_id)) {
+                            documentInMap.persons.push({
+                                person_id: person.person_id,
+                                first_name: person.first_name,
+                                last_name: person.last_name,
+                                // person_name: `${person.first_name} ${person.last_name}`
+                            });
+                        }
+                    }
                 }
-            });
+            }
         }
+
+        // Convert the map values back to an array
+        const documents = Array.from(documentsMap.values());
+
 
         // Collect all events (both from project and from persons)
         const timeline = [];
@@ -562,7 +580,7 @@ exports.getProjectRelationships = async (req, res) => {
 
         // Get all persons in the project
         const persons = await projectService.getProjectPersons(id);
-        
+
         if (!persons || persons.length === 0) {
             return res.json([]);
         }

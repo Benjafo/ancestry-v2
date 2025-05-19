@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Document, ProjectDetail } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
-import ViewDocumentModal from '../documents/ViewDocumentModal';
 import DocumentForm from '../documents/DocumentForm';
+import ViewDocumentModal from '../documents/ViewDocumentModal';
 
 interface ProjectDocumentsTabProps {
     project: ProjectDetail;
     onDocumentAdded?: (document: Document) => void;
+    onViewPerson?: (personId: string) => void; // Add onViewPerson prop
 }
 
 const AddDocumentModal: React.FC<{
@@ -20,7 +21,7 @@ const AddDocumentModal: React.FC<{
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
-                <DocumentForm 
+                <DocumentForm
                     onSuccess={(document) => {
                         onDocumentAdded(document);
                         onClose();
@@ -33,13 +34,13 @@ const AddDocumentModal: React.FC<{
     );
 };
 
-const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDocumentAdded }) => {
+const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDocumentAdded, onViewPerson }) => {
     // State to store unique documents and search term
     const [uniqueDocuments, setUniqueDocuments] = useState<ProjectDetail['documents']>([]);
     const [filteredDocuments, setFilteredDocuments] = useState<ProjectDetail['documents']>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
-    
+
     // State for document viewing modal
     const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
     const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
@@ -58,16 +59,15 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
             type: document.document_type,
             uploaded_at: document.upload_date
         };
-        
+
         setUniqueDocuments(prev => [...prev, newDocument]);
-        console.log('Document added:', document);
-        
+
         // Call the parent callback to refresh project data
         if (onDocumentAdded) {
             onDocumentAdded(document);
         }
     };
-    
+
     // Handler for viewing a document
     const handleViewDocument = (documentId: string) => {
         setViewingDocumentId(documentId);
@@ -85,6 +85,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                 }
             });
             const uniqueDocs = Array.from(uniqueDocsMap.values());
+            console.log('Documents:', uniqueDocs);
             setUniqueDocuments(uniqueDocs);
             setFilteredDocuments(uniqueDocs);
         } else {
@@ -242,7 +243,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredDocuments.map((document) => (
                             <li key={document.id || document.id}>
-                                <div 
+                                <div
                                     className="block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                                     onClick={() => handleViewDocument(document.id)}
                                 >
@@ -251,18 +252,38 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                                             {getDocumentTypeIcon(document.type)}
                                         </div>
                                         <div className="min-w-0 flex-1 px-4">
-                                            <div>
-                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
+                                            <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
+                                            {/* Display associated person(s) or "Family Document" */}
+                                            {document.persons && document.persons.length > 0 ? (
+                                                document.persons.length === 1 && document.persons[0] ? ( // Added check for document.persons[0]
+                                                    <p
+                                                        className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent the link click from triggering the document item click
+                                                            document.persons && onViewPerson && onViewPerson(document.persons[0].person_id);
+                                                        }}
+                                                    >
+                                                        Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
+                                                    </p>
+                                                ) : (
+                                                    <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                        Family Document ({document.persons ? document.persons.length : 0} people) {/* Added check for document.persons */}
+                                                    </p>
+                                                )
+                                            ) : (
                                                 <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                    <span className="truncate">Type: {formatDocumentType(document.type)}</span>
+                                                    No associated persons
                                                 </p>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
+                                            )}
+                                            <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                <span className="truncate">Type: {formatDocumentType(document.type)}</span>
                                             </p>
                                         </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
+                                        </p>
                                     </div>
                                 </div>
                             </li>
@@ -274,7 +295,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                     </div>
                 )}
             </div>
-            
+
             {/* Add Document Modal */}
             <AddDocumentModal
                 isOpen={isAddDocumentModalOpen}
@@ -282,16 +303,18 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                 projectId={project.id}
                 onDocumentAdded={handleDocumentAdded}
             />
-            
+
             {/* View Document Modal */}
-            {viewingDocumentId && (
-                <ViewDocumentModal
-                    isOpen={isViewDocumentModalOpen}
-                    onClose={() => setIsViewDocumentModalOpen(false)}
-                    documentId={viewingDocumentId}
-                />
-            )}
-        </div>
+            {
+                viewingDocumentId && (
+                    <ViewDocumentModal
+                        isOpen={isViewDocumentModalOpen}
+                        onClose={() => setIsViewDocumentModalOpen(false)}
+                        documentId={viewingDocumentId}
+                    />
+                )
+            }
+        </div >
     );
 };
 

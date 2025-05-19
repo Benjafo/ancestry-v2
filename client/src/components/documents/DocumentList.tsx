@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 import { capitalizeWords } from '../../utils/formatUtils';
-import LoadingSpinner from '../common/LoadingSpinner';
-import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
+import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
 import ViewDocumentModal from './ViewDocumentModal';
 
 // Helper function to extract error message safely
@@ -27,7 +27,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
     const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
-    
+
     // State for document viewing modal
     const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
     const [isViewDocumentModalOpen, setIsViewDocumentModalOpen] = useState(false);
@@ -53,14 +53,14 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
             setIsLoading(true);
             try {
                 let documentsData;
-                
+
                 if (personId) {
                     documentsData = await documentsApi.getDocumentsByPersonId(personId);
                 } else {
                     const response = await documentsApi.getDocuments();
                     documentsData = response.documents;
                 }
-                
+
                 setDocuments(documentsData);
                 setFilteredDocuments(documentsData);
             } catch (err: unknown) {
@@ -70,29 +70,29 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                 setIsLoading(false);
             }
         };
-        
+
         fetchDocuments();
     }, [personId]);
 
     useEffect(() => {
         // Apply filters whenever documents, searchTerm, or filterType changes
         let result = [...documents];
-        
+
         // Filter by type
         if (filterType !== 'all') {
             result = result.filter(document => document.document_type === filterType);
         }
-        
+
         // Filter by search term
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            result = result.filter(document => 
+            result = result.filter(document =>
                 (document.title && document.title.toLowerCase().includes(term)) ||
                 (document.description && document.description.toLowerCase().includes(term)) ||
                 (document.source && document.source.toLowerCase().includes(term))
             );
         }
-        
+
         setFilteredDocuments(result);
     }, [documents, searchTerm, filterType]);
 
@@ -159,7 +159,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
 
     const handleDelete = async (documentId: string) => {
         if (!onDeleteDocument) return;
-        
+
         if (window.confirm('Are you sure you want to delete this document?')) {
             try {
                 await documentsApi.deleteDocument(documentId);
@@ -211,7 +211,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                         />
                     </div>
                 </div>
-                
+
                 <div>
                     <label htmlFor="document-type-filter" className="sr-only">Filter by type</label>
                     <select
@@ -228,7 +228,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                     </select>
                 </div>
             </div>
-            
+
             {filteredDocuments.length === 0 ? (
                 <EmptyState message="No documents found." />
             ) : (
@@ -236,7 +236,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredDocuments.map(document => (
                             <li key={document.document_id}>
-                                <div 
+                                <div
                                     className="px-4 py-4 sm:px-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                                     onClick={() => handleSelect(document)}
                                 >
@@ -249,17 +249,17 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                                 <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">
                                                     {document.title}
                                                 </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                                     {capitalizeWords(document.document_type)}
                                                 </p>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex flex-col items-end">
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                                 {document.upload_date ? new Date(document.upload_date).toLocaleDateString() : 'Unknown date'}
                                             </p>
-                                            
+
                                             {!readOnly && (
                                                 <div className="mt-2 flex space-x-2">
                                                     {onEditDocument && (
@@ -275,7 +275,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                                             </svg>
                                                         </button>
                                                     )}
-                                                    
+
                                                     {onDeleteDocument && (
                                                         <button
                                                             onClick={(e) => {
@@ -293,7 +293,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     {document.description && (
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500 line-clamp-2">
@@ -301,7 +301,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                                             </p>
                                         </div>
                                     )}
-                                    
+
                                     {document.source && (
                                         <div className="mt-2 flex items-center text-sm text-gray-500">
                                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -319,7 +319,7 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
                     </ul>
                 </div>
             )}
-            
+
             {/* View Document Modal */}
             {viewingDocumentId && (
                 <ViewDocumentModal

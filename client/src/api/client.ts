@@ -239,8 +239,12 @@ export interface ProjectDetail extends Project {
         title: string;
         type: string;
         uploaded_at: string;
-        person_name?: string;
-        person_id?: string;
+        // Include an array of associated persons
+        persons?: {
+            person_id: string;
+            first_name: string;
+            last_name: string;
+        }[];
     }[];
     timeline: {
         id: string;

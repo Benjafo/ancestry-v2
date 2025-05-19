@@ -87,13 +87,13 @@ const ProjectDetail = () => {
             // Show success message
             setSuccessMessage('Person removed from project successfully');
 
-        // Refresh project data
-        const updatedProject = await projectsApi.getProjectById(projectId, { includeEvents: true, includeDocuments: true, includeRelationships: true }); // Ensure all related data is included
-        console.log('Refreshed project data after person update:', updatedProject); // Log the data
-        setProject(updatedProject);
+            // Refresh project data
+            const updatedProject = await projectsApi.getProjectById(projectId, { includeEvents: true, includeDocuments: true, includeRelationships: true }); // Ensure all related data is included
+            console.log('Refreshed project data after person update:', updatedProject); // Log the data
+            setProject(updatedProject);
 
-        // Clear success message after 3 seconds
-        setTimeout(() => {
+            // Clear success message after 3 seconds
+            setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
         } catch (err) {
@@ -158,8 +158,8 @@ const ProjectDetail = () => {
         setSuccessMessage('Document added successfully');
 
         // Refresh project data with documents included
-        const updatedProject = await projectsApi.getProjectById(projectId, { 
-            includeDocuments: true 
+        const updatedProject = await projectsApi.getProjectById(projectId, {
+            includeDocuments: true
         });
         console.log('Refreshed project data after document added:', updatedProject);
         setProject(updatedProject);
@@ -361,9 +361,10 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'documents' && (
-                        <ProjectDocumentsTab 
-                            project={project} 
+                        <ProjectDocumentsTab
+                            project={project}
                             onDocumentAdded={handleDocumentAdded}
+                            onViewPerson={handleViewPerson}
                         />
                     )}
 
