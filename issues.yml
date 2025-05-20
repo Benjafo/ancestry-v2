@@ -1,6 +1,7 @@
 project:
   active:
     Project: tree view
+    Project: recent activity should show create, edit, and delete events for documents, events, persons, and relationships
   finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
@@ -36,8 +37,10 @@ project:
     Project -> timeline: duplicate events in timeline
 other:
   active:
+    Dashboard: add icons to notifications
     Client assignment: add search bar
     Manager dashboard: pending tasks
+    Notifications: add icons to notifications
     General: implement the task feature
     General: add base modal class and close modal with escape key
     General: add toggles between list and grid view for all list pages
@@ -86,3 +89,4 @@ future_functionality:
     General: links
     General: payment processing
     General: service purchasing
+    General: tablet/mobile views

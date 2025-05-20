@@ -479,6 +479,7 @@ const ProjectDetail = () => {
                     isOpen={!!viewingPersonId}
                     onClose={() => setViewingPersonId(null)}
                     onEdit={handleEditPersonDetails}
+                    onViewRelatedPerson={handleViewPerson}
                     projectStatus={project.status}
                     isManager={isManager}
                 />

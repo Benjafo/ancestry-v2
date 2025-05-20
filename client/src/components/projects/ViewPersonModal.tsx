@@ -8,11 +8,20 @@ interface ViewPersonModalProps {
     isOpen: boolean;
     onClose: () => void;
     onEdit?: (person: Person) => void; // Optional callback for edit button
+    onViewRelatedPerson?: (personId: string) => void; // Optional callback for viewing related persons
     projectStatus?: 'active' | 'completed' | 'on_hold';
     isManager?: boolean;
 }
 
-const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit, projectStatus, isManager }) => {
+const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ 
+    personId, 
+    isOpen, 
+    onClose, 
+    onEdit, 
+    onViewRelatedPerson,
+    projectStatus, 
+    isManager 
+}) => {
     const [person, setPerson] = useState<Person | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -386,7 +395,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Spouses</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.spouses.map(spouse => (
-                                                            <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={spouse.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(spouse.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
                                                                 {spouse.start_date && (
                                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -406,7 +422,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Parents</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.parents.map(parent => (
-                                                            <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={parent.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(parent.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
@@ -423,7 +446,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Children</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.children.map(child => (
-                                                            <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={child.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(child.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {child.relationship_qualifier && `${child.relationship_qualifier} child`}
@@ -440,7 +470,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Siblings</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.siblings.map(sibling => (
-                                                            <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={sibling.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(sibling.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
@@ -457,7 +494,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandparents</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {(person.relationships as any).grandparents.map((grandparent: any) => (
-                                                            <div key={grandparent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={grandparent.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(grandparent.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{grandparent.first_name} {grandparent.last_name}</p>
                                                             </div>
                                                         ))}
@@ -471,7 +515,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandchildren</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {(person.relationships as any).grandchildren.map((grandchild: any) => (
-                                                            <div key={grandchild.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={grandchild.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(grandchild.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{grandchild.first_name} {grandchild.last_name}</p>
                                                             </div>
                                                         ))}
@@ -485,7 +536,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Aunts & Uncles</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {(person.relationships as any).auntsUncles.map((auntUncle: any) => (
-                                                            <div key={auntUncle.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={auntUncle.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(auntUncle.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{auntUncle.first_name} {auntUncle.last_name}</p>
                                                             </div>
                                                         ))}
@@ -499,7 +557,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nieces & Nephews</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {(person.relationships as any).niecesNephews.map((nieceNephew: any) => (
-                                                            <div key={nieceNephew.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={nieceNephew.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(nieceNephew.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{nieceNephew.first_name} {nieceNephew.last_name}</p>
                                                             </div>
                                                         ))}
@@ -513,7 +578,14 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cousins</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {(person.relationships as any).cousins.map((cousin: any) => (
-                                                            <div key={cousin.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                            <div 
+                                                                key={cousin.person_id} 
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewRelatedPerson && onViewRelatedPerson(cousin.person_id);
+                                                                }}
+                                                            >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{cousin.first_name} {cousin.last_name}</p>
                                                             </div>
                                                         ))}
