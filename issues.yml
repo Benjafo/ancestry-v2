@@ -1,7 +1,6 @@
 project:
   active:
     Project: tree view
-    Project -> relationships: rework how relationships are created and stored
   finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
@@ -30,6 +29,7 @@ project:
     Project -> family members: addding events does not save
     Project -> family members: add document modal does not keep documents
     Project -> family members: (fixed but very buggy) should be able to add existing documents to family memberProject -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
+    Project -> relationships: rework how relationships are created and stored
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
   discarded:
@@ -40,6 +40,7 @@ other:
     Manager dashboard: pending tasks
     General: implement the task feature
     General: add base modal class and close modal with escape key
+    General: add toggles between list and grid view for all list pages
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
