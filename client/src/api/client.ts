@@ -175,6 +175,10 @@ export interface Event {
     updated_at: string;
 }
 
+export interface NewEvent extends Omit<Event, 'event_id' | 'created_at' | 'updated_at'> {
+    // Any additional fields specific to new events
+}
+
 export interface Document {
     document_id: string;
     title: string;
@@ -436,14 +440,16 @@ export const projectsApi = {
         return response.json();
     },
 
-    createPerson: async (personData: Partial<Person> & { events?: Partial<Event>[] }): Promise<Person> => {
+    createPerson: async (personData: Partial<Person> & { events?: NewEvent[] }): Promise<Person> => {
         const response = await apiClient.post('persons', { json: personData });
+        console.log('Response:', response);
         const result = await response.json<{ message: string; person: Person }>();
+        console.log('Created person:', result);
         return result.person;
     },
 
     updatePerson: async (personId: string, personData: Partial<Person> & {
-        events?: Partial<Event>[],
+        events?: (NewEvent | Event)[],
         deletedEventIds?: string[]
     }): Promise<Person> => {
         const response = await apiClient.put(`persons/${personId}`, { json: personData });

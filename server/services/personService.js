@@ -43,17 +43,17 @@ class PersonService {
         if (!ageValidation.isValid) {
             throw new Error(`Age validation failed: ${ageValidation.warnings.join(', ')}`);
         }
-        
+
         return await TransactionManager.executeTransaction(async (transaction) => {
             // Process events and synchronize with biographical data
             const { syncedPersonData, syncedEvents } = this._synchronizeBiographicalDataAndEvents(
-                personData, 
+                personData,
                 events
             );
-            
+
             // Create the person
             const person = await personRepository.create(syncedPersonData, { transaction });
-            
+
             // Create events
             const eventService = require('./eventService');
             for (const eventData of syncedEvents) {
@@ -62,12 +62,15 @@ class PersonService {
                     person_id: person.person_id
                 }, transaction);
             }
-            
+
             // Fetch the complete person with events
-            return await personRepository.findPersonById(person.person_id, { 
-                includeEvents: true,
-                transaction
-            });
+            const personWithEvents = person.toJSON();
+            personWithEvents.events = syncedEvents.map(event => ({
+                ...event,
+                person_id: person.person_id
+            }));
+
+            return personWithEvents;
         });
     }
 
@@ -87,42 +90,42 @@ class PersonService {
             if (!currentPerson) {
                 throw new Error(`Person with id ${id} not found`);
             }
-            
+
             // Get current events
-            const currentEvents = await personRepository.findPersonById(id, { 
+            const currentEvents = await personRepository.findPersonById(id, {
                 includeEvents: true,
                 transaction
             }).then(person => person.events || []);
-            
+
             // Merge current data with updates
             const updatedData = {
                 ...currentPerson.toJSON(),
                 ...personData
             };
-            
+
             // Validate age
             const ageValidation = validateAge(updatedData);
             if (!ageValidation.isValid) {
                 throw new Error(`Age validation failed: ${ageValidation.warnings.join(', ')}`);
             }
-            
+
             // Process events and synchronize with biographical data
             const { syncedPersonData, syncedEvents } = this._synchronizeBiographicalDataAndEvents(
-                updatedData, 
+                updatedData,
                 [...currentEvents.filter(e => !deletedEventIds.includes(e.event_id)), ...events]
             );
-            
+
             // Update the person
             const person = await personRepository.update(id, syncedPersonData, { transaction });
-            
+
             // Handle events
             const eventService = require('./eventService');
-            
+
             // Delete events
             for (const eventId of deletedEventIds) {
                 await eventService.deleteEvent(eventId, transaction);
             }
-            
+
             // Update or create events
             for (const eventData of syncedEvents) {
                 if (eventData.event_id) {
@@ -139,15 +142,15 @@ class PersonService {
                     }, transaction);
                 }
             }
-            
+
             // Fetch the complete updated person with events
-            return await personRepository.findPersonById(id, { 
+            return await personRepository.findPersonById(id, {
                 includeEvents: true,
                 transaction
             });
         });
     }
-    
+
     /**
      * Synchronize biographical data with events
      * 
@@ -160,11 +163,11 @@ class PersonService {
         // Create a copy of the person data and events to avoid modifying the originals
         const syncedPersonData = { ...personData };
         const syncedEvents = [...events];
-        
+
         // Find birth and death events
         const birthEvents = syncedEvents.filter(e => e.event_type === 'birth');
         const deathEvents = syncedEvents.filter(e => e.event_type === 'death');
-        
+
         // Handle birth date synchronization
         if (syncedPersonData.birth_date) {
             if (birthEvents.length > 0) {
@@ -173,18 +176,18 @@ class PersonService {
                 if (birthEvent.event_date !== syncedPersonData.birth_date) {
                     throw new Error('Birth date in biographical info does not match birth event date');
                 }
-                
+
                 // Ensure location is synchronized if both are present
-                if (syncedPersonData.birth_location && birthEvent.event_location && 
+                if (syncedPersonData.birth_location && birthEvent.event_location &&
                     syncedPersonData.birth_location !== birthEvent.event_location) {
                     throw new Error('Birth location in biographical info does not match birth event location');
                 }
-                
+
                 // If person has location but event doesn't, update event
                 if (syncedPersonData.birth_location && !birthEvent.event_location) {
                     birthEvent.event_location = syncedPersonData.birth_location;
                 }
-                
+
                 // If event has location but person doesn't, update person
                 if (!syncedPersonData.birth_location && birthEvent.event_location) {
                     syncedPersonData.birth_location = birthEvent.event_location;
@@ -206,7 +209,7 @@ class PersonService {
                 syncedPersonData.birth_location = birthEvent.event_location;
             }
         }
-        
+
         // Handle death date synchronization (similar logic as birth)
         if (syncedPersonData.death_date) {
             if (deathEvents.length > 0) {
@@ -215,18 +218,18 @@ class PersonService {
                 if (deathEvent.event_date !== syncedPersonData.death_date) {
                     throw new Error('Death date in biographical info does not match death event date');
                 }
-                
+
                 // Ensure location is synchronized if both are present
-                if (syncedPersonData.death_location && deathEvent.event_location && 
+                if (syncedPersonData.death_location && deathEvent.event_location &&
                     syncedPersonData.death_location !== deathEvent.event_location) {
                     throw new Error('Death location in biographical info does not match death event location');
                 }
-                
+
                 // If person has location but event doesn't, update event
                 if (syncedPersonData.death_location && !deathEvent.event_location) {
                     deathEvent.event_location = syncedPersonData.death_location;
                 }
-                
+
                 // If event has location but person doesn't, update person
                 if (!syncedPersonData.death_location && deathEvent.event_location) {
                     syncedPersonData.death_location = deathEvent.event_location;
@@ -248,7 +251,7 @@ class PersonService {
                 syncedPersonData.death_location = deathEvent.event_location;
             }
         }
-        
+
         return { syncedPersonData, syncedEvents };
     }
 
@@ -265,7 +268,7 @@ class PersonService {
             if (!person) {
                 throw new Error(`Person with id ${id} not found`);
             }
-            
+
             // Delete the person
             return await personRepository.delete(id, { transaction });
         });
@@ -283,7 +286,7 @@ class PersonService {
         if (!person) {
             throw new Error(`Person with id ${personId} not found`);
         }
-        
+
         return await personRepository.findFamilyMembers(personId);
     }
 
@@ -302,21 +305,21 @@ class PersonService {
                 personRepository.findById(parentId, { transaction }),
                 personRepository.findById(childId, { transaction })
             ]);
-            
+
             if (!parent) {
                 throw new Error(`Parent with id ${parentId} not found`);
             }
-            
+
             if (!child) {
                 throw new Error(`Child with id ${childId} not found`);
             }
-            
+
             // Validate parent-child age difference
             const ageValidation = validateParentChildAgeDifference(parent, child);
             if (!ageValidation.isValid) {
                 throw new Error(`Parent-child age validation failed: ${ageValidation.warnings.join(', ')}`);
             }
-            
+
             // Create the relationship
             const relationship = await relationshipRepository.create({
                 person1_id: parentId,
@@ -325,7 +328,7 @@ class PersonService {
                 relationship_qualifier: relationshipData.relationship_qualifier || 'biological',
                 notes: relationshipData.notes
             }, { transaction });
-            
+
             return relationship;
         });
     }
@@ -345,23 +348,23 @@ class PersonService {
                 personRepository.findById(person1Id, { transaction }),
                 personRepository.findById(person2Id, { transaction })
             ]);
-            
+
             if (!person1) {
                 throw new Error(`Person with id ${person1Id} not found`);
             }
-            
+
             if (!person2) {
                 throw new Error(`Person with id ${person2Id} not found`);
             }
-            
+
             // Check if a spouse relationship already exists
             const existingRelationships = await relationshipRepository.findBetweenPersons(person1Id, person2Id);
             const existingSpouseRelationship = existingRelationships.find(rel => rel.relationship_type === 'spouse');
-            
+
             if (existingSpouseRelationship) {
                 throw new Error('A spouse relationship already exists between these persons');
             }
-            
+
             // Create the relationship
             const relationship = await relationshipRepository.create({
                 person1_id: person1Id,
@@ -372,7 +375,7 @@ class PersonService {
                 end_date: relationshipData.end_date,
                 notes: relationshipData.notes
             }, { transaction });
-            
+
             return relationship;
         });
     }
@@ -392,23 +395,23 @@ class PersonService {
                 personRepository.findById(person1Id, { transaction }),
                 personRepository.findById(person2Id, { transaction })
             ]);
-            
+
             if (!person1) {
                 throw new Error(`Person with id ${person1Id} not found`);
             }
-            
+
             if (!person2) {
                 throw new Error(`Person with id ${person2Id} not found`);
             }
-            
+
             // Check if a sibling relationship already exists
             const existingRelationships = await relationshipRepository.findBetweenPersons(person1Id, person2Id);
             const existingSiblingRelationship = existingRelationships.find(rel => rel.relationship_type === 'sibling');
-            
+
             if (existingSiblingRelationship) {
                 throw new Error('A sibling relationship already exists between these persons');
             }
-            
+
             // Create the relationship
             const relationship = await relationshipRepository.create({
                 person1_id: person1Id,
@@ -417,7 +420,7 @@ class PersonService {
                 relationship_qualifier: relationshipData.relationship_qualifier,
                 notes: relationshipData.notes
             }, { transaction });
-            
+
             return relationship;
         });
     }
@@ -481,7 +484,7 @@ class PersonService {
         if (!person) {
             throw new Error(`Person with id ${personId} not found`);
         }
-        
+
         // Base case: if generations is 0 or person has no data, return basic info
         if (generations <= 0) {
             return {
@@ -492,10 +495,10 @@ class PersonService {
                 gender: person.gender
             };
         }
-        
+
         // Get parents
         const parents = await personRepository.findParents(personId);
-        
+
         // Recursively get ancestors for each parent
         const parentAncestors = await Promise.all(
             parents.map(async (parent) => {
@@ -503,7 +506,7 @@ class PersonService {
                 return ancestors;
             })
         );
-        
+
         // Return person with their ancestors
         return {
             id: person.person_id,
@@ -528,7 +531,7 @@ class PersonService {
         if (!person) {
             throw new Error(`Person with id ${personId} not found`);
         }
-        
+
         // Base case: if generations is 0 or person has no data, return basic info
         if (generations <= 0) {
             return {
@@ -539,10 +542,10 @@ class PersonService {
                 gender: person.gender
             };
         }
-        
+
         // Get children
         const children = await personRepository.findChildren(personId);
-        
+
         // Recursively get descendants for each child
         const childDescendants = await Promise.all(
             children.map(async (child) => {
@@ -550,7 +553,7 @@ class PersonService {
                 return descendants;
             })
         );
-        
+
         // Return person with their descendants
         return {
             id: person.person_id,

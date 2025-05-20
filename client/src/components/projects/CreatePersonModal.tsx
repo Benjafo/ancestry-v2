@@ -120,7 +120,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
             console.log(events)
             const person = await projectsApi.createPerson({
                 ...cleanedFormData,
-                events: events.map(({ event_id, ...eventWithoutId }) => eventWithoutId)
+                events: events.map(({ event_id, ...eventWithoutId }) => eventWithoutId) as any
             });
 
             // Step 3: Create documents and associate them
