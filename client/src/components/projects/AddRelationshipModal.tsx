@@ -196,16 +196,16 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
             onClose();
         } catch (err: any) {
             console.error('Error creating relationship:', err);
-            
+
             // Extract and format the error message from the server response
             let errorMessage = 'Failed to create relationship';
-            
+
             try {
                 // For Ky errors, the response is available in err.response
                 if (err.response) {
                     // Clone the response to read it multiple times if needed
                     const clonedResponse = err.response.clone();
-                    
+
                     try {
                         // Try to parse as JSON first
                         const jsonData = await clonedResponse.json();
@@ -243,7 +243,7 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                 // If all else fails, use the original error message
                 errorMessage = err.message || errorMessage;
             }
-            
+
             // Format specific error messages to be more user-friendly
             if (errorMessage.includes('already exists between these people')) {
                 errorMessage = `A relationship of this type already exists between these people. Please choose different people or a different relationship type.`;
@@ -254,7 +254,7 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
             } else if (errorMessage.includes('Circular relationship')) {
                 errorMessage = `This relationship would create a circular family tree, which is not allowed.`;
             }
-            
+
             setError(errorMessage);
         } finally {
             setIsSubmitting(false);
@@ -332,14 +332,7 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                             >
                                 <option value="">Select Relationship Type</option>
                                 <option value="parent">Parent</option>
-                                <option value="child">Child</option>
                                 <option value="spouse">Spouse</option>
-                                <option value="sibling">Sibling</option>
-                                <option value="grandparent">Grandparent</option>
-                                <option value="grandchild">Grandchild</option>
-                                <option value="aunt/uncle">Aunt/Uncle</option>
-                                <option value="niece/nephew">Niece/Nephew</option>
-                                <option value="cousin">Cousin</option>
                             </select>
                         </div>
 

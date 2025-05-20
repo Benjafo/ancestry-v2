@@ -1,12 +1,12 @@
 project:
   active:
     Project: tree view
-    Project: all events should trigger user events that appear in the activity feeds
-    Project -> relationships: implement two way relationships when create relationship modal is submitted
+    Project -> relationships: rework how relationships are created and stored
   finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
     Project: relationships
+    Project: all events should trigger user events that appear in the activity feeds
     Project -> overview: recent activity should be accurate
     Project -> documents: no date on documents
     Project -> documents: type is blank

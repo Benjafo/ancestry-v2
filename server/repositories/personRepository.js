@@ -342,25 +342,222 @@ class PersonRepository extends BaseRepository {
     }
 
     /**
-     * Find all family members of a person (parents, children, siblings, spouses)
+     * Find all family members of a person (including derived relationships)
      * 
      * @param {String} personId - Person ID
      * @returns {Promise<Object>} Object with family members grouped by relationship type
      */
     async findFamilyMembers(personId) {
-        const [parents, children, siblings, spouses] = await Promise.all([
+        // Get direct relationships from database
+        const [parents, children, spouses] = await Promise.all([
             this.findParents(personId),
             this.findChildren(personId),
-            this.findSiblings(personId),
             this.findSpouses(personId)
         ]);
+        
+        // Calculate siblings (people who share at least one parent)
+        const siblings = await this.findSiblings(personId);
+        
+        // Calculate derived relationships
+        const grandparents = await this._findGrandparents(personId, parents);
+        const grandchildren = await this._findGrandchildren(personId, children);
+        const auntsUncles = await this._findAuntsUncles(personId, parents);
+        const niecesNephews = await this._findNiecesNephews(personId, siblings);
+        const cousins = await this._findCousins(personId, parents);
         
         return {
             parents,
             children,
             siblings,
-            spouses
+            spouses,
+            grandparents,
+            grandchildren,
+            auntsUncles,
+            niecesNephews,
+            cousins
         };
+    }
+    
+    /**
+     * Find grandparents of a person
+     * 
+     * @param {String} personId - Person ID
+     * @param {Array} parents - Array of parent persons (optional, to avoid duplicate queries)
+     * @returns {Promise<Array>} Array of grandparent persons
+     * @private
+     */
+    async _findGrandparents(personId, parentsParam = null) {
+        // Use provided parents or fetch them
+        const parents = parentsParam || await this.findParents(personId);
+        
+        if (parents.length === 0) {
+            return [];
+        }
+        
+        // Get parents of each parent (grandparents)
+        const grandparentsPromises = parents.map(parent => this.findParents(parent.person_id));
+        const grandparentArrays = await Promise.all(grandparentsPromises);
+        
+        // Flatten and deduplicate grandparents
+        const allGrandparents = grandparentArrays.flat();
+        const uniqueGrandparents = [];
+        const seenIds = new Set();
+        
+        allGrandparents.forEach(grandparent => {
+            if (!seenIds.has(grandparent.person_id)) {
+                seenIds.add(grandparent.person_id);
+                uniqueGrandparents.push(grandparent);
+            }
+        });
+        
+        return uniqueGrandparents;
+    }
+    
+    /**
+     * Find grandchildren of a person
+     * 
+     * @param {String} personId - Person ID
+     * @param {Array} children - Array of child persons (optional, to avoid duplicate queries)
+     * @returns {Promise<Array>} Array of grandchild persons
+     * @private
+     */
+    async _findGrandchildren(personId, childrenParam = null) {
+        // Use provided children or fetch them
+        const children = childrenParam || await this.findChildren(personId);
+        
+        if (children.length === 0) {
+            return [];
+        }
+        
+        // Get children of each child (grandchildren)
+        const grandchildrenPromises = children.map(child => this.findChildren(child.person_id));
+        const grandchildrenArrays = await Promise.all(grandchildrenPromises);
+        
+        // Flatten and deduplicate grandchildren
+        const allGrandchildren = grandchildrenArrays.flat();
+        const uniqueGrandchildren = [];
+        const seenIds = new Set();
+        
+        allGrandchildren.forEach(grandchild => {
+            if (!seenIds.has(grandchild.person_id)) {
+                seenIds.add(grandchild.person_id);
+                uniqueGrandchildren.push(grandchild);
+            }
+        });
+        
+        return uniqueGrandchildren;
+    }
+    
+    /**
+     * Find aunts and uncles of a person
+     * 
+     * @param {String} personId - Person ID
+     * @param {Array} parents - Array of parent persons (optional, to avoid duplicate queries)
+     * @returns {Promise<Array>} Array of aunt/uncle persons
+     * @private
+     */
+    async _findAuntsUncles(personId, parentsParam = null) {
+        // Use provided parents or fetch them
+        const parents = parentsParam || await this.findParents(personId);
+        
+        if (parents.length === 0) {
+            return [];
+        }
+        
+        // Get siblings of each parent (aunts/uncles)
+        const auntsUnclesPromises = parents.map(parent => this.findSiblings(parent.person_id));
+        const auntsUnclesArrays = await Promise.all(auntsUnclesPromises);
+        
+        // Flatten and deduplicate aunts/uncles
+        const allAuntsUncles = auntsUnclesArrays.flat();
+        const uniqueAuntsUncles = [];
+        const seenIds = new Set();
+        
+        allAuntsUncles.forEach(auntUncle => {
+            if (!seenIds.has(auntUncle.person_id)) {
+                seenIds.add(auntUncle.person_id);
+                uniqueAuntsUncles.push(auntUncle);
+            }
+        });
+        
+        return uniqueAuntsUncles;
+    }
+    
+    /**
+     * Find nieces and nephews of a person
+     * 
+     * @param {String} personId - Person ID
+     * @param {Array} siblings - Array of sibling persons (optional, to avoid duplicate queries)
+     * @returns {Promise<Array>} Array of niece/nephew persons
+     * @private
+     */
+    async _findNiecesNephews(personId, siblingsParam = null) {
+        // Use provided siblings or fetch them
+        const siblings = siblingsParam || await this.findSiblings(personId);
+        
+        if (siblings.length === 0) {
+            return [];
+        }
+        
+        // Get children of each sibling (nieces/nephews)
+        const niecesNephewsPromises = siblings.map(sibling => this.findChildren(sibling.person_id));
+        const niecesNephewsArrays = await Promise.all(niecesNephewsPromises);
+        
+        // Flatten and deduplicate nieces/nephews
+        const allNiecesNephews = niecesNephewsArrays.flat();
+        const uniqueNiecesNephews = [];
+        const seenIds = new Set();
+        
+        allNiecesNephews.forEach(nieceNephew => {
+            if (!seenIds.has(nieceNephew.person_id)) {
+                seenIds.add(nieceNephew.person_id);
+                uniqueNiecesNephews.push(nieceNephew);
+            }
+        });
+        
+        return uniqueNiecesNephews;
+    }
+    
+    /**
+     * Find cousins of a person
+     * 
+     * @param {String} personId - Person ID
+     * @param {Array} parents - Array of parent persons (optional, to avoid duplicate queries)
+     * @returns {Promise<Array>} Array of cousin persons
+     * @private
+     */
+    async _findCousins(personId, parentsParam = null) {
+        // Use provided parents or fetch them
+        const parents = parentsParam || await this.findParents(personId);
+        
+        if (parents.length === 0) {
+            return [];
+        }
+        
+        // Get aunts/uncles
+        const auntsUncles = await this._findAuntsUncles(personId, parents);
+        
+        if (auntsUncles.length === 0) {
+            return [];
+        }
+        
+        // Get children of each aunt/uncle (cousins)
+        const cousinsPromises = auntsUncles.map(auntUncle => this.findChildren(auntUncle.person_id));
+        const cousinsArrays = await Promise.all(cousinsPromises);
+        
+        // Flatten and deduplicate cousins
+        const allCousins = cousinsArrays.flat();
+        const uniqueCousins = [];
+        const seenIds = new Set();
+        
+        allCousins.forEach(cousin => {
+            if (!seenIds.has(cousin.person_id)) {
+                seenIds.add(cousin.person_id);
+                uniqueCousins.push(cousin);
+            }
+        });
+        
+        return uniqueCousins;
     }
 
     /**

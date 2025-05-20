@@ -619,80 +619,174 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         {activeTab === 'relationships' && (
                             <div>
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
+
                                 {relationships && Object.keys(relationships).length > 0 ? (
                                     <div className="space-y-6">
-                                        {relationships.parents && relationships.parents.length > 0 && (
-                                            <div>
-                                                <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Parents</h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {relationships.parents.map(parent => (
-                                                        <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
+                                        {/* Primary Relationships (can be created directly) */}
+                                        <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+                                            <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Primary Relationships</h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                                These relationships can be created and edited directly.
+                                            </p>
 
-                                        {relationships.children && relationships.children.length > 0 && (
-                                            <div>
-                                                <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Children</h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {relationships.children.map(child => (
-                                                        <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {child.relationship_qualifier && `${child.relationship_qualifier} child`}
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {relationships.spouses && relationships.spouses.length > 0 && (
-                                            <div>
-                                                <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Spouses</h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {relationships.spouses.map(spouse => (
-                                                        <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
-                                                            {spouse.start_date && (
+                                            {/* Parents */}
+                                            {relationships.parents && relationships.parents.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Parents</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {relationships.parents.map(parent => (
+                                                            <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Married: {formatDate(spouse.start_date)}
-                                                                    {spouse.end_date && ` - ${formatDate(spouse.end_date)}`}
+                                                                    {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
                                                                 </p>
-                                                            )}
-                                                        </div>
-                                                    ))}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
 
-                                        {relationships.siblings && relationships.siblings.length > 0 && (
-                                            <div>
-                                                <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Siblings</h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {relationships.siblings.map(sibling => (
-                                                        <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                            <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
-                                                            </p>
-                                                        </div>
-                                                    ))}
+                                            {/* Spouses */}
+                                            {relationships.spouses && relationships.spouses.length > 0 && (
+                                                <div>
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Spouses</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {relationships.spouses.map(spouse => (
+                                                            <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
+                                                                {spouse.start_date && (
+                                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                        Married: {formatDate(spouse.start_date)}
+                                                                        {spouse.end_date && ` - ${formatDate(spouse.end_date)}`}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+
+                                        {/* Derived Relationships */}
+                                        <div>
+                                            <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Derived Relationships</h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                                These relationships are automatically calculated based on parent relationships.
+                                            </p>
+
+                                            {/* Children */}
+                                            {relationships.children && relationships.children.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Children</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {relationships.children.map(child => (
+                                                            <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {child.relationship_qualifier && `${child.relationship_qualifier} child`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Siblings */}
+                                            {relationships.siblings && relationships.siblings.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Siblings</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {relationships.siblings.map(sibling => (
+                                                            <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Grandparents */}
+                                            {(relationships as any).grandparents && (relationships as any).grandparents.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandparents</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(relationships as any).grandparents.map((grandparent: any) => (
+                                                            <div key={grandparent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{grandparent.first_name} {grandparent.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Grandchildren */}
+                                            {(relationships as any).grandchildren && (relationships as any).grandchildren.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandchildren</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(relationships as any).grandchildren.map((grandchild: any) => (
+                                                            <div key={grandchild.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{grandchild.first_name} {grandchild.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Aunts/Uncles */}
+                                            {(relationships as any).auntsUncles && (relationships as any).auntsUncles.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Aunts & Uncles</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(relationships as any).auntsUncles.map((auntUncle: any) => (
+                                                            <div key={auntUncle.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{auntUncle.first_name} {auntUncle.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Nieces/Nephews */}
+                                            {(relationships as any).niecesNephews && (relationships as any).niecesNephews.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nieces & Nephews</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(relationships as any).niecesNephews.map((nieceNephew: any) => (
+                                                            <div key={nieceNephew.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{nieceNephew.first_name} {nieceNephew.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Cousins */}
+                                            {(relationships as any).cousins && (relationships as any).cousins.length > 0 && (
+                                                <div>
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cousins</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(relationships as any).cousins.map((cousin: any) => (
+                                                            <div key={cousin.person_id} className="border dark:border-gray-700 rounded-lg p-3">
+                                                                <p className="font-medium text-gray-900 dark:text-white">{cousin.first_name} {cousin.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="text-center py-8">
                                         <p className="text-gray-500 dark:text-gray-400">No relationships found for this person.</p>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                            Relationships can be created from the Relationships management section.
+                                            You can add parent and spouse relationships from the person's detail view.
+                                        </p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                            Other relationships like siblings, grandparents, aunts/uncles, and cousins will be automatically calculated based on the parent relationships.
                                         </p>
                                     </div>
                                 )}

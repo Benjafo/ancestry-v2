@@ -637,10 +637,27 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                     {activeTab === 'relationships' && (
                         <div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
+                            <div className="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-400 p-4 mb-4">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                                            <strong>Relationship Management Update:</strong> Only parent and spouse relationships can be created directly. Other relationship types (siblings, grandparents, etc.) are now automatically derived from these primary relationships.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="text-center py-8">
                                 <p className="text-gray-500 dark:text-gray-400">Relationships can be added after creating the person.</p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                    You'll be able to add parents, children, spouses, and siblings from the Relationships management section.
+                                    You'll be able to add parent and spouse relationships from the person's detail view.
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                    Other relationships like siblings, grandparents, aunts/uncles, and cousins will be automatically calculated based on the parent relationships.
                                 </p>
                             </div>
                         </div>

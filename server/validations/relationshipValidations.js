@@ -22,8 +22,8 @@ exports.createRelationshipValidation = [
     body('relationship_type')
         .notEmpty().withMessage(errorMessages.required('Relationship type'))
         .isString().withMessage('Relationship type must be a string')
-        .isIn(['parent', 'child', 'spouse', 'sibling', 'grandparent', 'grandchild', 'aunt/uncle', 'niece/nephew', 'cousin'])
-        .withMessage('Invalid relationship type'),
+        .isIn(['parent', 'spouse'])
+        .withMessage('Invalid relationship type. Only "parent" and "spouse" relationships can be created directly.'),
     
     body('relationship_qualifier')
         .optional()
@@ -91,8 +91,8 @@ exports.updateRelationshipValidation = [
     body('relationship_type')
         .optional()
         .isString().withMessage('Relationship type must be a string')
-        .isIn(['parent', 'child', 'spouse', 'sibling', 'grandparent', 'grandchild', 'aunt/uncle', 'niece/nephew', 'cousin'])
-        .withMessage('Invalid relationship type'),
+        .isIn(['parent', 'spouse'])
+        .withMessage('Invalid relationship type. Only "parent" and "spouse" relationships can be updated directly.'),
     
     body('relationship_qualifier')
         .optional()
