@@ -3,17 +3,11 @@
         <name>Subtask 1</name>
         <task>The previous tasks have been completed, let's move on. Using your knowledge of the
             codebase, please address the following problem. We need a way for the manager to add
-            existing documents to specific persons. <problem>Adding birth date and death date in the
-            biographical info should create birth and death events automatically, and vice versa. In
-            the same form submission, the biographical info and events can both be set for birth and
-            death, but the info must not conflict. Attempting to add a birth or death event that has
-            a date conflicting with the biographical information should not work. For example, when
-            I create a person, I should be able to manually add a birth date (required), and go to
-            the events tab and add a death event, and when I save the modal, I should see the birth
-            and death dates on the biographical information tab. Also, in that example scenario, I
-            could have added BOTH a death date in biographical information and a death event, as
-            long as the dates for both of them were the same.</problem> Please create a high level
-            overview of how you would functionally implement this task.</task>
+            existing documents to specific persons. <problem>created or associated documents do not
+            appear in edit person modal until whole modal is saved. For example, I will open the
+                edit person modal, add a document, and click save. I do not see the document in the
+            list, but then if I save the user, close the modal and reopen it, I see it then.</problem>
+            Please create a high level overview of how you would functionally implement this task.</task>
     </subtask>
     <subtask>
         <name>Subtask 2</name>
@@ -23,8 +17,8 @@
     </subtask>
     <subtask>
         <name>Subtask 3</name>
-        <task>Create a file plans/<task_name>birth_death_date_events</task_name>.xml, in which I'd like you to
-            reformat the steps from subtask 2 into XML format in a way that an LLM can easily
-            understand.</task>
+        <task>Create a file plans/<task_name>fix_view_before_save_issue</task_name>.xml, in which
+            I'd like you to reformat the steps from subtask 2 into XML format in a way that an LLM
+            can easily understand.</task>
     </subtask>
 </task>

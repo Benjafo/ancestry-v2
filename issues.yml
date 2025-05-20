@@ -2,8 +2,8 @@ project:
   active:
     Project: tree view
     Project: all events should trigger user events that appear in the activity feeds
-    Project -> documents: created or associated document does not appear in edit person modal until whole modal is saved
-    finished:
+    Project -> relationships: implement two way relationships when create relationship modal is submitted
+  finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
     Project: relationships
@@ -17,6 +17,7 @@ project:
     Project -> documents: documents should list associated family members with links to their profiles
     Project -> documents: edit documents from documents tab view
     Project -> documents: implement add document button for family documents
+    Project -> documents: created or associated document does not appear in edit person modal until whole modal is saved
     Project -> timeline: fix capitalization of event type
     Project -> timeline: related person should appear before event in timeline view
     Project -> family members: person cards should all be the same height

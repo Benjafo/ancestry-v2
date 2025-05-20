@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ApiError, Document, Event, Person, documentsApi, eventsApi, projectsApi } from '../../api/client';
+import { ApiError, Document, Event, Person, documentsApi, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import DocumentForm from '../documents/DocumentForm';
 import DocumentList from '../documents/DocumentList';
@@ -165,7 +165,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             };
 
             // Step 1: Update the person's basic info with events and deletedEventIds
-            const updatedPerson = await projectsApi.updatePerson(person.person_id, {
+            await projectsApi.updatePerson(person.person_id, {
                 ...cleanedFormData,
                 events,
                 deletedEventIds
@@ -188,15 +188,15 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             // For updated documents (have document_id and are still in the documents state)
             const updatedDocuments = documents.filter(doc => doc.document_id && !deletedDocumentIds.includes(doc.document_id));
             for (const _ of updatedDocuments) {
-                 // Note: The DocumentForm handles updating existing documents directly.
-                 // This loop might be redundant if the form updates immediately,
-                 // but keeping it for robustness if there's a different workflow.
-                 // In this specific case (EditPersonModal), the form updates immediately,
-                 // so this loop won't do anything for documents that were edited via the form.
-                 // It would only apply if documents were edited in the list directly (which is not the current UI).
-                 // We can potentially remove this loop if the DocumentForm always handles updates.
-                 // For now, let's keep it but be aware it might not be actively used in this modal's workflow.
-                 // await documentsApi.updateDocument(docData.document_id, docData);
+                // Note: The DocumentForm handles updating existing documents directly.
+                // This loop might be redundant if the form updates immediately,
+                // but keeping it for robustness if there's a different workflow.
+                // In this specific case (EditPersonModal), the form updates immediately,
+                // so this loop won't do anything for documents that were edited via the form.
+                // It would only apply if documents were edited in the list directly (which is not the current UI).
+                // We can potentially remove this loop if the DocumentForm always handles updates.
+                // For now, let's keep it but be aware it might not be actively used in this modal's workflow.
+                // await documentsApi.updateDocument(docData.document_id, docData);
             }
 
             // For deleted documents
@@ -264,16 +264,25 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
         setEditingDocumentId(documentId);
     };
 
-    const handleDeleteDocument = (documentId: string) => {
+    const handleDeleteDocument = async (documentId: string) => {
         // If it's a new document (no ID yet), just remove it from the list
         if (!documentId) {
             setDocuments(documents.filter(doc => doc.document_id !== documentId));
             return;
         }
 
-        // Otherwise, mark it for deletion on save
-        setDeletedDocumentIds([...deletedDocumentIds, documentId]);
-        setDocuments(documents.filter(doc => doc.document_id !== documentId));
+        // If it's an existing document, call the API to remove the association
+        try {
+            await documentsApi.removeDocumentPersonAssociation(documentId, person.person_id);
+            // Remove the document from the local state after successful API call
+            setDocuments(documents.filter(doc => doc.document_id !== documentId));
+            // Also remove from deletedDocumentIds if it was marked for deletion
+            setDeletedDocumentIds(deletedDocumentIds.filter(id => id !== documentId));
+        } catch (err: unknown) {
+            console.error('Error removing document association:', err);
+            const error = err as ApiError;
+            setError(error.message || 'Failed to remove document association');
+        }
     };
 
     const handleDocumentSaved = (document: Document) => {
@@ -594,6 +603,9 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         </div>
 
                                         <DocumentList
+                                            documents={documents} // Pass documents state as prop
+                                            isLoading={loading} // Pass loading state as prop
+                                            error={error} // Pass error state as prop
                                             personId={person.person_id}
                                             onEditDocument={handleEditDocument}
                                             onDeleteDocument={handleDeleteDocument}
@@ -721,7 +733,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                 const personData = await projectsApi.getPersonById(person.person_id, {
                                     includeDocuments: true
                                 });
-                                
+
                                 if (personData.documents) {
                                     setDocuments(personData.documents);
                                 }
@@ -729,7 +741,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                 console.error('Error refreshing person documents:', err);
                             }
                         };
-                        
+
                         fetchPersonDetails();
                     }}
                 />

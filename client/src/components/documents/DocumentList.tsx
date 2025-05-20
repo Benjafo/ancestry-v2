@@ -14,16 +14,16 @@ const getErrorMessage = (error: unknown): string => {
 
 interface DocumentListProps {
     personId?: string;
+    documents: Document[]; // Accept documents as a prop
+    isLoading: boolean; // Accept loading state as a prop
+    error: string | null; // Accept error state as a prop
     onEditDocument?: (documentId: string) => void;
     onDeleteDocument?: (documentId: string) => void;
     onSelectDocument?: (document: Document) => void;
     readOnly?: boolean;
 }
 
-const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocument, readOnly = false }: DocumentListProps) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [documents, setDocuments] = useState<Document[]>([]);
+const DocumentList = ({ personId, documents, isLoading, error, onEditDocument, onDeleteDocument, onSelectDocument, readOnly = false }: DocumentListProps) => {
     const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
@@ -48,34 +48,11 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
         { value: 'other', label: 'Other' }
     ];
 
-    useEffect(() => {
-        const fetchDocuments = async () => {
-            setIsLoading(true);
-            try {
-                let documentsData;
-
-                if (personId) {
-                    documentsData = await documentsApi.getDocumentsByPersonId(personId);
-                } else {
-                    const response = await documentsApi.getDocuments();
-                    documentsData = response.documents;
-                }
-
-                setDocuments(documentsData);
-                setFilteredDocuments(documentsData);
-            } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Failed to load documents');
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchDocuments();
-    }, [personId]);
+    // Remove the useEffect that fetches documents internally
+    // Remove internal documents state and fetching logic
 
     useEffect(() => {
-        // Apply filters whenever documents, searchTerm, or filterType changes
+        // Apply filters whenever documents prop, searchTerm, or filterType changes
         let result = [...documents];
 
         // Filter by type
@@ -163,10 +140,9 @@ const DocumentList = ({ personId, onEditDocument, onDeleteDocument, onSelectDocu
         if (window.confirm('Are you sure you want to delete this document?')) {
             try {
                 await documentsApi.deleteDocument(documentId);
-                setDocuments(documents.filter(document => document.document_id !== documentId));
-                onDeleteDocument(documentId);
+                onDeleteDocument(documentId); // Let the parent handle state update
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Failed to delete document');
+                // Let the parent handle error display
                 console.error(err);
             }
         }
