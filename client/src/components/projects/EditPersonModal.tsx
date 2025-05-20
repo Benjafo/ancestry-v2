@@ -164,29 +164,12 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                 ...(formData.notes ? { notes: formData.notes } : {})
             };
 
-            // Step 1: Update the person's basic info
-            await projectsApi.updatePerson(person.person_id, cleanedFormData);
-
-            // Step 2: Handle events
-            // For new events (no event_id)
-            const newEvents = events.filter(event => !event.event_id);
-            for (const eventData of newEvents) {
-                await eventsApi.createEvent({
-                    ...eventData,
-                    person_id: person.person_id
-                });
-            }
-
-            // For updated events (have event_id)
-            const existingEvents = events.filter(event => event.event_id);
-            for (const eventData of existingEvents) {
-                await eventsApi.updateEvent(eventData.event_id, eventData);
-            }
-
-            // For deleted events
-            for (const eventId of deletedEventIds) {
-                await eventsApi.deleteEvent(eventId);
-            }
+            // Step 1: Update the person's basic info with events and deletedEventIds
+            const updatedPerson = await projectsApi.updatePerson(person.person_id, {
+                ...cleanedFormData,
+                events,
+                deletedEventIds
+            });
 
             // Step 3: Handle documents
             // Handle documents that were newly created in the DocumentForm and need association

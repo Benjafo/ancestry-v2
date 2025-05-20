@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ApiError, Document, Event, Person, documentsApi, eventsApi, projectsApi } from '../../api/client';
+import { ApiError, Document, Event, Person, documentsApi, projectsApi } from '../../api/client';
 import DocumentForm from '../documents/DocumentForm';
 import EventForm from '../events/EventForm';
 
@@ -116,16 +116,12 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                 ...(formData.notes ? { notes: formData.notes } : {})
             };
 
-            // Step 1: Create the person
-            const { person } = await projectsApi.createPerson(cleanedFormData);
-
-            // Step 2: Create events for this person
-            for (const eventData of events) {
-                await eventsApi.createEvent({
-                    ...eventData,
-                    person_id: person.person_id
-                });
-            }
+            // Step 1: Create the person with events
+            console.log(events)
+            const person = await projectsApi.createPerson({
+                ...cleanedFormData,
+                events: events.map(({ event_id, ...eventWithoutId }) => eventWithoutId)
+            });
 
             // Step 3: Create documents and associate them
             for (const docData of documents) {
@@ -228,7 +224,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
 
         return (
             <div className="space-y-4">
-                {events.map((event, index) => (
+                {events.map((event: Partial<Event>, index) => (
                     <div key={index} className="border dark:border-gray-700 rounded-lg p-4">
                         <div className="flex justify-between">
                             <div>

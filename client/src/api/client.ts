@@ -436,14 +436,19 @@ export const projectsApi = {
         return response.json();
     },
 
-    createPerson: async (personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+    createPerson: async (personData: Partial<Person> & { events?: Partial<Event>[] }): Promise<Person> => {
         const response = await apiClient.post('persons', { json: personData });
-        return response.json();
+        const result = await response.json<{ message: string; person: Person }>();
+        return result.person;
     },
 
-    updatePerson: async (personId: string, personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+    updatePerson: async (personId: string, personData: Partial<Person> & {
+        events?: Partial<Event>[],
+        deletedEventIds?: string[]
+    }): Promise<Person> => {
         const response = await apiClient.put(`persons/${personId}`, { json: personData });
-        return response.json();
+        const result = await response.json<{ message: string; person: Person }>();
+        return result.person;
     },
 
     // Get project events
@@ -475,7 +480,7 @@ export const projectsApi = {
         });
         return response.json();
     },
-    
+
     // Update a research note
     updateResearchNote: async (noteId: string, message: string): Promise<{ message: string; event: UserEvent }> => {
         const response = await apiClient.put(`user-events/${noteId}`, {
@@ -483,7 +488,7 @@ export const projectsApi = {
         });
         return response.json();
     },
-    
+
     // Delete a research note
     deleteResearchNote: async (noteId: string): Promise<{ message: string }> => {
         const response = await apiClient.delete(`user-events/${noteId}`);
@@ -605,7 +610,7 @@ export const documentsApi = {
     uploadFile: async (file: File): Promise<{ message: string; file: { originalname: string; filename: string; mimetype: string; size: number; path: string } }> => {
         const formData = new FormData();
         formData.append('file', file);
-        
+
         const response = await apiClient.post('documents/upload', { body: formData });
         return response.json();
     },
@@ -614,13 +619,13 @@ export const documentsApi = {
         const response = await apiClient.post('documents', { json: documentData });
         return response.json();
     },
-    
+
     getDocumentsByProjectId: async (projectId: string, options?: { includePersons?: boolean }): Promise<Document[]> => {
         const params = new URLSearchParams();
         if (options?.includePersons) {
             params.append('includePersons', 'true');
         }
-        
+
         const queryString = params.toString() ? `?${params.toString()}` : '';
         const response = await apiClient.get(`projects/${projectId}/documents${queryString}`);
         return response.json();

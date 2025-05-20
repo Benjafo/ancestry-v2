@@ -65,7 +65,11 @@ exports.getPersonById = async (req, res) => {
  */
 exports.createPerson = async (req, res) => {
     try {
-        const person = await personService.createPerson(req.body);
+        // Extract events from request body
+        const { events, ...personData } = req.body;
+        
+        // Pass events to personService
+        const person = await personService.createPerson(personData, events);
         
         // Create user events for person creation
         if (req.body.project_id) {
@@ -112,7 +116,11 @@ exports.createPerson = async (req, res) => {
 exports.updatePerson = async (req, res) => {
     try {
         const { personId } = req.params;
-        const person = await personService.updatePerson(personId, req.body);
+        // Extract events and deletedEventIds from request body
+        const { events, deletedEventIds, ...personData } = req.body;
+        
+        // Pass events and deletedEventIds to personService
+        const person = await personService.updatePerson(personId, personData, events, deletedEventIds);
         
         // Create user events for person update
         if (req.body.project_id) {

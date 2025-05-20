@@ -34,9 +34,10 @@ class PersonService {
      * Create a new person
      * 
      * @param {Object} personData - Person data
+     * @param {Array} events - Events to associate with the person
      * @returns {Promise<Object>} Created person
      */
-    async createPerson(personData) {
+    async createPerson(personData, events = []) {
         // Validate age
         const ageValidation = validateAge(personData);
         if (!ageValidation.isValid) {
@@ -44,8 +45,29 @@ class PersonService {
         }
         
         return await TransactionManager.executeTransaction(async (transaction) => {
-            const person = await personRepository.create(personData, { transaction });
-            return person;
+            // Process events and synchronize with biographical data
+            const { syncedPersonData, syncedEvents } = this._synchronizeBiographicalDataAndEvents(
+                personData, 
+                events
+            );
+            
+            // Create the person
+            const person = await personRepository.create(syncedPersonData, { transaction });
+            
+            // Create events
+            const eventService = require('./eventService');
+            for (const eventData of syncedEvents) {
+                await eventService.createEvent({
+                    ...eventData,
+                    person_id: person.person_id
+                }, transaction);
+            }
+            
+            // Fetch the complete person with events
+            return await personRepository.findPersonById(person.person_id, { 
+                includeEvents: true,
+                transaction
+            });
         });
     }
 
@@ -54,15 +76,23 @@ class PersonService {
      * 
      * @param {String} id - Person ID
      * @param {Object} personData - Person data to update
+     * @param {Array} events - Events to associate with the person
+     * @param {Array} deletedEventIds - IDs of events to delete
      * @returns {Promise<Object>} Updated person
      */
-    async updatePerson(id, personData) {
+    async updatePerson(id, personData, events = [], deletedEventIds = []) {
         return await TransactionManager.executeTransaction(async (transaction) => {
             // Get the current person data
             const currentPerson = await personRepository.findById(id, { transaction });
             if (!currentPerson) {
                 throw new Error(`Person with id ${id} not found`);
             }
+            
+            // Get current events
+            const currentEvents = await personRepository.findPersonById(id, { 
+                includeEvents: true,
+                transaction
+            }).then(person => person.events || []);
             
             // Merge current data with updates
             const updatedData = {
@@ -76,10 +106,150 @@ class PersonService {
                 throw new Error(`Age validation failed: ${ageValidation.warnings.join(', ')}`);
             }
             
+            // Process events and synchronize with biographical data
+            const { syncedPersonData, syncedEvents } = this._synchronizeBiographicalDataAndEvents(
+                updatedData, 
+                [...currentEvents.filter(e => !deletedEventIds.includes(e.event_id)), ...events]
+            );
+            
             // Update the person
-            const person = await personRepository.update(id, personData, { transaction });
-            return person;
+            const person = await personRepository.update(id, syncedPersonData, { transaction });
+            
+            // Handle events
+            const eventService = require('./eventService');
+            
+            // Delete events
+            for (const eventId of deletedEventIds) {
+                await eventService.deleteEvent(eventId, transaction);
+            }
+            
+            // Update or create events
+            for (const eventData of syncedEvents) {
+                if (eventData.event_id) {
+                    // Update existing event
+                    await eventService.updateEvent(eventData.event_id, {
+                        ...eventData,
+                        person_id: id
+                    }, transaction);
+                } else {
+                    // Create new event
+                    await eventService.createEvent({
+                        ...eventData,
+                        person_id: id
+                    }, transaction);
+                }
+            }
+            
+            // Fetch the complete updated person with events
+            return await personRepository.findPersonById(id, { 
+                includeEvents: true,
+                transaction
+            });
         });
+    }
+    
+    /**
+     * Synchronize biographical data with events
+     * 
+     * @param {Object} personData - Person data
+     * @param {Array} events - Events to process
+     * @returns {Object} Object with synchronized person data and events
+     * @private
+     */
+    _synchronizeBiographicalDataAndEvents(personData, events = []) {
+        // Create a copy of the person data and events to avoid modifying the originals
+        const syncedPersonData = { ...personData };
+        const syncedEvents = [...events];
+        
+        // Find birth and death events
+        const birthEvents = syncedEvents.filter(e => e.event_type === 'birth');
+        const deathEvents = syncedEvents.filter(e => e.event_type === 'death');
+        
+        // Handle birth date synchronization
+        if (syncedPersonData.birth_date) {
+            if (birthEvents.length > 0) {
+                // If there's a birth event, ensure dates match
+                const birthEvent = birthEvents[0];
+                if (birthEvent.event_date !== syncedPersonData.birth_date) {
+                    throw new Error('Birth date in biographical info does not match birth event date');
+                }
+                
+                // Ensure location is synchronized if both are present
+                if (syncedPersonData.birth_location && birthEvent.event_location && 
+                    syncedPersonData.birth_location !== birthEvent.event_location) {
+                    throw new Error('Birth location in biographical info does not match birth event location');
+                }
+                
+                // If person has location but event doesn't, update event
+                if (syncedPersonData.birth_location && !birthEvent.event_location) {
+                    birthEvent.event_location = syncedPersonData.birth_location;
+                }
+                
+                // If event has location but person doesn't, update person
+                if (!syncedPersonData.birth_location && birthEvent.event_location) {
+                    syncedPersonData.birth_location = birthEvent.event_location;
+                }
+            } else {
+                // If there's no birth event, create one
+                syncedEvents.push({
+                    event_type: 'birth',
+                    event_date: syncedPersonData.birth_date,
+                    event_location: syncedPersonData.birth_location,
+                    description: `Birth of ${syncedPersonData.first_name} ${syncedPersonData.last_name}`
+                });
+            }
+        } else if (birthEvents.length > 0) {
+            // If there's a birth event but no birth date in person data, update person data
+            const birthEvent = birthEvents[0];
+            syncedPersonData.birth_date = birthEvent.event_date;
+            if (birthEvent.event_location) {
+                syncedPersonData.birth_location = birthEvent.event_location;
+            }
+        }
+        
+        // Handle death date synchronization (similar logic as birth)
+        if (syncedPersonData.death_date) {
+            if (deathEvents.length > 0) {
+                // If there's a death event, ensure dates match
+                const deathEvent = deathEvents[0];
+                if (deathEvent.event_date !== syncedPersonData.death_date) {
+                    throw new Error('Death date in biographical info does not match death event date');
+                }
+                
+                // Ensure location is synchronized if both are present
+                if (syncedPersonData.death_location && deathEvent.event_location && 
+                    syncedPersonData.death_location !== deathEvent.event_location) {
+                    throw new Error('Death location in biographical info does not match death event location');
+                }
+                
+                // If person has location but event doesn't, update event
+                if (syncedPersonData.death_location && !deathEvent.event_location) {
+                    deathEvent.event_location = syncedPersonData.death_location;
+                }
+                
+                // If event has location but person doesn't, update person
+                if (!syncedPersonData.death_location && deathEvent.event_location) {
+                    syncedPersonData.death_location = deathEvent.event_location;
+                }
+            } else {
+                // If there's no death event, create one
+                syncedEvents.push({
+                    event_type: 'death',
+                    event_date: syncedPersonData.death_date,
+                    event_location: syncedPersonData.death_location,
+                    description: `Death of ${syncedPersonData.first_name} ${syncedPersonData.last_name}`
+                });
+            }
+        } else if (deathEvents.length > 0) {
+            // If there's a death event but no death date in person data, update person data
+            const deathEvent = deathEvents[0];
+            syncedPersonData.death_date = deathEvent.event_date;
+            if (deathEvent.event_location) {
+                syncedPersonData.death_location = deathEvent.event_location;
+            }
+        }
+        
+        return { syncedPersonData, syncedEvents };
     }
 
     /**
