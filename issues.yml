@@ -2,8 +2,7 @@ project:
   active:
     Project: tree view
     Project: all events should trigger user events that appear in the activity feeds
-    Project -> documents: implement add document button for family documents
-    Project -> family members: should be able to add existing documents to family member
+    Project -> documents: created or associated document does not appear in edit person modal until whole modal is saved
     Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
   finished:
     Project: move create document button to the documents tab
@@ -18,6 +17,7 @@ project:
     Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
     Project -> documents: documents should list associated family members with links to their profiles
     Project -> documents: edit documents from documents tab view
+    Project -> documents: implement add document button for family documents
     Project -> timeline: fix capitalization of event type
     Project -> timeline: related person should appear before event in timeline view
     Project -> family members: person cards should all be the same height
@@ -29,6 +29,7 @@ project:
     Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
     Project -> family members: addding events does not save
     Project -> family members: add document modal does not keep documents
+    Project -> family members: should be able to add existing documents to family member
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
   discarded:
@@ -79,6 +80,7 @@ future_functionality:
   active:
     Project -> documents: preview and download document modal functionality, allow uploading larger files
     General: full codebase audit with gemini
+    General: mass document upload page
     General: import GEDCOM file page
     General: links
     General: payment processing

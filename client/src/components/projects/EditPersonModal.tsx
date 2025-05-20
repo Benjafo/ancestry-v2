@@ -5,6 +5,7 @@ import DocumentForm from '../documents/DocumentForm';
 import DocumentList from '../documents/DocumentList';
 import EventForm from '../events/EventForm';
 import EventList from '../events/EventList';
+import AddExistingDocumentToPersonModal from './AddExistingDocumentToPersonModal';
 
 interface EditPersonModalProps {
     person: Person;
@@ -48,6 +49,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
     const [deletedDocumentIds, setDeletedDocumentIds] = useState<string[]>([]);
     const [isAddingDocument, setIsAddingDocument] = useState(false);
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
+    const [isAddExistingDocumentModalOpen, setIsAddExistingDocumentModalOpen] = useState(false);
 
     // Relationships state (read-only)
     const [relationships, setRelationships] = useState<Person['relationships']>({});
@@ -590,13 +592,22 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                     <div>
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
-                                            <button
-                                                type="button"
-                                                className="btn-primary"
-                                                onClick={handleAddDocument}
-                                            >
-                                                Add Document
-                                            </button>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn-secondary"
+                                                    onClick={() => setIsAddExistingDocumentModalOpen(true)}
+                                                >
+                                                    Add Existing Document
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-primary"
+                                                    onClick={handleAddDocument}
+                                                >
+                                                    Add Document
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <DocumentList
@@ -714,6 +725,31 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         {loading ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>
+
+                {/* Add Existing Document Modal */}
+                <AddExistingDocumentToPersonModal
+                    isOpen={isAddExistingDocumentModalOpen}
+                    onClose={() => setIsAddExistingDocumentModalOpen(false)}
+                    personId={person.person_id}
+                    onDocumentAssociated={() => {
+                        // Refresh person details to get updated documents
+                        const fetchPersonDetails = async () => {
+                            try {
+                                const personData = await projectsApi.getPersonById(person.person_id, {
+                                    includeDocuments: true
+                                });
+                                
+                                if (personData.documents) {
+                                    setDocuments(personData.documents);
+                                }
+                            } catch (err) {
+                                console.error('Error refreshing person documents:', err);
+                            }
+                        };
+                        
+                        fetchPersonDetails();
+                    }}
+                />
             </div>
         </div>
     );
