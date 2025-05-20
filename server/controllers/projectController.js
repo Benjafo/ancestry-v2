@@ -1,6 +1,7 @@
 const { Project, User, Person, Event, Document, DocumentPerson } = require('../models');
 const { Sequelize } = require('sequelize');
 const projectService = require('../services/projectService');
+const UserEventService = require('../services/userEventService');
 
 // Get all projects
 exports.getProjects = async (req, res) => {
@@ -252,6 +253,16 @@ exports.createProject = async (req, res) => {
             researcher_id: req.user.user_id // Assign current user as researcher
         });
 
+        // Create user event for project creation
+        await UserEventService.createEvent(
+            req.user.user_id, // User receiving the event
+            req.user.user_id, // Actor (user who created the project)
+            'project_created',
+            `Created new project: ${title}`,
+            project.id,
+            'project'
+        );
+
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
         const projectWithDates = {
@@ -316,12 +327,45 @@ exports.updateProject = async (req, res) => {
             });
         }
 
+        // Store original values for event message
+        const originalTitle = project.title;
+        const originalStatus = project.status;
+
         // Update fields
         if (title) project.title = title;
         if (description) project.description = description;
         if (status) project.status = status;
 
         await project.save();
+
+        // Create user event for project update
+        let updateMessage = `Updated project: ${project.title}`;
+        if (title && title !== originalTitle) {
+            updateMessage += ` (title changed from "${originalTitle}" to "${title}")`;
+        }
+        if (status && status !== originalStatus) {
+            updateMessage += ` (status changed from "${originalStatus}" to "${status}")`;
+        }
+
+        // Create event for the actor
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'project_updated',
+            updateMessage,
+            project.id,
+            'project'
+        );
+
+        // Create events for all project users
+        await UserEventService.createEventForProjectUsers(
+            project.id,
+            req.user.user_id,
+            'project_updated',
+            `Project "${project.title}" has been updated`,
+            project.id,
+            'project'
+        );
 
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
@@ -417,6 +461,32 @@ exports.updateProjectPerson = async (req, res) => {
         await checkProjectEditAccess(req, id);
 
         const association = await projectService.updateProjectPerson(id, personId, { notes });
+
+        // Get person details for the event message
+        const { Person } = require('../models');
+        const person = await Person.findByPk(personId);
+        
+        if (person) {
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'project_person_updated',
+                `Updated project notes for person: ${person.first_name} ${person.last_name}`,
+                id,
+                'project'
+            );
+
+            // Create events for all project users
+            await UserEventService.createEventForProjectUsers(
+                id,
+                req.user.user_id,
+                'project_person_updated',
+                `Notes updated for ${person.first_name} ${person.last_name} in this project`,
+                id,
+                'project'
+            );
+        }
 
         res.json({
             message: 'Project person updated successfully',

@@ -451,6 +451,35 @@ exports.updateDocumentPersonAssociation = async (req, res) => {
             }
         );
 
+        // Get document and person info for events
+        const document = await documentService.getDocumentById(documentId);
+        const { Person } = require('../models');
+        const person = await Person.findByPk(personId);
+
+        if (document && person) {
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'document_person_association_updated',
+                `Updated association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
+                documentId,
+                'document'
+            );
+
+            // Create events for all project users if document is associated with a project
+            if (document.project_id) {
+                await UserEventService.createEventForProjectUsers(
+                    document.project_id,
+                    req.user.user_id,
+                    'document_person_association_updated',
+                    `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been updated`,
+                    documentId,
+                    'document'
+                );
+            }
+        }
+
         res.json({
             message: 'Document-person association updated successfully',
             association

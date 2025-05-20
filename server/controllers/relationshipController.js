@@ -1,4 +1,6 @@
 const relationshipService = require('../services/relationshipService');
+const UserEventService = require('../services/userEventService');
+const { Person, ProjectPerson } = require('../models');
 
 /**
  * Relationship Controller
@@ -59,6 +61,64 @@ exports.createRelationship = async (req, res) => {
     try {
         const relationship = await relationshipService.createRelationship(req.body);
         
+        // Get person details for the event message
+        const person1 = await Person.findByPk(relationship.person1_id);
+        const person2 = await Person.findByPk(relationship.person2_id);
+        
+        if (person1 && person2) {
+            // Create a descriptive message based on relationship type
+            let relationshipDescription = '';
+            switch (relationship.relationship_type) {
+                case 'parent':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} as parent of ${person2.first_name} ${person2.last_name}`;
+                    break;
+                case 'spouse':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name} as spouses`;
+                    break;
+                case 'sibling':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name} as siblings`;
+                    break;
+                default:
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
+            }
+            
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'relationship_created',
+                `Created relationship: ${relationshipDescription}`,
+                relationship.relationship_id,
+                'relationship'
+            );
+            
+            // Check if either person is in a project and create project events
+            const projectPersons1 = await ProjectPerson.findAll({
+                where: { person_id: person1.person_id }
+            });
+            
+            const projectPersons2 = await ProjectPerson.findAll({
+                where: { person_id: person2.person_id }
+            });
+            
+            // Get unique project IDs
+            const projectIds = new Set();
+            projectPersons1.forEach(pp => projectIds.add(pp.project_id));
+            projectPersons2.forEach(pp => projectIds.add(pp.project_id));
+            
+            // Create events for all relevant projects
+            for (const projectId of projectIds) {
+                await UserEventService.createEventForProjectUsers(
+                    projectId,
+                    req.user.user_id,
+                    'relationship_created',
+                    `New relationship created: ${relationshipDescription}`,
+                    relationship.relationship_id,
+                    'relationship'
+                );
+            }
+        }
+        
         res.status(201).json({
             message: 'Relationship created successfully',
             relationship
@@ -92,7 +152,73 @@ exports.createRelationship = async (req, res) => {
 exports.updateRelationship = async (req, res) => {
     try {
         const { relationshipId } = req.params;
+        
+        // Get the relationship before updating for comparison
+        const oldRelationship = await relationshipService.getRelationshipById(relationshipId);
+        if (!oldRelationship) {
+            return res.status(404).json({ message: 'Relationship not found' });
+        }
+        
+        // Update the relationship
         const relationship = await relationshipService.updateRelationship(relationshipId, req.body);
+        
+        // Get person details for the event message
+        const person1 = await Person.findByPk(relationship.person1_id);
+        const person2 = await Person.findByPk(relationship.person2_id);
+        
+        if (person1 && person2) {
+            // Create a descriptive message based on relationship type
+            let relationshipDescription = '';
+            switch (relationship.relationship_type) {
+                case 'parent':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} as parent of ${person2.first_name} ${person2.last_name}`;
+                    break;
+                case 'spouse':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name} as spouses`;
+                    break;
+                case 'sibling':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name} as siblings`;
+                    break;
+                default:
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
+            }
+            
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'relationship_updated',
+                `Updated relationship: ${relationshipDescription}`,
+                relationship.relationship_id,
+                'relationship'
+            );
+            
+            // Check if either person is in a project and create project events
+            const projectPersons1 = await ProjectPerson.findAll({
+                where: { person_id: person1.person_id }
+            });
+            
+            const projectPersons2 = await ProjectPerson.findAll({
+                where: { person_id: person2.person_id }
+            });
+            
+            // Get unique project IDs
+            const projectIds = new Set();
+            projectPersons1.forEach(pp => projectIds.add(pp.project_id));
+            projectPersons2.forEach(pp => projectIds.add(pp.project_id));
+            
+            // Create events for all relevant projects
+            for (const projectId of projectIds) {
+                await UserEventService.createEventForProjectUsers(
+                    projectId,
+                    req.user.user_id,
+                    'relationship_updated',
+                    `Relationship updated: ${relationshipDescription}`,
+                    relationship.relationship_id,
+                    'relationship'
+                );
+            }
+        }
         
         res.json({
             message: 'Relationship updated successfully',
@@ -130,7 +256,76 @@ exports.updateRelationship = async (req, res) => {
 exports.deleteRelationship = async (req, res) => {
     try {
         const { relationshipId } = req.params;
+        
+        // Get the relationship before deleting for event creation
+        const relationship = await relationshipService.getRelationshipById(relationshipId);
+        if (!relationship) {
+            return res.status(404).json({ message: 'Relationship not found' });
+        }
+        
+        // Get person details for the event message
+        const person1 = await Person.findByPk(relationship.person1_id);
+        const person2 = await Person.findByPk(relationship.person2_id);
+        
+        // Check if either person is in a project and get project IDs
+        let projectIds = new Set();
+        if (person1 && person2) {
+            const projectPersons1 = await ProjectPerson.findAll({
+                where: { person_id: person1.person_id }
+            });
+            
+            const projectPersons2 = await ProjectPerson.findAll({
+                where: { person_id: person2.person_id }
+            });
+            
+            // Get unique project IDs
+            projectPersons1.forEach(pp => projectIds.add(pp.project_id));
+            projectPersons2.forEach(pp => projectIds.add(pp.project_id));
+        }
+        
+        // Delete the relationship
         await relationshipService.deleteRelationship(relationshipId);
+        
+        // Create user events after successful deletion
+        if (person1 && person2) {
+            // Create a descriptive message based on relationship type
+            let relationshipDescription = '';
+            switch (relationship.relationship_type) {
+                case 'parent':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} as parent of ${person2.first_name} ${person2.last_name}`;
+                    break;
+                case 'spouse':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name} as spouses`;
+                    break;
+                case 'sibling':
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name} as siblings`;
+                    break;
+                default:
+                    relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
+            }
+            
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'relationship_deleted',
+                `Deleted relationship: ${relationshipDescription}`,
+                null, // No relationship ID since it's deleted
+                'relationship'
+            );
+            
+            // Create events for all relevant projects
+            for (const projectId of projectIds) {
+                await UserEventService.createEventForProjectUsers(
+                    projectId,
+                    req.user.user_id,
+                    'relationship_deleted',
+                    `Relationship deleted: ${relationshipDescription}`,
+                    null, // No relationship ID since it's deleted
+                    'relationship'
+                );
+            }
+        }
         
         res.json({
             message: 'Relationship deleted successfully'
