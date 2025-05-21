@@ -129,7 +129,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
                         if (jsonData && jsonData.message) {
                             errorMessage = jsonData.message;
                         }
-                    } catch (_jsonError) {
+                    } catch (_) {
                         // If JSON parsing fails, try to get the text
                         const textData = await err.response.text();
                         if (textData) {

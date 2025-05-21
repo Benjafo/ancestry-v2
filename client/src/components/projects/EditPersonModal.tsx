@@ -186,18 +186,18 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
 
             // Handle documents that were already associated and might have been updated or deleted
             // For updated documents (have document_id and are still in the documents state)
-            const updatedDocuments = documents.filter(doc => doc.document_id && !deletedDocumentIds.includes(doc.document_id));
-            for (const _document of updatedDocuments) {
-                // Note: The DocumentForm handles updating existing documents directly.
-                // This loop might be redundant if the form updates immediately,
-                // but keeping it for robustness if there's a different workflow.
-                // In this specific case (EditPersonModal), the form updates immediately,
-                // so this loop won't do anything for documents that were edited via the form.
-                // It would only apply if documents were edited in the list directly (which is not the current UI).
-                // We can potentially remove this loop if the DocumentForm always handles updates.
-                // For now, let's keep it but be aware it might not be actively used in this modal's workflow.
-                // await documentsApi.updateDocument(docData.document_id, docData);
-            }
+            // const updatedDocuments = documents.filter(doc => doc.document_id && !deletedDocumentIds.includes(doc.document_id));
+            // for (const _document of updatedDocuments) {
+            // Note: The DocumentForm handles updating existing documents directly.
+            // This loop might be redundant if the form updates immediately,
+            // but keeping it for robustness if there's a different workflow.
+            // In this specific case (EditPersonModal), the form updates immediately,
+            // so this loop won't do anything for documents that were edited via the form.
+            // It would only apply if documents were edited in the list directly (which is not the current UI).
+            // We can potentially remove this loop if the DocumentForm always handles updates.
+            // For now, let's keep it but be aware it might not be actively used in this modal's workflow.
+            // await documentsApi.updateDocument(docData.document_id, docData);
+            // }
 
             // For deleted documents
             for (const docId of deletedDocumentIds) {
