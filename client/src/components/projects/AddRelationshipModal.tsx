@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Person, relationshipsApi } from '../../api/client';
+import { Person, relationshipsApi, ApiRelationship } from '../../api/client';
 
 interface PersonSelectorProps {
     label: string;
@@ -89,36 +89,36 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
     };
 
     // Check for duplicate relationships
-    const checkForDuplicateRelationship = () => {
+    const checkForDuplicateRelationship = (relationships: ApiRelationship[]): ApiRelationship | undefined => {
         if (!formData.person1Id || !formData.person2Id || !formData.relationshipType) {
-            return false; // Not enough data to check
+            return undefined; // Not enough data to check, return undefined instead of false
         }
 
         // Check if a relationship of the same type already exists between these people
         return relationships.find(rel =>
             // Check direct match (person1 -> person2)
-            ((rel.person1Id === formData.person1Id && rel.person2Id === formData.person2Id &&
-                rel.type === formData.relationshipType) ||
+            ((rel.person1_id === formData.person1Id && rel.person2_id === formData.person2Id &&
+                rel.relationship_type === formData.relationshipType) ||
                 // Check reverse match (person2 -> person1)
-                (rel.person1Id === formData.person2Id && rel.person2Id === formData.person1Id &&
-                    rel.type === formData.relationshipType)) ||
+                (rel.person1_id === formData.person2Id && rel.person2_id === formData.person1Id &&
+                    rel.relationship_type === formData.relationshipType)) ||
             // Check for inverse relationships (parent-child, child-parent)
-            (formData.relationshipType === 'parent' && rel.type === 'child' &&
-                rel.person1Id === formData.person2Id && rel.person2Id === formData.person1Id) ||
-            (formData.relationshipType === 'child' && rel.type === 'parent' &&
-                rel.person1Id === formData.person2Id && rel.person2Id === formData.person1Id)
+            (formData.relationshipType === 'parent' && rel.relationship_type === 'child' &&
+                rel.person1_id === formData.person2Id && rel.person2_id === formData.person1Id) ||
+            (formData.relationshipType === 'child' && rel.relationship_type === 'parent' &&
+                rel.person1_id === formData.person2Id && rel.person2_id === formData.person1Id)
         );
     };
 
     // Check for duplicates when form data changes
     React.useEffect(() => {
-        const duplicateRelationship = checkForDuplicateRelationship();
+        const duplicateRelationship = checkForDuplicateRelationship(relationships as ApiRelationship[]);
         if (duplicateRelationship) {
             setError(`A relationship of type '${formData.relationshipType}' already exists between these people`);
         } else {
             setError(null);
         }
-    }, [formData.person1Id, formData.person2Id, formData.relationshipType]);
+    }, [formData.person1Id, formData.person2Id, formData.relationshipType, relationships]); // Added relationships to dependency array
 
     // Form validation
     const validateForm = () => {
@@ -143,7 +143,7 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
         }
 
         // Check for duplicate relationships
-        const duplicateRelationship = checkForDuplicateRelationship();
+        const duplicateRelationship = checkForDuplicateRelationship(relationships as ApiRelationship[]);
         if (duplicateRelationship) {
             setError(`A relationship of type '${formData.relationshipType}' already exists between these people`);
             return false;

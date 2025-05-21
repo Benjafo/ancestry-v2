@@ -92,6 +92,7 @@ other:
     General: once a project is "completed", it should not be editable
 future_functionality:
   active:
+    Api Client: rename Relationship and ApiRelationship
     General: recreate seed data
     General: test all features
     General: mass document upload page

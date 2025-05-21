@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { relationshipsApi } from '../../api/client';
+import { relationshipsApi, ApiRelationship } from '../../api/client';
 
 interface EditRelationshipModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRelationshipUpdated: () => void;
     relationshipId: string;
-    relationship: {
-        id: string;
-        person1Id: string;
-        person2Id: string;
-        person1Name: string;
-        person2Name: string;
-        type: string;
-        qualifier?: string;
-        startDate?: string;
-        endDate?: string;
-        notes?: string;
-    };
+    relationship: ApiRelationship;
 }
 
 const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
@@ -44,10 +33,10 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
     useEffect(() => {
         if (relationship) {
             setFormData({
-                relationshipType: relationship.type || '',
-                relationshipQualifier: relationship.qualifier || '',
-                startDate: relationship.startDate || '',
-                endDate: relationship.endDate || '',
+                relationshipType: relationship.relationship_type || '',
+                relationshipQualifier: relationship.relationship_qualifier || '',
+                startDate: relationship.start_date || '',
+                endDate: relationship.end_date || '',
                 notes: relationship.notes || ''
             });
         }
@@ -228,7 +217,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
                                 Person 1
                             </label>
                             <div className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                                {relationship.person1Name}
+                                {relationship.person1?.first_name} {relationship.person1?.last_name}
                             </div>
                         </div>
 
@@ -237,7 +226,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
                                 Person 2
                             </label>
                             <div className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                                {relationship.person2Name}
+                                {relationship.person2?.first_name} {relationship.person2?.last_name}
                             </div>
                         </div>
 

@@ -723,9 +723,25 @@ export interface ApiRelationship {
     person2?: Person; // Nested Person object
 }
 
+// Interface for relationship objects returned by the API
+export interface ApiRelationship {
+    id: string;
+    person1_id: string;
+    person2_id: string;
+    relationship_type: string;
+    relationship_qualifier?: string;
+    start_date?: string;
+    end_date?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+    person1?: Person; // Nested Person object
+    person2?: Person; // Nested Person object
+}
+
 // Relationship API service
 export const relationshipsApi = {
-    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: ApiRelationship[]; metadata: ApiMetadata }> => {
+    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: any[]; metadata: ApiMetadata }> => {
         const response = await apiClient.get('relationships', { searchParams: params });
         return response.json();
     },

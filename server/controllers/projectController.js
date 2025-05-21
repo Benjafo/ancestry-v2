@@ -686,13 +686,13 @@ exports.getProjectRelationships = async (req, res) => {
                 id: relationship.relationship_id,
                 person1Id: relationship.person1_id,
                 person2Id: relationship.person2_id,
-                person1Name: `${relationship.person1.first_name} ${relationship.person1.last_name}`,
-                person2Name: `${relationship.person2.first_name} ${relationship.person2.last_name}`,
-                type: relationship.relationship_type,
-                qualifier: relationship.relationship_qualifier,
+                relationship_type: relationship.relationship_type,
+                relationship_qualifier: relationship.relationship_qualifier,
                 startDate: relationship.start_date,
                 endDate: relationship.end_date,
-                notes: relationship.notes
+                notes: relationship.notes,
+                person1: relationship.person1,
+                person2: relationship.person2
             };
         });
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ProjectDetail, relationshipsApi } from '../../api/client';
+import { ApiRelationship, ProjectDetail, relationshipsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
@@ -14,13 +14,13 @@ interface ProjectRelationshipsTabProps {
 
 const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ project }) => {
     // State for relationships data
-    const [relationships, setRelationships] = useState<any[]>([]);
+    const [relationships, setRelationships] = useState<ApiRelationship[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     // State for modal visibility
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [editingRelationship, setEditingRelationship] = useState<any | null>(null);
+    const [editingRelationship, setEditingRelationship] = useState<ApiRelationship | null>(null);
     const [deletingRelationshipId, setDeletingRelationshipId] = useState<string | null>(null);
 
     // Fetch relationships for the current project
@@ -28,7 +28,9 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         const fetchRelationships = async () => {
             try {
                 setIsLoading(true);
-                const data = await relationshipsApi.getRelationshipsByProjectId(project.id);
+                // Fetch the full ApiRelationship data
+                const data: ApiRelationship[] = await relationshipsApi.getRelationshipsByProjectId(project.id);
+                console.log('Fetched relationships:', data);
                 setRelationships(data);
                 setIsLoading(false);
             } catch (err) {
@@ -47,7 +49,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
     };
 
     // Handler for editing a relationship
-    const handleEditRelationship = (relationship: any) => {
+    const handleEditRelationship = (relationship: ApiRelationship) => {
         setEditingRelationship(relationship);
     };
 
@@ -81,35 +83,35 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
             ) : (
                 <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
                     <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {relationships.map((relationship) => (
+                        {relationships.map((relationship: ApiRelationship) => (
                             <li key={relationship.id} className="px-4 py-4 sm:px-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col">
                                         <div className="flex items-center">
                                             <span className="font-medium text-gray-900 dark:text-white">
-                                                {relationship.person1Name}
+                                                {relationship.person1?.first_name} {relationship.person1?.last_name}
                                             </span>
                                             <span className="mx-2 text-gray-500 dark:text-gray-400">is</span>
                                             <span className="font-medium text-primary-600 dark:text-primary-400">
-                                                {relationship.qualifier ? `${relationship.qualifier} ` : ''}
-                                                {relationship.type}
+                                                {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
+                                                {relationship.relationship_type}
                                             </span>
                                             <span className="mx-2 text-gray-500 dark:text-gray-400">of</span>
                                             <span className="font-medium text-gray-900 dark:text-white">
-                                                {relationship.person2Name}
+                                                {relationship.person2?.first_name} {relationship.person2?.last_name}
                                             </span>
                                         </div>
 
-                                        {(relationship.startDate || relationship.endDate) && (
+                                        {(relationship.start_date || relationship.end_date) && (
                                             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                {relationship.startDate && (
-                                                    <span>From: {formatDate(relationship.startDate)}</span>
+                                                {relationship.start_date && (
+                                                    <span>From: {formatDate(relationship.start_date)}</span>
                                                 )}
-                                                {relationship.startDate && relationship.endDate && (
+                                                {relationship.start_date && relationship.end_date && (
                                                     <span className="mx-2">-</span>
                                                 )}
-                                                {relationship.endDate && (
-                                                    <span>To: {formatDate(relationship.endDate)}</span>
+                                                {relationship.end_date && (
+                                                    <span>To: {formatDate(relationship.end_date)}</span>
                                                 )}
                                             </div>
                                         )}
