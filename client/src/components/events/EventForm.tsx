@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
-import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 // Helper function to extract error message safely
 const getErrorMessage = (error: unknown): string => {
@@ -85,7 +85,7 @@ const EventForm = ({ personId, eventId, projectId, onSuccess, onCancel }: EventF
 
         try {
             // Create a clean copy of the form data and omit empty optional fields
-            const cleanedFormData: Partial<Event> = {
+            const cleanedFormData: Partial<Event> & { projectId?: string } = {
                 person_id: formData.person_id,
                 event_type: formData.event_type,
                 // Conditionally include optional fields if they are not empty strings
