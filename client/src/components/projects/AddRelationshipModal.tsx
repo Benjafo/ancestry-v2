@@ -45,7 +45,7 @@ interface AddRelationshipModalProps {
     onRelationshipAdded: () => void;
     projectId: string;
     persons: Person[];
-    relationships?: any[]; // Existing relationships in the project
+    relationships?: ApiRelationship[]; // Existing relationships in the project
 }
 
 const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
@@ -238,15 +238,15 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                         console.error('Error parsing JSON response:', jsonError);
                         // Fallback to text if JSON parsing fails
                         if ('response' in err && err.response instanceof Response) {
-                             err.response.text().then(textData => {
+                            err.response.text().then(textData => {
                                 if (textData) {
                                     setError(textData); // Set error here if text is found
                                 } else {
                                     setError(errorMessage); // Fallback to generic message
                                 }
                             }).catch(() => setError(errorMessage)); // Handle text error
-                             setIsSubmitting(false);
-                             return;
+                            setIsSubmitting(false);
+                            return;
                         }
                     }
                 }
