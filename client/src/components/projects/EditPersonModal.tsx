@@ -700,11 +700,11 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         )}
 
                                         {/* Grandparents */}
-                                        {(relationships as any).grandparents && (relationships as any).grandparents.length > 0 && (
+                                        {relationships.grandparents && relationships.grandparents.length > 0 && (
                                             <div className="mb-4">
                                                 <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandparents</h5>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {(relationships as any).grandparents.map((grandparent: any) => (
+                                                    {relationships.grandparents.map((grandparent) => (
                                                         <div key={grandparent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
                                                             <p className="font-medium text-gray-900 dark:text-white">{grandparent.first_name} {grandparent.last_name}</p>
                                                         </div>
@@ -714,11 +714,11 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         )}
 
                                         {/* Grandchildren */}
-                                        {(relationships as any).grandchildren && (relationships as any).grandchildren.length > 0 && (
+                                        {relationships.grandchildren && relationships.grandchildren.length > 0 && (
                                             <div className="mb-4">
                                                 <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandchildren</h5>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {(relationships as any).grandchildren.map((grandchild: any) => (
+                                                    {relationships.grandchildren.map((grandchild) => (
                                                         <div key={grandchild.person_id} className="border dark:border-gray-700 rounded-lg p-3">
                                                             <p className="font-medium text-gray-900 dark:text-white">{grandchild.first_name} {grandchild.last_name}</p>
                                                         </div>
@@ -728,11 +728,11 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         )}
 
                                         {/* Aunts/Uncles */}
-                                        {(relationships as any).auntsUncles && (relationships as any).auntsUncles.length > 0 && (
+                                        {relationships.auntsUncles && relationships.auntsUncles.length > 0 && (
                                             <div className="mb-4">
                                                 <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Aunts & Uncles</h5>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {(relationships as any).auntsUncles.map((auntUncle: any) => (
+                                                    {relationships.auntsUncles.map((auntUncle) => (
                                                         <div key={auntUncle.person_id} className="border dark:border-gray-700 rounded-lg p-3">
                                                             <p className="font-medium text-gray-900 dark:text-white">{auntUncle.first_name} {auntUncle.last_name}</p>
                                                         </div>
@@ -742,11 +742,11 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         )}
 
                                         {/* Nieces/Nephews */}
-                                        {(relationships as any).niecesNephews && (relationships as any).niecesNephews.length > 0 && (
+                                        {relationships.niecesNephews && relationships.niecesNephews.length > 0 && (
                                             <div className="mb-4">
                                                 <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nieces & Nephews</h5>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {(relationships as any).niecesNephews.map((nieceNephew: any) => (
+                                                    {relationships.niecesNephews.map((nieceNephew) => (
                                                         <div key={nieceNephew.person_id} className="border dark:border-gray-700 rounded-lg p-3">
                                                             <p className="font-medium text-gray-900 dark:text-white">{nieceNephew.first_name} {nieceNephew.last_name}</p>
                                                         </div>
@@ -756,11 +756,11 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         )}
 
                                         {/* Cousins */}
-                                        {(relationships as any).cousins && (relationships as any).cousins.length > 0 && (
+                                        {relationships.cousins && relationships.cousins.length > 0 && (
                                             <div>
                                                 <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cousins</h5>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {(relationships as any).cousins.map((cousin: any) => (
+                                                    {relationships.cousins.map((cousin) => (
                                                         <div key={cousin.person_id} className="border dark:border-gray-700 rounded-lg p-3">
                                                             <p className="font-medium text-gray-900 dark:text-white">{cousin.first_name} {cousin.last_name}</p>
                                                         </div>

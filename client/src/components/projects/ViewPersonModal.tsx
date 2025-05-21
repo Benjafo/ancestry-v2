@@ -497,11 +497,11 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             )}
 
                                             {/* Grandparents */}
-                                            {(person.relationships as any).grandparents && (person.relationships as any).grandparents.length > 0 && (
+                                            {(person.relationships).grandparents && (person.relationships).grandparents.length > 0 && (
                                                 <div className="mb-4">
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandparents</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {(person.relationships as any).grandparents.map((grandparent: any) => (
+                                                        {(person.relationships).grandparents.map((grandparent: any) => (
                                                             <div
                                                                 key={grandparent.person_id}
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -520,11 +520,11 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             )}
 
                                             {/* Grandchildren */}
-                                            {(person.relationships as any).grandchildren && (person.relationships as any).grandchildren.length > 0 && (
+                                            {(person.relationships).grandchildren && (person.relationships).grandchildren.length > 0 && (
                                                 <div className="mb-4">
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandchildren</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {(person.relationships as any).grandchildren.map((grandchild: any) => (
+                                                        {(person.relationships).grandchildren.map((grandchild: any) => (
                                                             <div
                                                                 key={grandchild.person_id}
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -543,11 +543,11 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             )}
 
                                             {/* Aunts/Uncles */}
-                                            {(person.relationships as any).auntsUncles && (person.relationships as any).auntsUncles.length > 0 && (
+                                            {(person.relationships).auntsUncles && (person.relationships).auntsUncles.length > 0 && (
                                                 <div className="mb-4">
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Aunts & Uncles</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {(person.relationships as any).auntsUncles.map((auntUncle: any) => (
+                                                        {(person.relationships).auntsUncles.map((auntUncle: any) => (
                                                             <div
                                                                 key={auntUncle.person_id}
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -566,11 +566,11 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             )}
 
                                             {/* Nieces/Nephews */}
-                                            {(person.relationships as any).niecesNephews && (person.relationships as any).niecesNephews.length > 0 && (
+                                            {(person.relationships).niecesNephews && (person.relationships).niecesNephews.length > 0 && (
                                                 <div className="mb-4">
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nieces & Nephews</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {(person.relationships as any).niecesNephews.map((nieceNephew: any) => (
+                                                        {(person.relationships).niecesNephews.map((nieceNephew: any) => (
                                                             <div
                                                                 key={nieceNephew.person_id}
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -589,11 +589,11 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             )}
 
                                             {/* Cousins */}
-                                            {(person.relationships as any).cousins && (person.relationships as any).cousins.length > 0 && (
+                                            {(person.relationships).cousins && (person.relationships).cousins.length > 0 && (
                                                 <div>
                                                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cousins</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {(person.relationships as any).cousins.map((cousin: any) => (
+                                                        {(person.relationships).cousins.map((cousin: any) => (
                                                             <div
                                                                 key={cousin.person_id}
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"

@@ -238,9 +238,14 @@ export interface Person {
         children?: Relationship[];
         spouses?: Relationship[];
         siblings?: Relationship[];
+        grandparents?: Relationship[]; // Added
+        grandchildren?: Relationship[]; // Added
+        auntsUncles?: Relationship[]; // Added
+        niecesNephews?: Relationship[]; // Added
+        cousins?: Relationship[]; // Added
     };
-    relationshipsAsSubject?: any[];
-    relationshipsAsObject?: any[];
+    relationshipsAsSubject?: any[]; // Keep for now, might be used elsewhere
+    relationshipsAsObject?: any[]; // Keep for now, might be used elsewhere
 }
 
 export interface ProjectDetail extends Project {
