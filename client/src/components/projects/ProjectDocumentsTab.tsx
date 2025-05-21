@@ -346,7 +346,9 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                                                         className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
                                                         onClick={(e) => {
                                                             e.stopPropagation(); // Prevent the link click from triggering the document item click
-                                                            document.persons && onViewPerson && onViewPerson(document.persons[0].person_id);
+                                                            if (document.persons && onViewPerson) {
+                                                                onViewPerson(document.persons[0].person_id);
+                                                            }
                                                         }}
                                                     >
                                                         Associated with: {document.persons[0].first_name} {document.persons[0].last_name}

@@ -2,6 +2,7 @@ project:
   active:
     Project: tree view
     Project -> overview -> notifications: no notifications displayed
+    Project -> overview: person and event and document events are not displayed in recent activity, only relationship events
     Project -> documents: family documents with 0 people attached disappear after creation and reload
     Project -> documents: delete document does not work
     Project -> relationships: update relationship validation error

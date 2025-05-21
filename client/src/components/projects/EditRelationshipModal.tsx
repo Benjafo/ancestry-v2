@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Person, relationshipsApi } from '../../api/client';
+import { relationshipsApi } from '../../api/client';
 
 interface EditRelationshipModalProps {
     isOpen: boolean;
@@ -70,7 +70,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
         if (formData.startDate && formData.endDate) {
             const startDate = new Date(formData.startDate);
             const endDate = new Date(formData.endDate);
-            
+
             if (endDate < startDate) {
                 setError('End date cannot be before start date');
                 return false;
@@ -89,11 +89,11 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
-        
+
         setIsSubmitting(true);
         setError(null);
 
@@ -105,31 +105,31 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
                 end_date: formData.endDate || undefined,
                 notes: formData.notes || undefined
             });
-            
+
             // Call the callback to refresh relationships
             onRelationshipUpdated();
-            
+
             // Close the modal
             onClose();
         } catch (err: any) {
             console.error('Error updating relationship:', err);
-            
+
             // Extract and format the error message from the server response
             let errorMessage = 'Failed to update relationship';
-            
+
             try {
                 // For Ky errors, the response is available in err.response
                 if (err.response) {
                     // Clone the response to read it multiple times if needed
                     const clonedResponse = err.response.clone();
-                    
+
                     try {
                         // Try to parse as JSON first
                         const jsonData = await clonedResponse.json();
                         if (jsonData && jsonData.message) {
                             errorMessage = jsonData.message;
                         }
-                    } catch (jsonError) {
+                    } catch (_) {
                         // If JSON parsing fails, try to get the text
                         const textData = await err.response.text();
                         if (textData) {
@@ -160,7 +160,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
                 // If all else fails, use the original error message
                 errorMessage = err.message || errorMessage;
             }
-            
+
             // Format specific error messages to be more user-friendly
             if (errorMessage.includes('validation failed')) {
                 errorMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
@@ -173,7 +173,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
             } else if (errorMessage.includes('is not a valid qualifier')) {
                 errorMessage = `The selected qualifier is not valid for this relationship type. Please choose a different qualifier.`;
             }
-            
+
             setError(errorMessage);
         } finally {
             setIsSubmitting(false);

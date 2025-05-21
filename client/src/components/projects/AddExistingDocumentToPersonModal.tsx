@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Document, documentsApi, DocumentPersonAssociation } from '../../api/client';
-import LoadingSpinner from '../common/LoadingSpinner';
-import ErrorAlert from '../common/ErrorAlert';
+import React, { useEffect, useRef, useState } from 'react';
+import { Document, documentsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface AddExistingDocumentToPersonModalProps {
     isOpen: boolean;
@@ -105,7 +105,7 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
 
             // Call the callback to refresh data
             onDocumentAssociated();
-            
+
             // Close the modal
             onClose();
         } catch (err) {
@@ -241,13 +241,12 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
                         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
                             <ul className="divide-y divide-gray-200 dark:divide-gray-700 max-h-60 overflow-y-auto">
                                 {searchResults.map(document => (
-                                    <li 
+                                    <li
                                         key={document.document_id}
-                                        className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                                            selectedDocument?.document_id === document.document_id 
-                                                ? 'bg-primary-50 dark:bg-primary-900' 
+                                        className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${selectedDocument?.document_id === document.document_id
+                                                ? 'bg-primary-50 dark:bg-primary-900'
                                                 : ''
-                                        }`}
+                                            }`}
                                         onClick={() => handleSelectDocument(document)}
                                     >
                                         <div className="px-4 py-4 sm:px-6">

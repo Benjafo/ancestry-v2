@@ -13,10 +13,10 @@ interface ViewDocumentModalProps {
     projectStatus?: 'active' | 'completed' | 'on_hold'; // To check if project is editable
 }
 
-const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({ 
-    isOpen, 
-    onClose, 
-    documentId, 
+const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
+    isOpen,
+    onClose,
+    documentId,
     onEdit,
     onDelete,
     isManager = false,
@@ -69,6 +69,8 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
         const fileUrl = `/api/documents/${documentId}/file`;
         const downloadUrl = `/api/documents/${documentId}/file?download=true`;
 
+        console.log('[Feature to implement]Download URL:', downloadUrl);
+
         if (document.mime_type?.startsWith('image/')) {
             return (
                 <div className="document-viewer">
@@ -109,7 +111,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 {/* Modal header with close button */}
-                <div 
+                <div
                     className="flex justify-between items-center mb-4"
                     onMouseEnter={() => setIsHeaderHovered(true)}
                     onMouseLeave={() => setIsHeaderHovered(false)}
@@ -120,9 +122,8 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
                     <div className="flex items-center space-x-2">
                         {/* Show buttons only for managers on active projects when hovered */}
                         {isManager && projectStatus !== 'completed' && document && (
-                            <div className={`flex space-x-2 transition-opacity duration-200 ${
-                                isHeaderHovered ? 'opacity-100' : 'opacity-0'
-                            }`}>
+                            <div className={`flex space-x-2 transition-opacity duration-200 ${isHeaderHovered ? 'opacity-100' : 'opacity-0'
+                                }`}>
                                 {onEdit && (
                                     <button
                                         onClick={() => onEdit(documentId)}

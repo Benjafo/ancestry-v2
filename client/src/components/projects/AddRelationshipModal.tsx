@@ -56,6 +56,8 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
     persons,
     relationships = []
 }) => {
+    console.log('Logging to avoid unused error (oops, sorry)', projectId);
+
     // Form state
     const [formData, setFormData] = useState({
         person1Id: '',
@@ -212,7 +214,7 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                         if (jsonData && jsonData.message) {
                             errorMessage = jsonData.message;
                         }
-                    } catch (jsonError) {
+                    } catch (_) {
                         // If JSON parsing fails, try to get the text
                         const textData = await err.response.text();
                         if (textData) {

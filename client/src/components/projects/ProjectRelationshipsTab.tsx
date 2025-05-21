@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ProjectDetail, Relationship, relationshipsApi } from '../../api/client';
-import LoadingSpinner from '../common/LoadingSpinner';
-import ErrorAlert from '../common/ErrorAlert';
-import EmptyState from '../common/EmptyState';
+import { ProjectDetail, relationshipsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import EmptyState from '../common/EmptyState';
+import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
 import AddRelationshipModal from './AddRelationshipModal';
-import EditRelationshipModal from './EditRelationshipModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
+import EditRelationshipModal from './EditRelationshipModal';
 
 interface ProjectRelationshipsTabProps {
     project: ProjectDetail;
@@ -17,7 +17,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
     const [relationships, setRelationships] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     // State for modal visibility
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingRelationship, setEditingRelationship] = useState<any | null>(null);
@@ -99,7 +99,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                 {relationship.person2Name}
                                             </span>
                                         </div>
-                                        
+
                                         {(relationship.startDate || relationship.endDate) && (
                                             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                 {relationship.startDate && (
@@ -113,14 +113,14 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                 )}
                                             </div>
                                         )}
-                                        
+
                                         {relationship.notes && (
                                             <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                                 <span className="font-medium">Notes:</span> {relationship.notes}
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     {/* Edit/Delete buttons */}
                                     {project.access_level === 'edit' && project.status !== 'completed' && (
                                         <div className="flex space-x-2">
@@ -212,10 +212,10 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                     onConfirm={async () => {
                         try {
                             await relationshipsApi.deleteRelationship(deletingRelationshipId);
-                            
+
                             // Remove the relationship from the state
                             setRelationships(relationships.filter(r => r.id !== deletingRelationshipId));
-                            
+
                             // Close the modal
                             setDeletingRelationshipId(null);
                         } catch (err) {

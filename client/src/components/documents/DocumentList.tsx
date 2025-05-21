@@ -7,10 +7,10 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import ViewDocumentModal from './ViewDocumentModal';
 
 // Helper function to extract error message safely
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) return error.message;
-    return String(error) || 'An unknown error occurred';
-};
+// const getErrorMessage = (error: unknown): string => {
+//     if (error instanceof Error) return error.message;
+//     return String(error) || 'An unknown error occurred';
+// };
 
 interface DocumentListProps {
     personId?: string;
@@ -23,7 +23,7 @@ interface DocumentListProps {
     readOnly?: boolean;
 }
 
-const DocumentList = ({ personId, documents, isLoading, error, onEditDocument, onDeleteDocument, onSelectDocument, readOnly = false }: DocumentListProps) => {
+const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDocument, onSelectDocument, readOnly = false }: DocumentListProps) => {
     const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
