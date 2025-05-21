@@ -214,7 +214,9 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                         if (jsonData && jsonData.message) {
                             errorMessage = jsonData.message;
                         }
-                    } catch (_jsonError) {
+                    } catch (jsonError) {
+                        console.error('Error parsing JSON response:', jsonError);
+
                         // If JSON parsing fails, try to get the text
                         const textData = await err.response.text();
                         if (textData) {
