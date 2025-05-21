@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Person, relationshipsApi, ApiRelationship } from '../../api/client';
+import { ApiRelationship, Person, relationshipsApi } from '../../api/client';
 
 interface PersonSelectorProps {
     label: string;
@@ -196,56 +196,62 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
 
             // Close the modal
             onClose();
-        } catch (err: any) {
+        } catch (err: unknown) { // Changed type to unknown
             console.error('Error creating relationship:', err);
 
-            // Extract and format the error message from the server response
+            // Extract and format the error message safely
             let errorMessage = 'Failed to create relationship';
 
-            try {
-                // For Ky errors, the response is available in err.response
-                if (err.response) {
-                    // Clone the response to read it multiple times if needed
-                    const clonedResponse = err.response.clone();
+            if (err instanceof Error) {
+                errorMessage = err.message;
 
+                // Attempt to parse Ky HTTPError response
+                if ('response' in err && err.response instanceof Response) {
                     try {
-                        // Try to parse as JSON first
-                        const jsonData = await clonedResponse.json();
-                        if (jsonData && jsonData.message) {
-                            errorMessage = jsonData.message;
-                        }
+                        const clonedResponse = err.response.clone();
+                        clonedResponse.json().then(jsonData => {
+                            if (jsonData && jsonData.message) {
+                                setError(jsonData.message); // Set error here if JSON message is found
+                            } else {
+                                clonedResponse.text().then(textData => {
+                                    if (textData) {
+                                        setError(textData); // Set error here if text is found
+                                    } else {
+                                        setError(errorMessage); // Fallback to generic message
+                                    }
+                                }).catch(() => setError(errorMessage)); // Handle text error
+                            }
+                        }).catch(() => {
+                            clonedResponse.text().then(textData => {
+                                if (textData) {
+                                    setError(textData); // Set error here if text is found
+                                } else {
+                                    setError(errorMessage); // Fallback to generic message
+                                }
+                            }).catch(() => setError(errorMessage)); // Handle text error
+                        });
+                        // Return early to prevent setting generic error message immediately
+                        setIsSubmitting(false);
+                        return;
+
                     } catch (jsonError) {
                         console.error('Error parsing JSON response:', jsonError);
-
-                        // If JSON parsing fails, try to get the text
-                        const textData = await err.response.text();
-                        if (textData) {
-                            // Try to extract a message from the text
-                            const messageMatch = textData.match(/"message"\s*:\s*"([^"]+)"/);
-                            if (messageMatch && messageMatch[1]) {
-                                errorMessage = messageMatch[1];
-                            } else {
-                                errorMessage = textData;
-                            }
+                        // Fallback to text if JSON parsing fails
+                        if ('response' in err && err.response instanceof Response) {
+                             err.response.text().then(textData => {
+                                if (textData) {
+                                    setError(textData); // Set error here if text is found
+                                } else {
+                                    setError(errorMessage); // Fallback to generic message
+                                }
+                            }).catch(() => setError(errorMessage)); // Handle text error
+                             setIsSubmitting(false);
+                             return;
                         }
                     }
-                } else if (err.name === 'HTTPError') {
-                    // For Ky HTTPError, try to extract the message from the error object
-                    const errorText = err.toString();
-                    // Extract the specific error message if possible
-                    const messageMatch = errorText.match(/message":"([^"]+)"/);
-                    if (messageMatch && messageMatch[1]) {
-                        errorMessage = messageMatch[1];
-                    } else {
-                        errorMessage = errorText;
-                    }
-                } else if (err.message) {
-                    errorMessage = err.message;
                 }
-            } catch (extractError) {
-                console.error('Error extracting error message:', extractError);
-                // If all else fails, use the original error message
-                errorMessage = err.message || errorMessage;
+            } else if (typeof err === 'string') {
+                errorMessage = err;
             }
 
             // Format specific error messages to be more user-friendly
@@ -259,8 +265,7 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
                 errorMessage = `This relationship would create a circular family tree, which is not allowed.`;
             }
 
-            setError(errorMessage);
-        } finally {
+            setError(errorMessage); // Set the formatted error message
             setIsSubmitting(false);
         }
     };
