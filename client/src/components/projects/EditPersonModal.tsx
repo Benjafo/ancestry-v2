@@ -187,7 +187,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             // Handle documents that were already associated and might have been updated or deleted
             // For updated documents (have document_id and are still in the documents state)
             const updatedDocuments = documents.filter(doc => doc.document_id && !deletedDocumentIds.includes(doc.document_id));
-            for (const _ of updatedDocuments) {
+            for (const _document of updatedDocuments) {
                 // Note: The DocumentForm handles updating existing documents directly.
                 // This loop might be redundant if the form updates immediately,
                 // but keeping it for robustness if there's a different workflow.
@@ -536,18 +536,18 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         {activeTab === 'events' && (
                             <div>
                                 {isAddingEvent || editingEventId ? (
-                                <EventForm
-                                    personId={person.person_id}
-                                    projectId={person.project_persons && Array.isArray(person.project_persons) 
-                                        ? person.project_persons[0]?.project_id 
-                                        : undefined}
-                                    eventId={editingEventId || undefined}
-                                    onSuccess={handleEventSaved}
-                                    onCancel={() => {
-                                        setIsAddingEvent(false);
-                                        setEditingEventId(null);
-                                    }}
-                                />
+                                    <EventForm
+                                        personId={person.person_id}
+                                        projectId={person.project_persons && Array.isArray(person.project_persons)
+                                            ? person.project_persons[0]?.project_id
+                                            : undefined}
+                                        eventId={editingEventId || undefined}
+                                        onSuccess={handleEventSaved}
+                                        onCancel={() => {
+                                            setIsAddingEvent(false);
+                                            setEditingEventId(null);
+                                        }}
+                                    />
                                 ) : (
                                     <div>
                                         <div className="flex justify-between items-center mb-4">
@@ -563,8 +563,8 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
 
                                         <EventList
                                             personId={person.person_id}
-                                            projectId={person.project_persons && Array.isArray(person.project_persons) 
-                                                ? person.project_persons[0]?.project_id 
+                                            projectId={person.project_persons && Array.isArray(person.project_persons)
+                                                ? person.project_persons[0]?.project_id
                                                 : undefined}
                                             onEditEvent={handleEditEvent}
                                             onDeleteEvent={handleDeleteEvent}

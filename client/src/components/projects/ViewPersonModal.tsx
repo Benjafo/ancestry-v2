@@ -429,7 +429,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(parent.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(parent.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
@@ -453,7 +455,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(child.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(child.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
@@ -477,7 +481,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(sibling.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(sibling.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
@@ -501,7 +507,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(grandparent.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(grandparent.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{grandparent.first_name} {grandparent.last_name}</p>
@@ -522,7 +530,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(grandchild.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(grandchild.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{grandchild.first_name} {grandchild.last_name}</p>
@@ -543,7 +553,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(auntUncle.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(auntUncle.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{auntUncle.first_name} {auntUncle.last_name}</p>
@@ -564,7 +576,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(nieceNephew.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(nieceNephew.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{nieceNephew.first_name} {nieceNephew.last_name}</p>
@@ -585,7 +599,9 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                 className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onViewRelatedPerson && onViewRelatedPerson(cousin.person_id);
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(cousin.person_id);
+                                                                    }
                                                                 }}
                                                             >
                                                                 <p className="font-medium text-gray-900 dark:text-white">{cousin.first_name} {cousin.last_name}</p>
