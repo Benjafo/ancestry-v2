@@ -536,15 +536,18 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         {activeTab === 'events' && (
                             <div>
                                 {isAddingEvent || editingEventId ? (
-                                    <EventForm
-                                        personId={person.person_id}
-                                        eventId={editingEventId || undefined}
-                                        onSuccess={handleEventSaved}
-                                        onCancel={() => {
-                                            setIsAddingEvent(false);
-                                            setEditingEventId(null);
-                                        }}
-                                    />
+                                <EventForm
+                                    personId={person.person_id}
+                                    projectId={person.project_persons && Array.isArray(person.project_persons) 
+                                        ? person.project_persons[0]?.project_id 
+                                        : undefined}
+                                    eventId={editingEventId || undefined}
+                                    onSuccess={handleEventSaved}
+                                    onCancel={() => {
+                                        setIsAddingEvent(false);
+                                        setEditingEventId(null);
+                                    }}
+                                />
                                 ) : (
                                     <div>
                                         <div className="flex justify-between items-center mb-4">
@@ -560,6 +563,9 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
 
                                         <EventList
                                             personId={person.person_id}
+                                            projectId={person.project_persons && Array.isArray(person.project_persons) 
+                                                ? person.project_persons[0]?.project_id 
+                                                : undefined}
                                             onEditEvent={handleEditEvent}
                                             onDeleteEvent={handleDeleteEvent}
                                         />

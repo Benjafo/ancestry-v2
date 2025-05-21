@@ -12,11 +12,12 @@ const getErrorMessage = (error: unknown): string => {
 interface EventFormProps {
     personId?: string;
     eventId?: string;
+    projectId?: string; // Add projectId prop
     onSuccess: (event: Event) => void;
     onCancel: () => void;
 }
 
-const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) => {
+const EventForm = ({ personId, eventId, projectId, onSuccess, onCancel }: EventFormProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Event>>({
@@ -92,6 +93,11 @@ const EventForm = ({ personId, eventId, onSuccess, onCancel }: EventFormProps) =
                 ...(formData.event_location ? { event_location: formData.event_location } : {}),
                 ...(formData.description ? { description: formData.description } : {}),
             };
+
+            // Include projectId if provided
+            if (projectId) {
+                (cleanedFormData as any).projectId = projectId;
+            }
 
             let result;
 

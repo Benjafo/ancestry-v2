@@ -9,6 +9,7 @@ const getErrorMessage = (error: unknown): string => {
 
 interface EventListProps {
     personId?: string;
+    projectId?: string; // Add projectId prop
     eventsData?: Event[]; // New prop to receive events directly
     onEditEvent?: (eventId: string) => void;
     onDeleteEvent?: (eventId: string) => void;
@@ -16,7 +17,7 @@ interface EventListProps {
     readOnly?: boolean;
 }
 
-const EventList = ({ personId, eventsData, onEditEvent, onDeleteEvent, onSelectEvent, readOnly = false }: EventListProps) => {
+const EventList = ({ personId, projectId, eventsData, onEditEvent, onDeleteEvent, onSelectEvent, readOnly = false }: EventListProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<Event[]>([]);
@@ -117,7 +118,8 @@ const EventList = ({ personId, eventsData, onEditEvent, onDeleteEvent, onSelectE
 
         if (window.confirm('Are you sure you want to delete this event?')) {
             try {
-                await eventsApi.deleteEvent(eventId);
+                // Pass projectId to deleteEvent if available
+                await eventsApi.deleteEvent(eventId, projectId);
                 // Update local state after successful deletion
                 setEvents(events.filter(event => event.event_id !== eventId));
                 onDeleteEvent(eventId);

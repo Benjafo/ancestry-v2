@@ -465,7 +465,7 @@ exports.updateProjectPerson = async (req, res) => {
         // Get person details for the event message
         const { Person } = require('../models');
         const person = await Person.findByPk(personId);
-        
+
         if (person) {
             // Create event for the actor
             await UserEventService.createEvent(
@@ -556,8 +556,7 @@ exports.getProjectEvents = async (req, res) => {
         // Build query options
         const queryOptions = {
             where: {
-                entity_id: id,
-                entity_type: 'project'
+                entity_id: id
             },
             order: [[sortBy, sortOrder.toUpperCase()]],
             limit: parseInt(limit),

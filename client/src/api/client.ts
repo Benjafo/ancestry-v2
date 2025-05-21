@@ -177,6 +177,7 @@ export interface Event {
 
 export interface NewEvent extends Omit<Event, 'event_id' | 'created_at' | 'updated_at'> {
     // Any additional fields specific to new events
+    projectId?: string; // Optional project ID for notifications
 }
 
 export interface Document {
@@ -560,18 +561,19 @@ export const eventsApi = {
         return response.json();
     },
 
-    createEvent: async (eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
+    createEvent: async (eventData: Partial<Event> & { projectId?: string }): Promise<{ message: string; event: Event }> => {
         const response = await apiClient.post('events', { json: eventData });
         return response.json();
     },
 
-    updateEvent: async (eventId: string, eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
+    updateEvent: async (eventId: string, eventData: Partial<Event> & { projectId?: string }): Promise<{ message: string; event: Event }> => {
         const response = await apiClient.put(`events/${eventId}`, { json: eventData });
         return response.json();
     },
 
-    deleteEvent: async (eventId: string): Promise<{ message: string }> => {
-        const response = await apiClient.delete(`events/${eventId}`);
+    deleteEvent: async (eventId: string, projectId?: string): Promise<{ message: string }> => {
+        const queryParams = projectId ? `?projectId=${projectId}` : '';
+        const response = await apiClient.delete(`events/${eventId}${queryParams}`);
         return response.json();
     },
 

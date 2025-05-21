@@ -578,6 +578,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <div>
                             {isAddingEvent || editingEventIndex !== null ? (
                                 <EventForm
+                                    projectId={projectId}
                                     onSuccess={handleEventSaved}
                                     onCancel={() => {
                                         setIsAddingEvent(false);

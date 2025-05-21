@@ -1,13 +1,16 @@
 project:
   active:
     Project: tree view
-    Project: recent activity should show create, edit, and delete events for documents, events, persons, and relationships
+    Project -> overview: duplicate notifications
+    Project -> overview -> notifications: no notifications displayed
+    Project -> documents: family documents with 0 people attached disappear after creation and reload
   finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
     Project: relationships
     Project: all events should trigger user events that appear in the activity feeds
     Project -> overview: recent activity should be accurate
+    Project -> overview: recent activity should show create, edit, and delete events for documents, events, persons, and relationships
     Project -> documents: no date on documents
     Project -> documents: type is blank
     Project -> documents: duplicate documents are shown
@@ -31,6 +34,7 @@ project:
     Project -> family members: add document modal does not keep documents
     Project -> family members: (fixed but very buggy) should be able to add existing documents to family memberProject -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
     Project -> relationships: rework how relationships are created and stored
+    Project -> relationships: add links to view person modal
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
   discarded:
@@ -82,11 +86,13 @@ other:
     General: once a project is "completed", it should not be editable
 future_functionality:
   active:
-    Project -> documents: preview and download document modal functionality, allow uploading larger files
-    General: full codebase audit with gemini
+    General: recreate seed data
+    General: test all features
     General: mass document upload page
+    General: full codebase audit with gemini
     General: import GEDCOM file page
     General: links
     General: payment processing
     General: service purchasing
     General: tablet/mobile views
+    Project -> documents: preview and download document modal functionality, allow uploading larger files

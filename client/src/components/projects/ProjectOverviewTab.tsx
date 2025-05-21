@@ -21,9 +21,11 @@ const ProjectOverviewTab: React.FC<ProjectOverviewTabProps> = ({ project }) => {
             try {
                 setIsLoading(true);
                 const data = await projectsApi.getProjectEvents(project.id, {
-                    limit: 3,
+                    limit: 5,
                     sortBy: 'createdAt',
-                    sortOrder: 'desc'
+                    sortOrder: 'desc',
+                    // We can't filter by multiple event types at once, so we'll fetch all events
+                    // and let the backend return all relevant events
                 });
                 setRecentActivity(data.events || []);
                 setIsLoading(false);
