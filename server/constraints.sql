@@ -79,7 +79,7 @@ CHECK (event_type IN (
     'project_created', 'project_assigned', 'project_updated', 'project_removed',
     'document_added', 'document_uploaded', 'document_updated', 'document_deleted', 'document_person_associated',
     'person_created', 'person_discovered', 'person_updated', 'person_deleted', 'person_added_to_project',
-    'event_recorded',
+    'event_created', 'event_updated', 'event_deleted',
     'relationship_created', 'relationship_established', 'relationship_updated', 'relationship_deleted',
     'research_milestone', 'project_update',
     'user_created', 'user_deactivated', 'user_reactivated', 'password_reset',

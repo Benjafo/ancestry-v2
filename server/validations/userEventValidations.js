@@ -16,7 +16,7 @@ exports.createUserEventValidation = [
             'document_uploaded', 
             'person_discovered', 
             'person_created', 
-            'event_recorded', 
+            'event_created', 
             'relationship_established', 
             'relationship_created', 
             'research_milestone', 

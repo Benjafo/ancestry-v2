@@ -14,10 +14,10 @@ const { UserEvent } = require('../models');
  */
 async function seedUserEvents(transaction, { adminUser, clientUser, project1, project2, project3, persons, events, documents }) {
     console.log('Creating user events...');
-    
+
     const clientEvents = [];
     const adminEvents = [];
-    
+
     // Helper functions to create events
     async function createClientEvent(type, message, entityId = null, entityType = null) {
         return await UserEvent.create({
@@ -29,7 +29,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             entity_type: entityType
         }, { transaction });
     }
-    
+
     async function createAdminEvent(type, message, entityId = null, entityType = null) {
         return await UserEvent.create({
             user_id: adminUser.user_id,
@@ -40,10 +40,10 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             entity_type: entityType
         }, { transaction });
     }
-    
+
     // ===== CLIENT USER EVENTS =====
     console.log('Creating user events for client...');
-    
+
     // Project assignment event
     clientEvents.push(await createClientEvent(
         'project_assigned',
@@ -51,7 +51,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         project1.id,
         'project'
     ));
-    
+
     // Document addition events
     const documentAdditions = [
         { doc: documents.immigrationDoc, message: `A new document has been added to your project: ${documents.immigrationDoc.title}` },
@@ -62,7 +62,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { doc: documents.militaryRecordDoc, message: `A new document has been added to your project: ${documents.militaryRecordDoc.title}` },
         { doc: documents.familyPhotoDoc, message: `A new document has been added to your project: ${documents.familyPhotoDoc.title}` }
     ];
-    
+
     for (const { doc, message } of documentAdditions) {
         clientEvents.push(await createClientEvent(
             'document_added',
@@ -71,13 +71,13 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'document'
         ));
     }
-    
+
     // Person discovery events
     const personDiscoveries = Object.entries(persons).map(([key, person]) => ({
         person,
         message: `New family member discovered: ${person.first_name} ${person.last_name}`
     }));
-    
+
     for (const { person, message } of personDiscoveries) {
         clientEvents.push(await createClientEvent(
             'person_discovered',
@@ -86,7 +86,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'person'
         ));
     }
-    
+
     // Event recording events
     const eventRecordings = [
         { event: events.johnImmigrationEvent, message: `New event recorded: Immigration to ${events.johnImmigrationEvent.event_location}` },
@@ -100,16 +100,16 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { event: events.johnJrMargaretMarriageEvent, message: `New event recorded: Marriage at ${events.johnJrMargaretMarriageEvent.event_location}` },
         { event: events.johnJrMilitaryEvent, message: `New event recorded: Military Service in ${events.johnJrMilitaryEvent.event_location}` }
     ];
-    
+
     for (const { event, message } of eventRecordings) {
         clientEvents.push(await createClientEvent(
-            'event_recorded',
+            'event_created',
             message,
             event.event_id,
             'event'
         ));
     }
-    
+
     // Relationship events
     const relationshipEstablishments = [
         { p1: persons.johnSmithSr, p2: persons.marySmith, type: 'Marriage', message: `New relationship established: ${persons.johnSmithSr.first_name} and ${persons.marySmith.first_name} ${persons.marySmith.last_name} (Marriage)` },
@@ -124,7 +124,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { p1: persons.robertJohnson, p2: persons.margaretSmith, type: 'Parent-Child', message: `New relationship established: ${persons.robertJohnson.first_name} ${persons.robertJohnson.last_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name} (Parent-Child)` },
         { p1: persons.elizabethJohnson, p2: persons.margaretSmith, type: 'Parent-Child', message: `New relationship established: ${persons.elizabethJohnson.first_name} ${persons.elizabethJohnson.last_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name} (Parent-Child)` }
     ];
-    
+
     for (const { message } of relationshipEstablishments) {
         clientEvents.push(await createClientEvent(
             'relationship_established',
@@ -133,7 +133,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'relationship'
         ));
     }
-    
+
     // Research milestone events
     const researchMilestones = [
         'First generation of Smith family documented',
@@ -142,7 +142,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         'Third generation of Smith family documented',
         'Military service records verified'
     ];
-    
+
     for (const message of researchMilestones) {
         clientEvents.push(await createClientEvent(
             'research_milestone',
@@ -151,13 +151,13 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'project'
         ));
     }
-    
+
     // Project updates
     const projectUpdates = [
         'New research findings added to your project',
         'Timeline updated with new events'
     ];
-    
+
     for (const message of projectUpdates) {
         clientEvents.push(await createClientEvent(
             'project_update',
@@ -166,10 +166,10 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'project'
         ));
     }
-    
+
     // ===== ADMIN USER EVENTS =====
     console.log('Creating user events for admin...');
-    
+
     // Project management events
     const projectManagement = [
         { project: project1, type: 'project_created', message: `Created project: ${project1.title}` },
@@ -178,7 +178,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { project: project1, type: 'project_assigned', message: `Assigned client to project: ${project1.title}` },
         { project: project3, type: 'project_updated', message: `Updated project status: ${project3.title} set to on_hold` }
     ];
-    
+
     for (const { project, type, message } of projectManagement) {
         adminEvents.push(await createAdminEvent(
             type,
@@ -187,7 +187,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'project'
         ));
     }
-    
+
     // Person management events
     const personManagement = [
         { person: persons.johnSmithSr, message: `Added person: ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.middle_name} ${persons.johnSmithSr.last_name}` },
@@ -202,7 +202,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { person: persons.elizabethJohnson, message: `Added person: ${persons.elizabethJohnson.first_name} ${persons.elizabethJohnson.last_name}` },
         { person: persons.sarahMiller, message: `Added person: ${persons.sarahMiller.first_name} ${persons.sarahMiller.last_name}` }
     ];
-    
+
     for (const { person, message } of personManagement) {
         adminEvents.push(await createAdminEvent(
             'person_created',
@@ -211,7 +211,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'person'
         ));
     }
-    
+
     // Document management events
     const documentManagement = [
         { doc: documents.immigrationDoc, message: `Uploaded document: ${documents.immigrationDoc.title}` },
@@ -222,7 +222,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { doc: documents.militaryRecordDoc, message: `Uploaded document: ${documents.militaryRecordDoc.title}` },
         { doc: documents.familyPhotoDoc, message: `Uploaded document: ${documents.familyPhotoDoc.title}` }
     ];
-    
+
     for (const { doc, message } of documentManagement) {
         adminEvents.push(await createAdminEvent(
             'document_uploaded',
@@ -231,7 +231,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'document'
         ));
     }
-    
+
     // Event recording events for admin
     const adminEventRecordings = [
         { event: events.johnImmigrationEvent, message: `Recorded event: Immigration (1925) for ${persons.johnSmithSr.first_name} ${persons.johnSmithSr.last_name}` },
@@ -245,16 +245,16 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         { event: events.johnJrMargaretMarriageEvent, message: `Recorded event: Marriage (1960) for ${persons.johnSmithJr.first_name} and ${persons.margaretSmith.first_name} ${persons.margaretSmith.last_name}` },
         { event: events.johnJrMilitaryEvent, message: `Recorded event: Military Service (1955) for ${persons.johnSmithJr.first_name} ${persons.johnSmithJr.last_name}` }
     ];
-    
+
     for (const { event, message } of adminEventRecordings) {
         adminEvents.push(await createAdminEvent(
-            'event_recorded',
+            'event_created',
             message,
             event.event_id,
             'event'
         ));
     }
-    
+
     // Relationship management events for admin
     for (const { message } of relationshipEstablishments) {
         adminEvents.push(await createAdminEvent(
@@ -264,9 +264,9 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'relationship'
         ));
     }
-    
+
     console.log(`Created ${clientEvents.length} client events and ${adminEvents.length} admin events`);
-    
+
     return {
         clientEvents,
         adminEvents

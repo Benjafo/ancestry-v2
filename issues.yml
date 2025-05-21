@@ -1,9 +1,11 @@
 project:
   active:
     Project: tree view
-    Project -> overview: duplicate notifications
     Project -> overview -> notifications: no notifications displayed
     Project -> documents: family documents with 0 people attached disappear after creation and reload
+    Project -> documents: delete document does not work
+    Project -> relationships: update relationship validation error
+    Project -> relationships: delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
   finished:
     Project: move create document button to the documents tab
     Project: implement research notes tab
@@ -11,6 +13,7 @@ project:
     Project: all events should trigger user events that appear in the activity feeds
     Project -> overview: recent activity should be accurate
     Project -> overview: recent activity should show create, edit, and delete events for documents, events, persons, and relationships
+    Project -> overview: duplicate notifications
     Project -> documents: no date on documents
     Project -> documents: type is blank
     Project -> documents: duplicate documents are shown
@@ -48,6 +51,8 @@ other:
     General: implement the task feature
     General: add base modal class and close modal with escape key
     General: add toggles between list and grid view for all list pages
+    General: refactor and reduce reused code
+    General: recreate seed data
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
