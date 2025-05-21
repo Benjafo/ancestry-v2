@@ -707,14 +707,30 @@ export const documentsApi = {
     }
 };
 
+// Interface for relationship objects returned by the API
+export interface ApiRelationship {
+    id: string;
+    person1_id: string;
+    person2_id: string;
+    relationship_type: string;
+    relationship_qualifier?: string;
+    start_date?: string;
+    end_date?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+    person1?: Person; // Nested Person object
+    person2?: Person; // Nested Person object
+}
+
 // Relationship API service
 export const relationshipsApi = {
-    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: any[]; metadata: ApiMetadata }> => {
+    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: ApiRelationship[]; metadata: ApiMetadata }> => {
         const response = await apiClient.get('relationships', { searchParams: params });
         return response.json();
     },
 
-    getRelationshipById: async (relationshipId: string): Promise<any> => {
+    getRelationshipById: async (relationshipId: string): Promise<ApiRelationship> => {
         const response = await apiClient.get(`relationships/${relationshipId}`);
         return response.json();
     },
@@ -727,7 +743,7 @@ export const relationshipsApi = {
         start_date?: string;
         end_date?: string;
         notes?: string;
-    }): Promise<{ message: string; relationship: any }> => {
+    }): Promise<{ message: string; relationship: ApiRelationship }> => {
         const response = await apiClient.post('relationships', { json: relationshipData });
         return response.json();
     },
@@ -738,7 +754,7 @@ export const relationshipsApi = {
         start_date?: string;
         end_date?: string;
         notes?: string;
-    }>): Promise<{ message: string; relationship: any }> => {
+    }>): Promise<{ message: string; relationship: ApiRelationship }> => {
         const response = await apiClient.put(`relationships/${relationshipId}`, { json: relationshipData });
         return response.json();
     },
@@ -748,22 +764,22 @@ export const relationshipsApi = {
         return response.json();
     },
 
-    getRelationshipsByPersonId: async (personId: string): Promise<any[]> => {
+    getRelationshipsByPersonId: async (personId: string): Promise<ApiRelationship[]> => {
         const response = await apiClient.get(`relationships/person/${personId}`);
         return response.json();
     },
 
-    getRelationshipsByType: async (type: string): Promise<any[]> => {
+    getRelationshipsByType: async (type: string): Promise<ApiRelationship[]> => {
         const response = await apiClient.get(`relationships/type/${type}`);
         return response.json();
     },
 
-    getRelationshipsBetweenPersons: async (person1Id: string, person2Id: string): Promise<any[]> => {
+    getRelationshipsBetweenPersons: async (person1Id: string, person2Id: string): Promise<ApiRelationship[]> => {
         const response = await apiClient.get(`relationships/between/${person1Id}/${person2Id}`);
         return response.json();
     },
 
-    getRelationshipsByProjectId: async (projectId: string): Promise<any[]> => {
+    getRelationshipsByProjectId: async (projectId: string): Promise<ApiRelationship[]> => {
         const response = await apiClient.get(`projects/${projectId}/relationships`);
         return response.json();
     }
