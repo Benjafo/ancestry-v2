@@ -94,9 +94,11 @@ const EventForm = ({ personId, eventId, projectId, onSuccess, onCancel }: EventF
                 ...(formData.description ? { description: formData.description } : {}),
             };
 
+            console.log('Cleaned Form Data:', cleanedFormData);
+
             // Include projectId if provided
             if (projectId) {
-                (cleanedFormData as any).projectId = projectId;
+                cleanedFormData.projectId = projectId;
             }
 
             let result;
