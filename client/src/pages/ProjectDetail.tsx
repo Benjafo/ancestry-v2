@@ -19,6 +19,7 @@ import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { User } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
 import { getStatusBadgeClass, getStatusText } from '../utils/statusUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -97,9 +98,10 @@ const ProjectDetail = () => {
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error removing person from project:', err);
-            setError('Failed to remove person from project');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error removing person from project:', errorMessage);
+            setError(errorMessage);
 
             // Clear error message after 3 seconds
             setTimeout(() => {
@@ -195,9 +197,10 @@ const ProjectDetail = () => {
                 });
                 setProject(projectData);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching project details:', err);
-                setError('Failed to load project details');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching project details:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };

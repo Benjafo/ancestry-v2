@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import { getEventTypeIcon } from '../../utils/iconUtils';
-
-// Helper function to extract error message safely
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) return error.message;
-    return String(error) || 'An unknown error occurred';
-};
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface TimelineProps {
     personId: string;
@@ -28,7 +23,8 @@ const Timeline = ({ personId, onEditEvent, onDeleteEvent, readOnly = false }: Ti
                 const timelineEvents = await eventsApi.getPersonTimeline(personId);
                 setEvents(timelineEvents);
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Failed to load timeline');
+                const errorMessage = await getApiErrorMessage(err);
+                setError(errorMessage);
                 console.error(err);
             } finally {
                 setIsLoading(false);
@@ -60,7 +56,8 @@ const Timeline = ({ personId, onEditEvent, onDeleteEvent, readOnly = false }: Ti
                 setEvents(events.filter(event => event.event_id !== eventId));
                 onDeleteEvent(eventId);
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Failed to delete event');
+                const errorMessage = await getApiErrorMessage(err);
+                setError(errorMessage);
                 console.error(err);
             }
         }

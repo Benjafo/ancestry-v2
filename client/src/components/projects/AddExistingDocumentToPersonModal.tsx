@@ -4,6 +4,7 @@ import { formatDate } from '../../utils/dateUtils';
 import { getDocumentTypeIcon } from '../../utils/iconUtils';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface AddExistingDocumentToPersonModalProps {
     isOpen: boolean;
@@ -51,9 +52,10 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
             try {
                 const response = await documentsApi.getDocuments({ search: searchTerm });
                 setSearchResults(response.documents || []);
-            } catch (err) {
-                console.error('Error searching documents:', err);
-                setError('Failed to search documents. Please try again.');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error searching documents:', errorMessage);
+                setError(errorMessage);
                 setSearchResults([]);
             } finally {
                 setIsLoading(false);
@@ -109,9 +111,10 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
 
             // Close the modal
             onClose();
-        } catch (err) {
-            console.error('Error associating document:', err);
-            setError('Failed to associate document. Please try again.');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error associating document:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsAssociating(false);
         }

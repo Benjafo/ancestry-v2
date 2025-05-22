@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Project, projectsApi } from '../../api/client';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface CreateProjectModalProps {
     isOpen: boolean;
@@ -33,9 +34,10 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
             });
 
             onSuccess(response.project);
-        } catch (err) {
-            console.error('Error creating project:', err);
-            setError('Failed to create project. Please try again.');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error creating project:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

@@ -8,6 +8,7 @@ import SuccessAlert from '../components/common/SuccessAlert';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { formatDate } from '../utils/dateUtils';
 import { getActivityIcon } from '../utils/iconUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const ManagerDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -22,9 +23,10 @@ const ManagerDashboard = () => {
             const data = await managerApi.getDashboardSummary();
             setDashboardData(data);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching manager dashboard data:', err);
-            setError('Failed to load dashboard data');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching manager dashboard data:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ApiError, Person, projectsApi } from '../../api/client';
+import { Person, projectsApi } from '../../api/client';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface CreatePersonModalProps {
     projectId?: string; // Optional: if provided, will add the person to this project
@@ -115,9 +116,9 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
             onPersonCreated(refreshedPerson);
             onClose();
         } catch (err: unknown) {
-            console.error('Error creating person:', err);
-            const error = err as ApiError;
-            setError(error.message || 'Failed to create person');
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error creating person:', errorMessage);
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

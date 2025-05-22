@@ -1,5 +1,6 @@
 import ky from 'ky';
 import { clearTokens, getRefreshToken, getToken, setToken, User } from '../utils/auth';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 // API response types
 export interface AuthResponse {
@@ -52,8 +53,9 @@ export const apiClient = ky.create({
                                 request.headers.set('Authorization', `Bearer ${accessToken}`);
                                 return ky(request);
                             }
-                        } catch (error) {
-                            console.error('Token refresh failed:', error);
+                        } catch (error: unknown) {
+                            const errorMessage = await getApiErrorMessage(error);
+                            console.error('Token refresh failed:', errorMessage);
                         }
                     }
 

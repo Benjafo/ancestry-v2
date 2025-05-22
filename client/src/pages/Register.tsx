@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { authApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import { login } from '../utils/auth';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -49,9 +50,10 @@ const Register = () => {
             const response = await authApi.register(registerData);
             login(response.token, response.user, response.refreshToken);
             navigate({ to: '/dashboard' });
-        } catch (err) {
-            console.error('Registration error:', err);
-            setError('Registration failed. Please try again.');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Registration error:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

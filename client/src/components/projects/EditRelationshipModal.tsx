@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiRelationship, relationshipsApi } from '../../api/client';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface EditRelationshipModalProps {
     isOpen: boolean;
@@ -100,78 +101,25 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
 
             // Close the modal
             onClose();
-        } catch (err: unknown) { // Changed type to unknown
-            console.error('Error updating relationship:', err);
-
-            // Extract and format the error message safely
-            let errorMessage = 'Failed to update relationship';
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-
-                // Attempt to parse Ky HTTPError response
-                if ('response' in err && err.response instanceof Response) {
-                    try {
-                        const clonedResponse = err.response.clone();
-                        clonedResponse.json().then(jsonData => {
-                            if (jsonData && jsonData.message) {
-                                setError(jsonData.message); // Set error here if JSON message is found
-                            } else {
-                                clonedResponse.text().then(textData => {
-                                    if (textData) {
-                                        setError(textData); // Set error here if text is found
-                                    } else {
-                                        setError(errorMessage); // Fallback to generic message
-                                    }
-                                }).catch(() => setError(errorMessage)); // Handle text error
-                            }
-                        }).catch(() => {
-                            clonedResponse.text().then(textData => {
-                                if (textData) {
-                                    setError(textData); // Set error here if text is found
-                                } else {
-                                    setError(errorMessage); // Fallback to generic message
-                                }
-                            }).catch(() => setError(errorMessage)); // Handle text error
-                        });
-                        // Return early to prevent setting generic error message immediately
-                        setIsSubmitting(false);
-                        return;
-
-                    } catch (jsonError) {
-                        console.error('Error parsing JSON response:', jsonError);
-                        // Fallback to text if JSON parsing fails
-                        if ('response' in err && err.response instanceof Response) {
-                            err.response.text().then(textData => {
-                                if (textData) {
-                                    setError(textData); // Set error here if text is found
-                                } else {
-                                    setError(errorMessage); // Fallback to generic message
-                                }
-                            }).catch(() => setError(errorMessage)); // Handle text error
-                            setIsSubmitting(false);
-                            return;
-                        }
-                    }
-                }
-            } else if (typeof err === 'string') {
-                errorMessage = err;
-            }
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating relationship:', errorMessage);
 
             // Format specific error messages to be more user-friendly
+            let displayMessage = errorMessage;
             if (errorMessage.includes('validation failed')) {
-                errorMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
+                displayMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
             } else if (errorMessage.includes('not found')) {
-                errorMessage = `The relationship could not be found. It may have been deleted. Please refresh and try again.`;
+                displayMessage = `The relationship could not be found. It may have been deleted. Please refresh and try again.`;
             } else if (errorMessage.includes('Marriage validation failed')) {
-                errorMessage = `Marriage validation error: ${errorMessage.split('Marriage validation failed:')[1]?.trim() || 'Please check the marriage details.'}`;
+                displayMessage = `Marriage validation error: ${errorMessage.split('Marriage validation failed:')[1]?.trim() || 'Please check the marriage details.'}`;
             } else if (errorMessage.includes('Circular relationship')) {
-                errorMessage = `This relationship would create a circular family tree, which is not allowed.`;
+                displayMessage = `This relationship would create a circular family tree, which is not allowed.`;
             } else if (errorMessage.includes('is not a valid qualifier')) {
-                errorMessage = `The selected qualifier is not valid for this relationship type. Please choose a different qualifier.`;
+                displayMessage = `The selected qualifier is not valid for this relationship type. Please choose a different qualifier.`;
             }
 
-            setError(errorMessage); // Set the formatted error message
+            setError(displayMessage);
             setIsSubmitting(false);
         }
     };

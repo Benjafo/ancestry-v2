@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
-
-// Helper function to extract error message safely
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) return error.message;
-    return String(error) || 'An unknown error occurred';
-};
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface EventListProps {
     personId?: string;
@@ -68,7 +63,8 @@ const EventList = ({ personId, projectId, eventsData, onEditEvent, onDeleteEvent
 
                 console.log('Events loaded:', eventsToSet);
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Failed to load events');
+                const errorMessage = await getApiErrorMessage(err);
+                setError(errorMessage);
                 console.error(err);
             } finally {
                 setIsLoading(false);
@@ -125,7 +121,8 @@ const EventList = ({ personId, projectId, eventsData, onEditEvent, onDeleteEvent
                 setEvents(events.filter(event => event.event_id !== eventId));
                 onDeleteEvent(eventId);
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Failed to delete event');
+                const errorMessage = await getApiErrorMessage(err);
+                setError(errorMessage);
                 console.error(err);
             }
         }

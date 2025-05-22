@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Project, projectsApi } from '../../api/client';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface EditProjectModalProps<T extends Project = Project> {
     project: T;
@@ -63,9 +64,10 @@ const EditProjectModal = <T extends Project = Project>({
             const response = await projectsApi.updateProject(project.id, dataToSend);
             // Cast the response to the same type as the input project
             onSuccess({ ...project, ...response.project } as T);
-        } catch (err) {
-            console.error('Error updating project:', err);
-            setFormErrors({ submit: 'Failed to update project. Please try again.' });
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating project:', errorMessage);
+            setFormErrors({ submit: errorMessage });
         } finally {
             setIsSubmitting(false);
         }

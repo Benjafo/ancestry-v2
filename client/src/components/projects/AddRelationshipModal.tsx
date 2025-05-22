@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ApiRelationship, Person, relationshipsApi } from '../../api/client';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface PersonSelectorProps {
     label: string;
@@ -196,76 +197,23 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
 
             // Close the modal
             onClose();
-        } catch (err: unknown) { // Changed type to unknown
-            console.error('Error creating relationship:', err);
-
-            // Extract and format the error message safely
-            let errorMessage = 'Failed to create relationship';
-
-            if (err instanceof Error) {
-                errorMessage = err.message;
-
-                // Attempt to parse Ky HTTPError response
-                if ('response' in err && err.response instanceof Response) {
-                    try {
-                        const clonedResponse = err.response.clone();
-                        clonedResponse.json().then(jsonData => {
-                            if (jsonData && jsonData.message) {
-                                setError(jsonData.message); // Set error here if JSON message is found
-                            } else {
-                                clonedResponse.text().then(textData => {
-                                    if (textData) {
-                                        setError(textData); // Set error here if text is found
-                                    } else {
-                                        setError(errorMessage); // Fallback to generic message
-                                    }
-                                }).catch(() => setError(errorMessage)); // Handle text error
-                            }
-                        }).catch(() => {
-                            clonedResponse.text().then(textData => {
-                                if (textData) {
-                                    setError(textData); // Set error here if text is found
-                                } else {
-                                    setError(errorMessage); // Fallback to generic message
-                                }
-                            }).catch(() => setError(errorMessage)); // Handle text error
-                        });
-                        // Return early to prevent setting generic error message immediately
-                        setIsSubmitting(false);
-                        return;
-
-                    } catch (jsonError) {
-                        console.error('Error parsing JSON response:', jsonError);
-                        // Fallback to text if JSON parsing fails
-                        if ('response' in err && err.response instanceof Response) {
-                            err.response.text().then(textData => {
-                                if (textData) {
-                                    setError(textData); // Set error here if text is found
-                                } else {
-                                    setError(errorMessage); // Fallback to generic message
-                                }
-                            }).catch(() => setError(errorMessage)); // Handle text error
-                            setIsSubmitting(false);
-                            return;
-                        }
-                    }
-                }
-            } else if (typeof err === 'string') {
-                errorMessage = err;
-            }
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error creating relationship:', errorMessage);
 
             // Format specific error messages to be more user-friendly
+            let displayMessage = errorMessage;
             if (errorMessage.includes('already exists between these people')) {
-                errorMessage = `A relationship of this type already exists between these people. Please choose different people or a different relationship type.`;
+                displayMessage = `A relationship of this type already exists between these people. Please choose different people or a different relationship type.`;
             } else if (errorMessage.includes('validation failed')) {
-                errorMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
+                displayMessage = `Validation error: ${errorMessage.split('validation failed:')[1]?.trim() || 'Please check your inputs.'}`;
             } else if (errorMessage.includes('not found')) {
-                errorMessage = `One or both of the selected people could not be found. Please refresh and try again.`;
+                displayMessage = `One or both of the selected people could not be found. Please refresh and try again.`;
             } else if (errorMessage.includes('Circular relationship')) {
-                errorMessage = `This relationship would create a circular family tree, which is not allowed.`;
+                displayMessage = `This relationship would create a circular family tree, which is not allowed.`;
             }
 
-            setError(errorMessage); // Set the formatted error message
+            setError(displayMessage);
             setIsSubmitting(false);
         }
     };

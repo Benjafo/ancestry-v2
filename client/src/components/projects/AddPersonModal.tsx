@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ApiError, Person, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 import PersonSelector from './PersonSelector';
 
 interface AddPersonModalProps {
@@ -28,9 +29,9 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ projectId, isOpen, onCl
             onPersonAdded();
             onClose();
         } catch (err: unknown) {
-            console.error('Error adding person to project:', err);
-            const error = err as ApiError;
-            setError(error.message || 'Failed to add person to project');
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error adding person to project:', errorMessage);
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

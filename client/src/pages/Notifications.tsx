@@ -4,6 +4,7 @@ import { UserEvent, dashboardApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import { formatSnakeCase } from '../utils/formatUtils';
 import { formatDate } from '../utils/dateUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState<UserEvent[]>([]);
@@ -22,9 +23,10 @@ const Notifications = () => {
                 setNotifications(data.userEvents);
                 setFilteredNotifications(data.userEvents);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching notifications:', err);
-                setError('Failed to load notifications');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching notifications:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };

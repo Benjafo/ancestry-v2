@@ -7,6 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 // Assignment History Component
 const AssignmentHistory = ({ clientId }: { clientId: string }) => {
@@ -21,9 +22,10 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
                 const response = await managerApi.getAssignmentHistory(clientId);
                 setHistory(response.history);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching assignment history:', err);
-                setError('Failed to load assignment history');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching assignment history:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };
@@ -105,9 +107,10 @@ const ClientAssignment = () => {
             setClients(clientsResponse.users);
             setProjects(projectsResponse.projects);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching data:', err);
-            setError('Failed to load data');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching data:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
@@ -118,9 +121,10 @@ const ClientAssignment = () => {
             const response = await managerApi.getClientAssignments(clientId);
             setClientAssignments(response);
             setIsLoadingAssignments(false);
-        } catch (err) {
-            console.error('Error fetching client assignments:', err);
-            setError('Failed to load client assignments');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching client assignments:', errorMessage);
+            setError(errorMessage);
             setIsLoadingAssignments(false);
         }
     };
@@ -137,9 +141,10 @@ const ClientAssignment = () => {
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error assigning client to project:', err);
-            setError('Failed to assign client to project');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error assigning client to project:', errorMessage);
+            setError(errorMessage);
         }
     };
 
@@ -155,9 +160,10 @@ const ClientAssignment = () => {
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error removing client from project:', err);
-            setError('Failed to remove client from project');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error removing client from project:', errorMessage);
+            setError(errorMessage);
         }
     };
 

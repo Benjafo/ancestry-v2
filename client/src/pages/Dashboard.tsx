@@ -8,6 +8,7 @@ import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
 import { formatSnakeCase } from '../utils/formatUtils';
 import { formatDate } from '../utils/dateUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const Dashboard = () => {
     const user = getUser();
@@ -31,9 +32,10 @@ const Dashboard = () => {
                 setNotifications(userEventsData.userEvents);
 
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching dashboard data:', err);
-                setError('Failed to load dashboard data');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching dashboard data:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };
@@ -46,9 +48,10 @@ const Dashboard = () => {
                 });
                 setProjects(response.projects);
                 setProjectsLoading(false);
-            } catch (err) {
-                console.error('Error fetching projects:', err);
-                setProjectsError('Failed to load projects');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching projects:', errorMessage);
+                setProjectsError(errorMessage);
                 setProjectsLoading(false);
             }
         };

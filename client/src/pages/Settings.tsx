@@ -4,6 +4,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
 import { STATES_BY_COUNTRY } from '../utils/locationData';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import {
     validateAddress,
     validateAddressGroup,
@@ -96,14 +97,8 @@ const Settings = () => {
                     state: profileState || data.profile.state
                 }));
             } catch (err: unknown) {
-                console.error('Error fetching profile data:', err);
-                // Try to extract error message from the API response if available
-                const errorMessage =
-                    typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                        ? String(err.response.message)
-                        : err instanceof Error
-                            ? err.message
-                            : 'Failed to load profile data';
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching profile data:', errorMessage);
                 setProfileError(errorMessage);
             }
         };
@@ -150,14 +145,8 @@ const Settings = () => {
             const response = await clientApi.updateProfile(emailPreferences);
             setPreferencesSuccess(response.message || 'Email preferences updated successfully');
         } catch (err: unknown) {
-            console.error('Error updating email preferences:', err);
-            // Try to extract error message from the API response if available
-            const errorMessage =
-                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                    ? String(err.response.message)
-                    : err instanceof Error
-                        ? err.message
-                        : 'Failed to update email preferences';
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating email preferences:', errorMessage);
             setPreferencesError(errorMessage);
         } finally {
             setIsUpdatingPreferences(false);
@@ -268,14 +257,8 @@ const Settings = () => {
             setProfileSuccess(response.message || 'Profile updated successfully');
             setIsUpdatingProfile(false);
         } catch (err: unknown) {
-            console.error('Error updating profile:', err);
-            // Try to extract error message from the API response if available
-            const errorMessage =
-                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                    ? String(err.response.message)
-                    : err instanceof Error
-                        ? err.message
-                        : 'Failed to update profile';
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating profile:', errorMessage);
             setProfileError(errorMessage);
             setIsUpdatingProfile(false);
         }
@@ -330,14 +313,8 @@ const Settings = () => {
                 confirmPassword: ''
             });
         } catch (err: unknown) {
-            console.error('Error changing password:', err);
-            // Try to extract error message from the API response if available
-            const errorMessage =
-                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                    ? String(err.response.message)
-                    : err instanceof Error
-                        ? err.message
-                        : 'Failed to change password. Please try again.';
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error changing password:', errorMessage);
             setPasswordError(errorMessage);
         } finally {
             setIsChangingPassword(false);

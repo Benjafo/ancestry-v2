@@ -7,6 +7,7 @@ import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ViewDocumentModal from './ViewDocumentModal';
 import { getDocumentTypeIcon } from '../../utils/iconUtils';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface DocumentListProps {
     personId?: string;
@@ -80,8 +81,9 @@ const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDoc
                 await documentsApi.deleteDocument(documentId);
                 onDeleteDocument(documentId); // Let the parent handle state update
             } catch (err: unknown) {
-                // Let the parent handle error display
-                console.error(err);
+                const errorMessage = await getApiErrorMessage(err);
+                // Let the parent handle error display, but log the specific message
+                console.error(errorMessage);
             }
         }
     };

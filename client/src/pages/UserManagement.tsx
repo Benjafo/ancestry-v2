@@ -8,6 +8,7 @@ import InfoAlert from '../components/common/InfoAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { formatDateTime } from '../utils/dateUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const UserManagement = () => {
     const [users, setUsers] = useState<UserDetails[]>([]);
@@ -49,9 +50,10 @@ const UserManagement = () => {
             setTotalPages(response.metadata.totalPages);
             setTotalUsers(response.metadata.total);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            setError('Failed to load users');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching users:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
@@ -64,9 +66,10 @@ const UserManagement = () => {
         try {
             const response = await managerApi.resetUserPassword(userId);
             setTemporaryPassword(response.temporaryPassword);
-        } catch (err) {
-            console.error('Error resetting password:', err);
-            setError('Failed to reset password');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error resetting password:', errorMessage);
+            setError(errorMessage);
         }
     };
 

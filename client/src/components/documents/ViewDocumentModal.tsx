@@ -3,6 +3,7 @@ import { Document, documentsApi } from '../../api/client';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { formatDate } from '../../utils/dateUtils';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface ViewDocumentModalProps {
     isOpen: boolean;
@@ -41,9 +42,10 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
             setError(null);
             const doc = await documentsApi.getDocumentById(documentId);
             setDocument(doc);
-        } catch (err) {
-            console.error('Error fetching document:', err);
-            setError('Failed to load document details');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching document:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

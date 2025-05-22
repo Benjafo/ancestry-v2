@@ -8,6 +8,7 @@ import CreateProjectModal from '../components/projects/CreateProjectModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectList from '../components/projects/ProjectList';
 import { hasRole } from '../utils/auth';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const Projects = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -73,9 +74,10 @@ const Projects = () => {
             });
             setProjects(data.projects);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching projects:', err);
-            setError('Failed to load projects');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching projects:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
