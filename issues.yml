@@ -60,7 +60,6 @@ other:
     General: add base modal class and close modal with escape key
     General: add toggles between list and grid view for all list pages
     General: refactor and reduce reused code
-    General: recreate seed data
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
@@ -101,9 +100,7 @@ future_functionality:
   active:
     Api Client: rename Relationship and ApiRelationship
     General: recreate seed data
-    General: test all features
     General: mass document upload page
-    General: full codebase audit with gemini
     General: import GEDCOM file page
     General: links
     General: payment processing

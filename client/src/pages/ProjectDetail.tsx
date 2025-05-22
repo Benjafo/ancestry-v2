@@ -18,6 +18,7 @@ import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { User } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
+import { getStatusBadgeClass, getStatusText } from '../utils/statusUtils';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -203,32 +204,6 @@ const ProjectDetail = () => {
 
         fetchProjectDetails();
     }, [projectId]);
-
-    const getStatusBadgeClass = (status: ProjectDetailType['status']) => {
-        switch (status) {
-            case 'active':
-                return 'bg-green-100 text-green-800';
-            case 'completed':
-                return 'bg-blue-100 text-blue-800';
-            case 'on_hold':
-                return 'bg-yellow-100 text-yellow-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const getStatusText = (status: ProjectDetailType['status']) => {
-        switch (status) {
-            case 'active':
-                return 'Active';
-            case 'completed':
-                return 'Completed';
-            case 'on_hold':
-                return 'On Hold';
-            default:
-                return status;
-        }
-    };
 
     if (isLoading) {
         return <LoadingSpinner containerClassName="h-64" size="lg" />;
