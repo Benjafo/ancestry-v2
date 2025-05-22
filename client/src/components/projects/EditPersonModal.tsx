@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { ApiError, Document, Event, Person, documentsApi, projectsApi } from '../../api/client';
-import { formatDate } from '../../utils/dateUtils';
 import DocumentForm from '../documents/DocumentForm';
 import DocumentList from '../documents/DocumentList';
 import EventForm from '../events/EventForm';
@@ -51,15 +50,12 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
     const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
     const [isAddExistingDocumentModalOpen, setIsAddExistingDocumentModalOpen] = useState(false);
 
-    // Relationships state (read-only)
-    const [relationships, setRelationships] = useState<Person['relationships']>({});
-
     // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isFetchingData, setIsFetchingData] = useState(true);
 
-    // Fetch person details including events, documents, and relationships
+    // Fetch person details including events and documents
     useEffect(() => {
         if (isOpen) {
             const fetchPersonDetails = async () => {
@@ -67,8 +63,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                 try {
                     const personData = await projectsApi.getPersonById(person.person_id, {
                         includeEvents: true,
-                        includeDocuments: true,
-                        includeRelationships: true
+                        includeDocuments: true
                     });
 
                     // Set events
@@ -79,11 +74,6 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                     // Set documents
                     if (personData.documents) {
                         setDocuments(personData.documents);
-                    }
-
-                    // Set relationships
-                    if (personData.relationships) {
-                        setRelationships(personData.relationships);
                     }
                 } catch (err) {
                     console.error('Error fetching person details:', err);
@@ -207,8 +197,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
             // Fetch the updated person with all related data
             const refreshedPerson = await projectsApi.getPersonById(person.person_id, {
                 includeEvents: true,
-                includeDocuments: true,
-                includeRelationships: true
+                includeDocuments: true
             });
 
             onPersonUpdated(refreshedPerson);
