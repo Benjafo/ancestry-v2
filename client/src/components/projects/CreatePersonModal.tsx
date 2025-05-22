@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { ApiError, Document, Event, Person, documentsApi, projectsApi } from '../../api/client';
-import DocumentForm from '../documents/DocumentForm';
-import EventForm from '../events/EventForm';
+import { ApiError, Person, projectsApi } from '../../api/client';
 
 interface CreatePersonModalProps {
     projectId?: string; // Optional: if provided, will add the person to this project
@@ -16,9 +14,6 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
     onClose,
     onPersonCreated
 }) => {
-    // Tab state
-    const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
-
     // Basic person info state
     const [formData, setFormData] = useState({
         first_name: '',
@@ -35,16 +30,6 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
 
     // Project-specific notes (if adding to a project)
     const [projectNotes, setProjectNotes] = useState('');
-
-    // Events state
-    const [events, setEvents] = useState<Partial<Event>[]>([]);
-    const [isAddingEvent, setIsAddingEvent] = useState(false);
-    const [editingEventIndex, setEditingEventIndex] = useState<number | null>(null);
-
-    // Documents state
-    const [documents, setDocuments] = useState<Partial<Document>[]>([]);
-    const [isAddingDocument, setIsAddingDocument] = useState(false);
-    const [editingDocumentIndex, setEditingDocumentIndex] = useState<number | null>(null);
 
     // UI state
     const [loading, setLoading] = useState(false);
@@ -116,36 +101,16 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                 ...(formData.notes ? { notes: formData.notes } : {})
             };
 
-            // Step 1: Create the person with events
-            console.log(events)
-            const person = await projectsApi.createPerson({
-                ...cleanedFormData,
-                events: events.map(({ event_id, ...eventWithoutId }) => {
-                    console.log('Logging to avoid unused error (oops, sorry)', event_id)
-                    return eventWithoutId
-                }) as any
-            });
+            // Create the person with biographical information only
+            const person = await projectsApi.createPerson(cleanedFormData);
 
-            // Step 3: Create documents and associate them
-            for (const docData of documents) {
-                const { document } = await documentsApi.createDocument(docData);
-                await documentsApi.associateDocumentWithPerson(
-                    document.document_id,
-                    person.person_id
-                );
-            }
-
-            // Step 4: If projectId is provided, add the person to the project
+            // If projectId is provided, add the person to the project
             if (projectId) {
                 await projectsApi.addPersonToProject(projectId, person.person_id, projectNotes);
             }
 
-            // Fetch the updated person with all related data
-            const refreshedPerson = await projectsApi.getPersonById(person.person_id, {
-                includeEvents: true,
-                includeDocuments: true,
-                includeRelationships: true
-            });
+            // Fetch the updated person
+            const refreshedPerson = await projectsApi.getPersonById(person.person_id);
 
             onPersonCreated(refreshedPerson);
             onClose();
@@ -158,182 +123,6 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
         }
     };
 
-    // Event handlers
-    const handleAddEvent = () => {
-        setIsAddingEvent(true);
-    };
-
-    const handleEditEvent = (index: number) => {
-        setEditingEventIndex(index);
-    };
-
-    const handleDeleteEvent = (index: number) => {
-        setEvents(events.filter((_, i) => i !== index));
-    };
-
-    const handleEventSaved = (event: Event) => {
-        if (editingEventIndex !== null) {
-            // Update existing event
-            const updatedEvents = [...events];
-            updatedEvents[editingEventIndex] = event;
-            setEvents(updatedEvents);
-            setEditingEventIndex(null);
-        } else {
-            // Add new event
-            setEvents([...events, event]);
-            setIsAddingEvent(false);
-        }
-    };
-
-    // Document handlers
-    const handleAddDocument = () => {
-        setIsAddingDocument(true);
-    };
-
-    const handleEditDocument = (index: number) => {
-        setEditingDocumentIndex(index);
-    };
-
-    const handleDeleteDocument = (index: number) => {
-        setDocuments(documents.filter((_, i) => i !== index));
-    };
-
-    const handleDocumentSaved = (document: Document) => {
-        if (editingDocumentIndex !== null) {
-            // Update existing document
-            const updatedDocuments = [...documents];
-            updatedDocuments[editingDocumentIndex] = document;
-            setDocuments(updatedDocuments);
-            setEditingDocumentIndex(null);
-        } else {
-            // Add new document
-            setDocuments([...documents, document]);
-            setIsAddingDocument(false);
-        }
-    };
-
-    // Custom event and document components for creating new items
-    const NewEventsList = () => {
-        if (events.length === 0) {
-            return (
-                <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400">No events added yet.</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        Click the "Add Event" button to add events to this person.
-                    </p>
-                </div>
-            );
-        }
-
-        return (
-            <div className="space-y-4">
-                {events.map((event: Partial<Event>, index) => (
-                    <div key={index} className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex justify-between">
-                            <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">{event.event_type}</h4>
-                                {event.event_date && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Date: {new Date(event.event_date).toLocaleDateString()}
-                                    </p>
-                                )}
-                                {event.event_location && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Location: {event.event_location}
-                                    </p>
-                                )}
-                                {event.description && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                                        {event.description}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="flex space-x-2">
-                                <button
-                                    type="button"
-                                    onClick={() => handleEditEvent(index)}
-                                    className="text-primary-600 hover:text-primary-900"
-                                >
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleDeleteEvent(index)}
-                                    className="text-red-600 hover:text-red-900"
-                                >
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
-    const NewDocumentsList = () => {
-        if (documents.length === 0) {
-            return (
-                <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400">No documents added yet.</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        Click the "Add Document" button to add documents to this person.
-                    </p>
-                </div>
-            );
-        }
-
-        return (
-            <div className="space-y-4">
-                {documents.map((doc, index) => (
-                    <div key={index} className="border dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex justify-between">
-                            <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">{doc.title}</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Type: {doc.document_type}
-                                </p>
-                                {doc.source && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Source: {doc.source}
-                                    </p>
-                                )}
-                                {doc.description && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                                        {doc.description}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="flex space-x-2">
-                                <button
-                                    type="button"
-                                    onClick={() => handleEditDocument(index)}
-                                    className="text-primary-600 hover:text-primary-900"
-                                >
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleDeleteDocument(index)}
-                                    className="text-red-600 hover:text-red-900"
-                                >
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    };
 
     if (!isOpen) return null;
 
@@ -354,48 +143,6 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                     </button>
                 </div>
 
-                {/* Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-                    <nav className="flex -mb-px">
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('info')}
-                        >
-                            Biographical Info
-                        </button>
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('events')}
-                        >
-                            Events
-                        </button>
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('documents')}
-                        >
-                            Documents
-                        </button>
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('relationships')}
-                        >
-                            Relationships
-                        </button>
-                    </nav>
-                </div>
-
                 {/* Error state */}
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
@@ -412,12 +159,9 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                     </div>
                 )}
 
-                {/* Tab content */}
-                <div>
-                    {/* Biographical Info Tab */}
-                    {activeTab === 'info' && (
-                        <form onSubmit={handleSubmit}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* Biographical Information Form */}
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         First Name *
@@ -573,100 +317,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                                     />
                                 </div>
                             )}
-                        </form>
-                    )}
-
-                    {/* Events Tab */}
-                    {activeTab === 'events' && (
-                        <div>
-                            {isAddingEvent || editingEventIndex !== null ? (
-                                <EventForm
-                                    projectId={projectId}
-                                    onSuccess={handleEventSaved}
-                                    onCancel={() => {
-                                        setIsAddingEvent(false);
-                                        setEditingEventIndex(null);
-                                    }}
-                                />
-                            ) : (
-                                <div>
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Events</h3>
-                                        <button
-                                            type="button"
-                                            className="btn-primary"
-                                            onClick={handleAddEvent}
-                                        >
-                                            Add Event
-                                        </button>
-                                    </div>
-
-                                    <NewEventsList />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Documents Tab */}
-                    {activeTab === 'documents' && (
-                        <div>
-                            {isAddingDocument || editingDocumentIndex !== null ? (
-                                <DocumentForm
-                                    onSuccess={handleDocumentSaved}
-                                    onCancel={() => {
-                                        setIsAddingDocument(false);
-                                        setEditingDocumentIndex(null);
-                                    }}
-                                />
-                            ) : (
-                                <div>
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
-                                        <button
-                                            type="button"
-                                            className="btn-primary"
-                                            onClick={handleAddDocument}
-                                        >
-                                            Add Document
-                                        </button>
-                                    </div>
-
-                                    <NewDocumentsList />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Relationships Tab (Read-only) */}
-                    {activeTab === 'relationships' && (
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
-                            <div className="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-400 p-4 mb-4">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                                            <strong>Relationship Management Update:</strong> Only parent and spouse relationships can be created directly. Other relationship types (siblings, grandparents, etc.) are now automatically derived from these primary relationships.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-center py-8">
-                                <p className="text-gray-500 dark:text-gray-400">Relationships can be added after creating the person.</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                    You'll be able to add parent and spouse relationships from the person's detail view.
-                                </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                    Other relationships like siblings, grandparents, aunts/uncles, and cousins will be automatically calculated based on the parent relationships.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                </form>
 
                 {/* Footer with action buttons */}
                 <div className="mt-6 flex justify-end space-x-2">
