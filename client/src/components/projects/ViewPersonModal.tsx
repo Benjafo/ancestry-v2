@@ -61,21 +61,23 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
         // Process relationships where this person is the subject (person1)
         if (personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) {
             personData.relationshipsAsSubject.forEach(rel => {
-                const person = {
-                    person_id: rel.person2.person_id,
-                    first_name: rel.person2.first_name,
-                    last_name: rel.person2.last_name,
-                    relationship_qualifier: rel.relationship_qualifier,
-                    start_date: rel.start_date,
-                    end_date: rel.end_date
-                };
+                if (rel.person2) {
+                    const person = {
+                        person_id: rel.person2.person_id,
+                        first_name: rel.person2.first_name,
+                        last_name: rel.person2.last_name,
+                        relationship_qualifier: rel.relationship_qualifier,
+                        start_date: rel.start_date,
+                        end_date: rel.end_date
+                    };
 
-                if (rel.relationship_type === 'parent') {
-                    organizedRelationships.children.push(person);
-                } else if (rel.relationship_type === 'spouse') {
-                    organizedRelationships.spouses.push(person);
-                } else if (rel.relationship_type === 'sibling') {
-                    organizedRelationships.siblings.push(person);
+                    if (rel.relationship_type === 'parent') {
+                        organizedRelationships.children.push(person);
+                    } else if (rel.relationship_type === 'spouse') {
+                        organizedRelationships.spouses.push(person);
+                    } else if (rel.relationship_type === 'sibling') {
+                        organizedRelationships.siblings.push(person);
+                    }
                 }
             });
         }
@@ -83,21 +85,23 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
         // Process relationships where this person is the object (person2)
         if (personData.relationshipsAsObject && personData.relationshipsAsObject.length > 0) {
             personData.relationshipsAsObject.forEach(rel => {
-                const person = {
-                    person_id: rel.person1.person_id,
-                    first_name: rel.person1.first_name,
-                    last_name: rel.person1.last_name,
-                    relationship_qualifier: rel.relationship_qualifier,
-                    start_date: rel.start_date,
-                    end_date: rel.end_date
-                };
+                if (rel.person1) {
+                    const person = {
+                        person_id: rel.person1.person_id,
+                        first_name: rel.person1.first_name,
+                        last_name: rel.person1.last_name,
+                        relationship_qualifier: rel.relationship_qualifier,
+                        start_date: rel.start_date,
+                        end_date: rel.end_date
+                    };
 
-                if (rel.relationship_type === 'parent') {
-                    organizedRelationships.parents.push(person);
-                } else if (rel.relationship_type === 'spouse') {
-                    organizedRelationships.spouses.push(person);
-                } else if (rel.relationship_type === 'sibling') {
-                    organizedRelationships.siblings.push(person);
+                    if (rel.relationship_type === 'parent') {
+                        organizedRelationships.parents.push(person);
+                    } else if (rel.relationship_type === 'spouse') {
+                        organizedRelationships.spouses.push(person);
+                    } else if (rel.relationship_type === 'sibling') {
+                        organizedRelationships.siblings.push(person);
+                    }
                 }
             });
         }
