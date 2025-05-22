@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
+import { formatDate } from '../../utils/dateUtils';
 
 // Helper function to extract error message safely
 const getErrorMessage = (error: unknown): string => {
@@ -220,7 +221,7 @@ const EventList = ({ personId, projectId, eventsData, onEditEvent, onDeleteEvent
                                                     {formatEventType(event.event_type)}
                                                 </p>
                                                 <p className="ml-2 flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
-                                                    {event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Unknown date'}
+                                                    {formatDate(event.event_date, 'Unknown date')}
                                                 </p>
                                             </div>
 

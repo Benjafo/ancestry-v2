@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
 import { formatSnakeCase } from '../utils/formatUtils';
+import { formatDate } from '../utils/dateUtils';
 
 const Dashboard = () => {
     const user = getUser();
@@ -144,7 +145,7 @@ const Dashboard = () => {
                                 <div className="flex justify-between">
                                     <span className="font-medium dark:text-white">{formatSnakeCase(notification.event_type)}</span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
+                                        {formatDate(notification.createdAt, 'No date')}
                                     </span>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>

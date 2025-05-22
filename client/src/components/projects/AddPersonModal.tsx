@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ApiError, Person, projectsApi } from '../../api/client';
+import { formatDate } from '../../utils/dateUtils';
 import PersonSelector from './PersonSelector';
 
 interface AddPersonModalProps {
@@ -54,9 +55,9 @@ const AddPersonModal: React.FC<AddPersonModalProps> = ({ projectId, isOpen, onCl
                         <div className="mb-4 p-3 border rounded-md bg-gray-50 dark:bg-gray-700">
                             <h3 className="font-medium text-gray-900 dark:text-white">{selectedPerson.first_name} {selectedPerson.last_name}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {selectedPerson.birth_date && `Born: ${new Date(selectedPerson.birth_date).toLocaleDateString()}`}
+                                {selectedPerson.birth_date && `Born: ${formatDate(selectedPerson.birth_date)}`}
                                 {selectedPerson.birth_date && selectedPerson.death_date && ' - '}
-                                {selectedPerson.death_date && `Died: ${new Date(selectedPerson.death_date).toLocaleDateString()}`}
+                                {selectedPerson.death_date && `Died: ${formatDate(selectedPerson.death_date)}`}
                             </p>
                         </div>
                     )}

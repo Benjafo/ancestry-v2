@@ -7,6 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import InfoAlert from '../components/common/InfoAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
+import { formatDateTime } from '../utils/dateUtils';
 
 const UserManagement = () => {
     const [users, setUsers] = useState<UserDetails[]>([]);
@@ -260,7 +261,7 @@ const UserManagement = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {user.last_login
-                                                ? new Date(user.last_login).toLocaleString()
+                                                ? formatDateTime(user.last_login)
                                                 : 'Never'
                                             }
                                         </td>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 import { capitalizeWords } from '../../utils/formatUtils';
+import { formatDate } from '../../utils/dateUtils';
 import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -170,7 +171,7 @@ const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDoc
 
                                         <div className="flex flex-col items-end">
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {document.upload_date ? new Date(document.upload_date).toLocaleDateString() : 'Unknown date'}
+                                                {formatDate(document.upload_date, 'Unknown date')}
                                             </p>
 
                                             {!readOnly && (
@@ -222,7 +223,7 @@ const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDoc
                                             </svg>
                                             <span className="text-gray-600 dark:text-gray-300">Source: {document.source}</span>
                                             {document.date_of_original && (
-                                                <span className="ml-2 text-gray-600 dark:text-gray-300">({new Date(document.date_of_original).toLocaleDateString()})</span>
+                                                <span className="ml-2 text-gray-600 dark:text-gray-300">({formatDate(document.date_of_original)})</span>
                                             )}
                                         </div>
                                     )}

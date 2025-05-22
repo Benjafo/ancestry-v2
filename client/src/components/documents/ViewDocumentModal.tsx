@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { formatDate } from '../../utils/dateUtils';
 
 interface ViewDocumentModalProps {
     isOpen: boolean;
@@ -183,7 +184,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
                                 <div>
                                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Original Date</p>
                                     <p className="text-gray-900 dark:text-white">
-                                        {new Date(document.date_of_original).toLocaleDateString()}
+                                        {formatDate(document.date_of_original)}
                                     </p>
                                 </div>
                             )}
@@ -196,7 +197,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
                             <div>
                                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Uploaded</p>
                                 <p className="text-gray-900 dark:text-white">
-                                    {new Date(document.upload_date).toLocaleDateString()}
+                                    {formatDate(document.upload_date)}
                                 </p>
                             </div>
                         </div>

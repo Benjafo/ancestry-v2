@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { UserEvent, dashboardApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import { formatSnakeCase } from '../utils/formatUtils';
+import { formatDate } from '../utils/dateUtils';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState<UserEvent[]>([]);
@@ -138,7 +139,7 @@ const Notifications = () => {
                                         {formatSnakeCase(notification.event_type)}
                                     </span>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
+                                        {formatDate(notification.createdAt, 'No date')}
                                     </span>
                                 </div>
                                 <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
