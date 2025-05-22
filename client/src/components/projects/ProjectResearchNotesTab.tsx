@@ -5,7 +5,7 @@ import { formatDate } from '../../utils/dateUtils';
 import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-import ConfirmDeleteNoteModal from './ConfirmDeleteNoteModal';
+import ConfirmDeleteNoteModal from '../common/ConfirmDeleteNoteModal';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface ProjectResearchNotesTabProps {

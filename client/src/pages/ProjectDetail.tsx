@@ -4,7 +4,7 @@ import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
-import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
+import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
 import CreatePersonModal from '../components/projects/CreatePersonModal';
 import EditPersonModal from '../components/projects/EditPersonModal';
 import EditPersonNotesModal from '../components/projects/EditPersonNotesModal';
