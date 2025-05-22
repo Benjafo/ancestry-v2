@@ -244,8 +244,8 @@ export interface Person {
         niecesNephews?: Relationship[]; // Added
         cousins?: Relationship[]; // Added
     };
-    relationshipsAsSubject?: any[]; // Keep for now, might be used elsewhere
-    relationshipsAsObject?: any[]; // Keep for now, might be used elsewhere
+    relationshipsAsSubject?: ApiRelationship[]; // Keep for now, might be used elsewhere
+    relationshipsAsObject?: ApiRelationship[]; // Keep for now, might be used elsewhere
 }
 
 export interface ProjectDetail extends Project {
@@ -741,7 +741,7 @@ export interface ApiRelationship {
 
 // Relationship API service
 export const relationshipsApi = {
-    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: any[]; metadata: ApiMetadata }> => {
+    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: ApiRelationship[]; metadata: ApiMetadata }> => {
         const response = await apiClient.get('relationships', { searchParams: params });
         return response.json();
     },
