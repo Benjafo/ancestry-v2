@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ApiMetadata, projectsApi, UserEvent } from '../../api/client';
-import { getActivityIcon } from '../../utils/activityUtils';
 import { formatDate } from '../../utils/dateUtils';
 import { formatSnakeCase } from '../../utils/formatUtils';
+import { getActivityIcon } from '../../utils/iconUtils';
 import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
