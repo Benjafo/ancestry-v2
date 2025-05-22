@@ -38,30 +38,30 @@ class EventRepository extends BaseRepository {
             eventDateEnd: 'event_date',
             location: 'event_location'
         };
-        
+
         // Define allowed sort fields
         const allowedSortFields = [
             'event_type', 'event_date', 'event_location', 'created_at', 'updated_at'
         ];
-        
+
         // Define search fields
         const searchFields = ['description', 'event_location'];
-        
+
         // Build date range filters
         const dateFilters = {};
-        
+
         if (params.eventDateStart || params.eventDateEnd) {
             dateFilters.event_date = {};
-            
+
             if (params.eventDateStart) {
                 dateFilters.event_date[Op.gte] = new Date(params.eventDateStart);
             }
-            
+
             if (params.eventDateEnd) {
                 dateFilters.event_date[Op.lte] = new Date(params.eventDateEnd);
             }
         }
-        
+
         // Build query options
         const queryOptions = QueryBuilder.buildQueryOptions(
             {
@@ -80,7 +80,7 @@ class EventRepository extends BaseRepository {
                 searchFields
             }
         );
-        
+
         // Add date filters
         if (Object.keys(dateFilters).length > 0) {
             queryOptions.where = {
@@ -88,7 +88,7 @@ class EventRepository extends BaseRepository {
                 ...dateFilters
             };
         }
-        
+
         // Add location filter if provided
         if (params.location) {
             queryOptions.where = {
@@ -96,7 +96,7 @@ class EventRepository extends BaseRepository {
                 event_location: { [Op.iLike]: `%${params.location}%` }
             };
         }
-        
+
         // Add include for person data if requested
         if (params.includePerson) {
             queryOptions.include = [
@@ -106,15 +106,15 @@ class EventRepository extends BaseRepository {
                 }
             ];
         }
-        
+
         // Execute query
         const result = await this.findAndCountAll(queryOptions);
-        
+
         // Calculate pagination metadata
         const page = parseInt(params.page, 10) || 1;
         const pageSize = parseInt(params.pageSize, 10) || 10;
         const totalPages = Math.ceil(result.count / pageSize);
-        
+
         return {
             events: result.rows,
             metadata: {
@@ -136,14 +136,14 @@ class EventRepository extends BaseRepository {
      */
     async findEventById(id, options = {}) {
         const include = [];
-        
+
         if (options.includePerson) {
             include.push({
                 model: Person,
                 attributes: ['person_id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'death_date']
             });
         }
-        
+
         return await this.findById(id, { include });
     }
 
@@ -155,14 +155,51 @@ class EventRepository extends BaseRepository {
      * @returns {Promise<Array>} Array of events
      */
     async findEventsByPersonId(personId, options = {}) {
+        const { Op } = require('sequelize');
+        const PersonEvent = require('../models/personEvent');
+
+        // First, find all event IDs associated with this person
+        const personEvents = await PersonEvent.findAll({
+            where: { person_id: personId },
+            attributes: ['event_id'],
+            raw: true
+        });
+
+        // Extract event IDs
+        const eventIds = personEvents.map(pe => pe.event_id);
+
+        // If no events found, return empty array
+        if (eventIds.length === 0) {
+            return [];
+        }
+
+        // Query for events with these IDs
         const queryOptions = {
             where: {
-                person_id: personId
+                event_id: {
+                    [Op.in]: eventIds
+                }
             },
             ...options
         };
-        
-        return await this.findAll(queryOptions);
+
+        // Include person data if requested
+        if (options.includePerson) {
+            queryOptions.include = [{
+                model: Person,
+                as: 'persons',
+                through: { attributes: [] }
+            }];
+        }
+
+        const events = await this.findAll(queryOptions);
+
+        // Add person_id to each event
+        events.forEach(event => {
+            event.dataValues.person_id = personId;
+        });
+
+        return events;
     }
 
     /**
@@ -179,7 +216,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -200,7 +237,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -218,7 +255,7 @@ class EventRepository extends BaseRepository {
             },
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -231,14 +268,44 @@ class EventRepository extends BaseRepository {
      * @returns {Promise<Array>} Array of events
      */
     async findEventsByPersonAndType(personId, eventType, options = {}) {
+        const { Op } = require('sequelize');
+        const PersonEvent = require('../models/personEvent');
+
+        // First, find all event IDs associated with this person
+        const personEvents = await PersonEvent.findAll({
+            where: { person_id: personId },
+            attributes: ['event_id'],
+            raw: true
+        });
+
+        // Extract event IDs
+        const eventIds = personEvents.map(pe => pe.event_id);
+
+        // If no events found, return empty array
+        if (eventIds.length === 0) {
+            return [];
+        }
+
+        // Query for events with these IDs and the specified type
         const queryOptions = {
             where: {
-                person_id: personId,
+                event_id: {
+                    [Op.in]: eventIds
+                },
                 event_type: eventType
             },
             ...options
         };
-        
+
+        // Include person data if requested
+        if (options.includePerson) {
+            queryOptions.include = [{
+                model: Person,
+                as: 'persons',
+                through: { attributes: [] }
+            }];
+        }
+
         return await this.findAll(queryOptions);
     }
 }

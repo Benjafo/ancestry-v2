@@ -1,26 +1,36 @@
 project:
   active:
     Project: tree view
-    Project: there should be a page or modal to view all events in the timeline, even if they are duplicated
-    Project: the add document button does not open the modal
-    Project: events should trigger user events that appear in the activity feeds
-    Project: researcher should be able to create "research notes"
-    Project: implement research notes tab
-    Project: switching between tabs should change the "Add X" button, e.g. add document, add event, add person, add research note
-    Project -> overview: recent activity should be accurate
-    Project -> documents: there should be some sort of view functionality for records
-    Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
-    Project -> timeline: there are duplicate events in the timeline, events should be listed as a family event if over three persons are attached to it, otherwise it should list the attached persons separated by commas. An event should only appear once on the timeline
-    Project -> family members: clients should not be able to edit family members in the view person modal
-    Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
-    Project -> family members: create and edit person modal should allow for creating and editing relationships
-    Project -> family members: add and edit events in create and edit modal is broken
-    Project -> family members: add and edit documents in create and edit modal is broken
-    Project -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
+    Project -> overview -> notifications: no notifications displayed
+    Project -> overview: person and event and document events are not displayed in recent activity, only relationship events
+    Project -> documents: family documents with 0 people attached disappear after creation and reload
+    Project -> documents: delete document does not work
+    Project -> document list: search returns all documents
+    Project -> document list: remove association notes
+    Project -> relationships: add link to view person modal from list
+    Project -> relationships: update relationship validation error
+    Project -> relationships: delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
+    Project -> view person modal -> events: events should be in order of occurrence
+    Project -> view person modal -> events: display server validation error instead of 400 status error
+    Project -> edit person modal -> relationships: should display a message telling the user to edit relationships in the relationships tab
   finished:
+    Project: move create document button to the documents tab
+    Project: implement research notes tab
+    Project: relationships
+    Project: all events should trigger user events that appear in the activity feeds
+    Project -> overview: recent activity should be accurate
+    Project -> overview: recent activity should show create, edit, and delete events for documents, events, persons, and relationships
+    Project -> overview: duplicate notifications
     Project -> documents: no date on documents
     Project -> documents: type is blank
     Project -> documents: duplicate documents are shown
+    Project -> documents: edit modal should populate with existing data
+    Project -> documents: send optional fields as null rather than empty string for backend validation
+    Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
+    Project -> documents: documents should list associated family members with links to their profiles
+    Project -> documents: edit documents from documents tab view
+    Project -> documents: implement add document button for family documents
+    Project -> documents: created or associated document does not appear in edit person modal until whole modal is saved
     Project -> timeline: fix capitalization of event type
     Project -> timeline: related person should appear before event in timeline view
     Project -> family members: person cards should all be the same height
@@ -28,12 +38,29 @@ project:
     Project -> family members: duplicate header with heading and "add person" button should be removed
     Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
     Project -> family members: edit button is obstructed by link to view person modal
+    Project -> family members: clients should not be able to edit family members in the view person modal
+    Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
+    Project -> family members: addding events does not save
+    Project -> family members: add document modal does not keep documents
+    Project -> family members: (fixed but very buggy) should be able to add existing documents to family memberProject -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
+    Project -> relationships: rework how relationships are created and stored
+    Project -> relationships: add links to view person modal
     Project -> new project: the description field does not implement dark mode
     Project -> edit project: the status dropdown has not implemented dark mode
+  discarded:
+    Project -> timeline: duplicate events in timeline
 other:
   active:
+    Dashboard: add icons to notifications
+    Client assignment: add search bar
     Manager dashboard: pending tasks
+    Manager dashboard: update stats at top to remove redundant active projects info
+    Notifications: add icons to notifications
     General: implement the task feature
+    General: add base modal class and close modal with escape key
+    General: add toggles between list and grid view for all list pages
+    General: refactor and reduce reused code
+    General: recreate seed data
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
@@ -72,8 +99,14 @@ other:
     General: once a project is "completed", it should not be editable
 future_functionality:
   active:
+    Api Client: rename Relationship and ApiRelationship
+    General: recreate seed data
+    General: test all features
+    General: mass document upload page
     General: full codebase audit with gemini
     General: import GEDCOM file page
     General: links
     General: payment processing
     General: service purchasing
+    General: tablet/mobile views
+    Project -> documents: preview and download document modal functionality, allow uploading larger files

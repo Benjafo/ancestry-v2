@@ -141,19 +141,19 @@ exports.documentIdValidation = [
  * Validation for associating a document with a person
  */
 exports.associateDocumentPersonValidation = [
-    body('document_id')
+    body('documentId')
         .notEmpty().withMessage(errorMessages.required('Document ID'))
         .isUUID().withMessage('Document ID must be a valid UUID'),
-    
-    body('person_id')
+
+    body('personId')
         .notEmpty().withMessage(errorMessages.required('Person ID'))
         .isUUID().withMessage('Person ID must be a valid UUID'),
-    
+
     body('relevance')
         .optional()
         .isString().withMessage('Relevance must be a string')
         .isIn(['primary', 'secondary', 'mentioned']).withMessage('Relevance must be one of: primary, secondary, mentioned'),
-    
+
     body('notes')
         .optional()
         .isString().withMessage('Notes must be a string')

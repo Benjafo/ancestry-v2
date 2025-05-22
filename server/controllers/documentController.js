@@ -1,6 +1,8 @@
 const documentService = require('../services/documentService');
 const UserEventService = require('../services/userEventService');
 const { Project, ProjectUser } = require('../models');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * Document Controller
@@ -73,7 +75,7 @@ exports.createDocument = async (req, res) => {
                 req.user.user_id,
                 'document_uploaded',
                 `Uploaded document: ${document.title}`,
-                document.document_id,
+                document.projectId,
                 'document'
             );
 
@@ -83,7 +85,7 @@ exports.createDocument = async (req, res) => {
                 req.user.user_id,
                 'document_added',
                 `A new document has been added to your project: ${document.title}`,
-                document.document_id,
+                document.project_id,
                 'document'
             );
         }
@@ -129,7 +131,7 @@ exports.updateDocument = async (req, res) => {
                 req.user.user_id,
                 'document_updated',
                 `Updated document: ${document.title}`,
-                document.document_id,
+                document.project_id,
                 'document'
             );
 
@@ -139,10 +141,11 @@ exports.updateDocument = async (req, res) => {
                 req.user.user_id,
                 'document_updated',
                 `A document in your project has been updated: ${document.title}`,
-                document.document_id,
+                document.project_id,
                 'document'
             );
         }
+        console.log('Updated Document:', document);
 
         res.json({
             message: 'Document updated successfully',
@@ -213,7 +216,7 @@ exports.deleteDocument = async (req, res) => {
                 req.user.user_id,
                 'document_deleted',
                 `A document has been removed from your project: ${documentTitle}`,
-                null, // No document ID since it's deleted
+                projectId,
                 'document'
             );
         }
@@ -319,12 +322,45 @@ exports.getDocumentsByDateRange = async (req, res) => {
 };
 
 /**
+ * Get documents by project ID
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.getProjectDocuments = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const options = {
+            includePersons: req.query.includePersons === 'true'
+        };
+
+        const documents = await documentService.getDocumentsByProjectId(projectId, options);
+
+        res.json(documents);
+    } catch (error) {
+        console.error('Get project documents error:', error);
+
+        if (error.message.includes('not found')) {
+            return res.status(404).json({
+                message: error.message
+            });
+        }
+
+        res.status(500).json({
+            message: 'Server error retrieving project documents',
+            error: error.message
+        });
+    }
+};
+
+/**
  * Associate a document with a person
  * 
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
 exports.associateDocumentWithPerson = async (req, res) => {
+    console.log('Associate Document with Person Request Body:', req.body);
     try {
         const { documentId, personId } = req.body;
 
@@ -416,6 +452,35 @@ exports.updateDocumentPersonAssociation = async (req, res) => {
             }
         );
 
+        // Get document and person info for events
+        const document = await documentService.getDocumentById(documentId);
+        const { Person } = require('../models');
+        const person = await Person.findByPk(personId);
+
+        if (document && person) {
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'document_person_association_updated',
+                `Updated association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
+                documentId,
+                'document'
+            );
+
+            // Create events for all project users if document is associated with a project
+            if (document.project_id) {
+                await UserEventService.createEventForProjectUsers(
+                    document.project_id,
+                    req.user.user_id,
+                    'document_person_association_updated',
+                    `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been updated`,
+                    documentId,
+                    'document'
+                );
+            }
+        }
+
         res.json({
             message: 'Document-person association updated successfully',
             association
@@ -446,7 +511,45 @@ exports.removeDocumentPersonAssociation = async (req, res) => {
     try {
         const { documentId, personId } = req.params;
 
+        // Get document and person details before removing the association
+        const document = await documentService.getDocumentById(documentId);
+        const { Person } = require('../models');
+        const person = await Person.findByPk(personId);
+
+        if (!document || !person) {
+            return res.status(404).json({
+                message: 'Document or person not found'
+            });
+        }
+
+        // Store project_id for event creation
+        const projectId = document.project_id;
+
+        // Remove the association
         await documentService.removeDocumentPersonAssociation(documentId, personId);
+
+        // Create user events if the document is associated with a project
+        if (projectId) {
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'document_person_association_removed',
+                `Removed association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
+                documentId,
+                'document'
+            );
+
+            // Create events for all project users
+            await UserEventService.createEventForProjectUsers(
+                projectId,
+                req.user.user_id,
+                'document_person_association_removed',
+                `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been removed`,
+                projectId, // Change entityId to projectId
+                'document'
+            );
+        }
 
         res.json({
             message: 'Document-person association removed successfully'
@@ -497,6 +600,100 @@ exports.getDocumentPersonAssociation = async (req, res) => {
 
         res.status(500).json({
             message: 'Server error retrieving document-person association',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Get document file for viewing or downloading
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.getDocumentFile = async (req, res) => {
+    try {
+        const { documentId } = req.params;
+
+        // Get document details from database
+        const document = await documentService.getDocumentById(documentId);
+
+        if (!document) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+
+        // Ensure uploads directory exists
+        const uploadsDir = path.join(__dirname, '../uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+
+        // Construct file path
+        const filePath = path.join(uploadsDir, document.file_path);
+
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ message: 'File not found on server' });
+        }
+
+        // Set content type
+        const contentType = document.mime_type || 'application/octet-stream';
+        res.setHeader('Content-Type', contentType);
+
+        // Set content disposition based on query parameter
+        if (req.query.download === 'true') {
+            // For downloading
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(document.file_path)}"`);
+        } else {
+            // For viewing in browser
+            res.setHeader('Content-Disposition', 'inline');
+        }
+
+        // Send the file
+        res.sendFile(filePath);
+    } catch (error) {
+        console.error('Get document file error:', error);
+        res.status(500).json({
+            message: 'Server error retrieving document file',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Upload a document file
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+exports.uploadDocumentFile = async (req, res) => {
+    try {
+        // Check if file was uploaded
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Get file details from multer
+        const { filename, originalname, mimetype, size, path: filePath } = req.file;
+
+        // Extract relative path from absolute path
+        const relativePath = filename;
+
+        // Return file details to client
+        res.status(200).json({
+            message: 'File uploaded successfully',
+            file: {
+                originalname,
+                filename,
+                mimetype,
+                size,
+                path: relativePath
+            }
+        });
+    } catch (error) {
+        console.error('Upload document file error:', error);
+        res.status(500).json({
+            message: 'Server error uploading document file',
             error: error.message
         });
     }

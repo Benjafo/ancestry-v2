@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Person, ProjectDetail } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 
@@ -15,6 +15,8 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
     onViewPerson,
     onRemovePerson
 }) => {
+    // State to track which person card is being hovered
+    const [hoveredPersonId, setHoveredPersonId] = useState<string | null>(null);
     return (
         <div>
             {!project.persons || project.persons.length === 0 ? (
@@ -26,8 +28,10 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                     {project.persons.map(person => (
                         <div
                             key={person.person_id}
-                            className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                            className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                             onClick={() => onViewPerson(person.person_id)}
+                            onMouseEnter={() => setHoveredPersonId(person.person_id)}
+                            onMouseLeave={() => setHoveredPersonId(null)}
                         >
                             <div className="flex justify-between">
                                 <h3 className="font-medium text-gray-900 dark:text-white">
@@ -35,7 +39,11 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                 </h3>
 
                                 {project.access_level === 'edit' && project.status !== 'completed' && (
-                                    <div className="flex space-x-2">
+                                    <div 
+                                        className={`flex space-x-2 transition-opacity duration-200 ${
+                                            hoveredPersonId === person.person_id ? 'opacity-100' : 'opacity-0'
+                                        }`}
+                                    >
                                         <button
                                             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                                             onClick={(e) => {

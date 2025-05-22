@@ -111,6 +111,14 @@ const Document = sequelize.define('Document', {
                 msg: 'Date of original must be a valid date'
             }
         }
+    },
+    project_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+            model: 'projects',
+            key: 'id'
+        }
     }
 }, {
     timestamps: true,
@@ -171,5 +179,14 @@ const Document = sequelize.define('Document', {
         }
     }
 });
+
+// Define associations
+Document.associate = (models) => {
+    // A document belongs to a project
+    Document.belongsTo(models.Project, {
+        foreignKey: 'project_id',
+        as: 'project'
+    });
+};
 
 module.exports = Document;

@@ -67,7 +67,28 @@ exports.createPersonValidation = [
     
     body('notes')
         .optional()
-        .isString().withMessage('Notes must be a string')
+        .isString().withMessage('Notes must be a string'),
+        
+    body('events')
+        .optional()
+        .isArray().withMessage('Events must be an array')
+        .custom((events) => {
+            if (!events || events.length === 0) return true;
+            
+            // Check for duplicate event types (birth/death)
+            const birthEvents = events.filter(e => e.event_type === 'birth');
+            const deathEvents = events.filter(e => e.event_type === 'death');
+            
+            if (birthEvents.length > 1) {
+                throw new Error('Cannot have multiple birth events');
+            }
+            
+            if (deathEvents.length > 1) {
+                throw new Error('Cannot have multiple death events');
+            }
+            
+            return true;
+        })
 ];
 
 /**
@@ -146,7 +167,44 @@ exports.updatePersonValidation = [
     
     body('notes')
         .optional()
-        .isString().withMessage('Notes must be a string')
+        .isString().withMessage('Notes must be a string'),
+        
+    body('events')
+        .optional()
+        .isArray().withMessage('Events must be an array')
+        .custom((events) => {
+            if (!events || events.length === 0) return true;
+            
+            // Check for duplicate event types (birth/death)
+            const birthEvents = events.filter(e => e.event_type === 'birth');
+            const deathEvents = events.filter(e => e.event_type === 'death');
+            
+            if (birthEvents.length > 1) {
+                throw new Error('Cannot have multiple birth events');
+            }
+            
+            if (deathEvents.length > 1) {
+                throw new Error('Cannot have multiple death events');
+            }
+            
+            return true;
+        }),
+        
+    body('deletedEventIds')
+        .optional()
+        .isArray().withMessage('Deleted event IDs must be an array')
+        .custom((eventIds) => {
+            if (!eventIds || eventIds.length === 0) return true;
+            
+            // Check that all IDs are valid UUIDs
+            for (const id of eventIds) {
+                if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+                    throw new Error(`Invalid UUID format for event ID: ${id}`);
+                }
+            }
+            
+            return true;
+        })
 ];
 
 /**

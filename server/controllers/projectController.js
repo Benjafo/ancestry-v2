@@ -1,6 +1,7 @@
-const { Project, User, Person, Event, Document } = require('../models');
+const { Project, User, Person, Event, Document, DocumentPerson } = require('../models');
 const { Sequelize } = require('sequelize');
 const projectService = require('../services/projectService');
+const UserEventService = require('../services/userEventService');
 
 // Get all projects
 exports.getProjects = async (req, res) => {
@@ -139,25 +140,43 @@ exports.getProjectById = async (req, res) => {
         // Process the project data to match frontend expectations
         const projectJson = project.toJSON();
 
-        // Collect all documents from all persons in the project
-        const documents = [];
+        // Collect all documents from all persons in the project and include associated persons
+        const documentsMap = new Map(); // Use a map to store unique documents by ID
+
         if (projectJson.persons && projectJson.persons.length > 0) {
-            projectJson.persons.forEach(person => {
+            for (const person of projectJson.persons) {
                 if (person.documents && person.documents.length > 0) {
-                    person.documents.forEach(doc => {
-                        // Transform document properties to match ProjectDetail interface
-                        documents.push({
-                            id: doc.document_id,
-                            title: doc.title,
-                            type: doc.document_type,
-                            uploaded_at: doc.upload_date,
-                            person_name: `${person.first_name} ${person.last_name}`,
-                            person_id: person.person_id
-                        });
-                    });
+                    for (const doc of person.documents) {
+                        // If the document is not already in the map, add it
+                        if (!documentsMap.has(doc.document_id)) {
+                            documentsMap.set(doc.document_id, {
+                                id: doc.document_id,
+                                title: doc.title,
+                                type: doc.document_type,
+                                uploaded_at: doc.upload_date,
+                                // Initialize persons array
+                                persons: []
+                            });
+                        }
+
+                        // Add the current person to the document's persons array in the map
+                        const documentInMap = documentsMap.get(doc.document_id);
+                        if (documentInMap && !documentInMap.persons.some(p => p.person_id === person.person_id)) {
+                            documentInMap.persons.push({
+                                person_id: person.person_id,
+                                first_name: person.first_name,
+                                last_name: person.last_name,
+                                // person_name: `${person.first_name} ${person.last_name}`
+                            });
+                        }
+                    }
                 }
-            });
+            }
         }
+
+        // Convert the map values back to an array
+        const documents = Array.from(documentsMap.values());
+
 
         // Collect all events (both from project and from persons)
         const timeline = [];
@@ -234,6 +253,16 @@ exports.createProject = async (req, res) => {
             researcher_id: req.user.user_id // Assign current user as researcher
         });
 
+        // Create user event for project creation
+        await UserEventService.createEvent(
+            req.user.user_id, // User receiving the event
+            req.user.user_id, // Actor (user who created the project)
+            'project_created',
+            `Created new project: ${title}`,
+            project.id,
+            'project'
+        );
+
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
         const projectWithDates = {
@@ -298,12 +327,45 @@ exports.updateProject = async (req, res) => {
             });
         }
 
+        // Store original values for event message
+        const originalTitle = project.title;
+        const originalStatus = project.status;
+
         // Update fields
         if (title) project.title = title;
         if (description) project.description = description;
         if (status) project.status = status;
 
         await project.save();
+
+        // Create user event for project update
+        let updateMessage = `Updated project: ${project.title}`;
+        if (title && title !== originalTitle) {
+            updateMessage += ` (title changed from "${originalTitle}" to "${title}")`;
+        }
+        if (status && status !== originalStatus) {
+            updateMessage += ` (status changed from "${originalStatus}" to "${status}")`;
+        }
+
+        // Create event for the actor
+        await UserEventService.createEvent(
+            req.user.user_id,
+            req.user.user_id,
+            'project_updated',
+            updateMessage,
+            project.id,
+            'project'
+        );
+
+        // Create events for all project users
+        await UserEventService.createEventForProjectUsers(
+            project.id,
+            req.user.user_id,
+            'project_updated',
+            `Project "${project.title}" has been updated`,
+            project.id,
+            'project'
+        );
 
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
@@ -400,6 +462,32 @@ exports.updateProjectPerson = async (req, res) => {
 
         const association = await projectService.updateProjectPerson(id, personId, { notes });
 
+        // Get person details for the event message
+        const { Person } = require('../models');
+        const person = await Person.findByPk(personId);
+
+        if (person) {
+            // Create event for the actor
+            await UserEventService.createEvent(
+                req.user.user_id,
+                req.user.user_id,
+                'project_person_updated',
+                `Updated project notes for person: ${person.first_name} ${person.last_name}`,
+                id,
+                'project'
+            );
+
+            // Create events for all project users
+            await UserEventService.createEventForProjectUsers(
+                id,
+                req.user.user_id,
+                'project_person_updated',
+                `Notes updated for ${person.first_name} ${person.last_name} in this project`,
+                id,
+                'project'
+            );
+        }
+
         res.json({
             message: 'Project person updated successfully',
             association
@@ -468,8 +556,7 @@ exports.getProjectEvents = async (req, res) => {
         // Build query options
         const queryOptions = {
             where: {
-                entity_id: id,
-                entity_type: 'project'
+                entity_id: id
             },
             order: [[sortBy, sortOrder.toUpperCase()]],
             limit: parseInt(limit),
@@ -547,6 +634,86 @@ async function checkProjectAccess(req, projectId) {
 
     return true;
 }
+
+// Get relationships for a specific project
+exports.getProjectRelationships = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if user has access to this project
+        await checkProjectAccess(req, id);
+
+        // Import necessary models
+        const { Relationship, Person } = require('../models');
+        const { Op } = require('sequelize');
+
+        // Get all persons in the project
+        const persons = await projectService.getProjectPersons(id);
+
+        if (!persons || persons.length === 0) {
+            return res.json([]);
+        }
+
+        // Extract person IDs
+        const personIds = persons.map(person => person.person_id);
+
+        // Find all relationships where either person1 or person2 is in the project
+        const relationships = await Relationship.findAll({
+            where: {
+                [Op.or]: [
+                    { person1_id: { [Op.in]: personIds } },
+                    { person2_id: { [Op.in]: personIds } }
+                ]
+            },
+            include: [
+                {
+                    model: Person,
+                    as: 'person1',
+                    attributes: ['person_id', 'first_name', 'last_name']
+                },
+                {
+                    model: Person,
+                    as: 'person2',
+                    attributes: ['person_id', 'first_name', 'last_name']
+                }
+            ]
+        });
+
+        // Transform relationships to match frontend expectations
+        const formattedRelationships = relationships.map(rel => {
+            const relationship = rel.toJSON();
+            return {
+                id: relationship.relationship_id,
+                person1Id: relationship.person1_id,
+                person2Id: relationship.person2_id,
+                relationship_type: relationship.relationship_type,
+                relationship_qualifier: relationship.relationship_qualifier,
+                startDate: relationship.start_date,
+                endDate: relationship.end_date,
+                notes: relationship.notes,
+                person1: relationship.person1,
+                person2: relationship.person2
+            };
+        });
+
+        res.json(formattedRelationships);
+    } catch (error) {
+        console.error('Get project relationships error:', error);
+
+        if (error.message.includes('not found')) {
+            return res.status(404).json({ message: error.message });
+        }
+
+        if (error.message.includes('access')) {
+            return res.status(403).json({ message: error.message });
+        }
+
+        res.status(500).json({
+            message: 'Server error retrieving project relationships',
+            error: error.message
+        });
+    }
+};
 
 // Helper function to check if user has edit access to a project
 async function checkProjectEditAccess(req, projectId) {

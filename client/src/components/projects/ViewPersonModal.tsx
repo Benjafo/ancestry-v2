@@ -1,20 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Person, projectsApi } from '../../api/client';
+import { Person, Relationship, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import DocumentList from '../documents/DocumentList';
 
 interface ViewPersonModalProps {
     personId: string;
     isOpen: boolean;
     onClose: () => void;
     onEdit?: (person: Person) => void; // Optional callback for edit button
-    projectStatus?: 'active' | 'completed' | 'on_hold'; // Add project status prop
+    onViewRelatedPerson?: (personId: string) => void; // Optional callback for viewing related persons
+    projectStatus?: 'active' | 'completed' | 'on_hold';
+    isManager?: boolean;
 }
 
-const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onClose, onEdit, projectStatus }) => {
+const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
+    personId,
+    isOpen,
+    onClose,
+    onEdit,
+    onViewRelatedPerson,
+    projectStatus,
+    isManager
+}) => {
     const [person, setPerson] = useState<Person | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'info' | 'events' | 'documents' | 'relationships'>('info');
+
+    // No need for document viewing state as DocumentList handles this internally
 
     // Function to format event type for display
     const formatEventType = (eventType: string): string => {
@@ -36,6 +49,66 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
         }
     }, [personId, isOpen]);
 
+    // Function to organize relationships from relationshipsAsSubject and relationshipsAsObject
+    const organizeRelationships = (personData: Person) => {
+        const organizedRelationships = {
+            parents: [] as Relationship[],
+            children: [] as Relationship[],
+            spouses: [] as Relationship[],
+            siblings: [] as Relationship[]
+        };
+
+        // Process relationships where this person is the subject (person1)
+        if (personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) {
+            personData.relationshipsAsSubject.forEach(rel => {
+                if (rel.person2) {
+                    const person = {
+                        person_id: rel.person2.person_id,
+                        first_name: rel.person2.first_name,
+                        last_name: rel.person2.last_name,
+                        relationship_qualifier: rel.relationship_qualifier,
+                        start_date: rel.start_date,
+                        end_date: rel.end_date
+                    };
+
+                    if (rel.relationship_type === 'parent') {
+                        organizedRelationships.children.push(person);
+                    } else if (rel.relationship_type === 'spouse') {
+                        organizedRelationships.spouses.push(person);
+                    } else if (rel.relationship_type === 'sibling') {
+                        organizedRelationships.siblings.push(person);
+                    }
+                }
+            });
+        }
+
+        // Process relationships where this person is the object (person2)
+        if (personData.relationshipsAsObject && personData.relationshipsAsObject.length > 0) {
+            personData.relationshipsAsObject.forEach(rel => {
+                if (rel.person1) {
+                    const person = {
+                        person_id: rel.person1.person_id,
+                        first_name: rel.person1.first_name,
+                        last_name: rel.person1.last_name,
+                        relationship_qualifier: rel.relationship_qualifier,
+                        start_date: rel.start_date,
+                        end_date: rel.end_date
+                    };
+
+                    if (rel.relationship_type === 'parent') {
+                        organizedRelationships.parents.push(person);
+                    } else if (rel.relationship_type === 'spouse') {
+                        organizedRelationships.spouses.push(person);
+                    } else if (rel.relationship_type === 'sibling') {
+                        organizedRelationships.siblings.push(person);
+                    }
+                }
+            });
+        }
+
+        return organizedRelationships;
+    };
+
     const fetchPersonDetails = async () => {
         setLoading(true);
         try {
@@ -45,6 +118,17 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                 includeDocuments: true,
                 includeRelationships: true
             });
+
+            // Process relationships if they exist in the new format
+            if ((personData.relationshipsAsSubject && personData.relationshipsAsSubject.length > 0) ||
+                (personData.relationshipsAsObject && personData.relationshipsAsObject.length > 0)) {
+
+                const organizedRelationships = organizeRelationships(personData);
+
+                // Update the person data with the organized relationships
+                personData.relationships = organizedRelationships;
+            }
+
             setPerson(personData);
         } catch (err) {
             console.error('Error fetching person details:', err);
@@ -65,7 +149,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                         {loading ? 'Loading...' : person ? `${person.first_name} ${person.last_name}` : 'Person Details'}
                     </h2>
                     <div className="flex items-center space-x-2">
-                        {!loading && person && onEdit && projectStatus !== 'completed' && (
+                        {!loading && person && onEdit && projectStatus !== 'completed' && isManager && (
                             <button
                                 onClick={() => {
                                     onEdit(person);
@@ -287,31 +371,13 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Documents</h3>
                                     {person.documents && person.documents.length > 0 ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {person.documents.map(document => (
-                                                <div key={document.document_id} className="border dark:border-gray-700 rounded-lg p-4">
-                                                    <div className="flex items-start">
-                                                        <div className="flex-shrink-0 mr-4">
-                                                            {/* Document type icon would go here */}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-base font-medium text-gray-900 dark:text-white">{document.title}</h4>
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Type: {formatEventType(document.document_type)}</p>
-                                                            {document.date_of_original && (
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Date: {formatDate(document.date_of_original)}
-                                                                </p>
-                                                            )}
-                                                            {document.source && (
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    Source: {document.source}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <DocumentList
+                                            personId={person.person_id}
+                                            documents={person.documents}
+                                            isLoading={false}
+                                            error={null}
+                                            readOnly={true}
+                                        />
                                     ) : (
                                         <div className="text-center py-8">
                                             <p className="text-gray-500 dark:text-gray-400">No documents found for this person.</p>
@@ -324,47 +390,26 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                             {activeTab === 'relationships' && (
                                 <div>
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
+
                                     {person.relationships && Object.keys(person.relationships).length > 0 ? (
                                         <div className="space-y-6">
-                                            {person.relationships.parents && person.relationships.parents.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Parents</h4>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {person.relationships.parents.map(parent => (
-                                                            <div key={parent.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{parent.first_name} {parent.last_name}</p>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
-                                                                </p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {person.relationships.children && person.relationships.children.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Children</h4>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {person.relationships.children.map(child => (
-                                                            <div key={child.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{child.first_name} {child.last_name}</p>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                    {child.relationship_qualifier && `${child.relationship_qualifier} child`}
-                                                                </p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
+                                            {/* Spouses */}
                                             {person.relationships.spouses && person.relationships.spouses.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Spouses</h4>
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Spouses</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.spouses.map(spouse => (
-                                                            <div key={spouse.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{spouse.first_name} {spouse.last_name}</p>
+                                                            <div
+                                                                key={spouse.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(spouse.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
                                                                 {spouse.start_date && (
                                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                         Married: {formatDate(spouse.start_date)}
@@ -377,16 +422,193 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({ personId, isOpen, onC
                                                 </div>
                                             )}
 
+                                            {/* Parents */}
+                                            {person.relationships.parents && person.relationships.parents.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Parents</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {person.relationships.parents.map(parent => (
+                                                            <div
+                                                                key={parent.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(parent.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Children */}
+                                            {person.relationships.children && person.relationships.children.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Children</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {person.relationships.children.map(child => (
+                                                            <div
+                                                                key={child.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(child.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
+                                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {child.relationship_qualifier && `${child.relationship_qualifier} child`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Siblings */}
                                             {person.relationships.siblings && person.relationships.siblings.length > 0 && (
-                                                <div>
-                                                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Siblings</h4>
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Siblings</h5>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         {person.relationships.siblings.map(sibling => (
-                                                            <div key={sibling.person_id} className="border dark:border-gray-700 rounded-lg p-3">
-                                                                <p className="font-medium">{sibling.first_name} {sibling.last_name}</p>
+                                                            <div
+                                                                key={sibling.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(sibling.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{sibling.first_name} {sibling.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {sibling.relationship_qualifier && `${sibling.relationship_qualifier} sibling`}
                                                                 </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Grandparents */}
+                                            {(person.relationships).grandparents && (person.relationships).grandparents.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandparents</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(person.relationships).grandparents.map((grandparent) => (
+                                                            <div
+                                                                key={grandparent.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(grandparent.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{grandparent.first_name} {grandparent.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Grandchildren */}
+                                            {(person.relationships).grandchildren && (person.relationships).grandchildren.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Grandchildren</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(person.relationships).grandchildren.map((grandchild) => (
+                                                            <div
+                                                                key={grandchild.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(grandchild.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{grandchild.first_name} {grandchild.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Aunts/Uncles */}
+                                            {(person.relationships).auntsUncles && (person.relationships).auntsUncles.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Aunts & Uncles</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(person.relationships).auntsUncles.map((auntUncle) => (
+                                                            <div
+                                                                key={auntUncle.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(auntUncle.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{auntUncle.first_name} {auntUncle.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Nieces/Nephews */}
+                                            {(person.relationships).niecesNephews && (person.relationships).niecesNephews.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nieces & Nephews</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(person.relationships).niecesNephews.map((nieceNephew) => (
+                                                            <div
+                                                                key={nieceNephew.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(nieceNephew.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{nieceNephew.first_name} {nieceNephew.last_name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Cousins */}
+                                            {(person.relationships).cousins && (person.relationships).cousins.length > 0 && (
+                                                <div>
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cousins</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(person.relationships).cousins.map((cousin) => (
+                                                            <div
+                                                                key={cousin.person_id}
+                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (onViewRelatedPerson) {
+                                                                        onViewRelatedPerson(cousin.person_id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <p className="font-medium text-gray-900 dark:text-white">{cousin.first_name} {cousin.last_name}</p>
                                                             </div>
                                                         ))}
                                                     </div>

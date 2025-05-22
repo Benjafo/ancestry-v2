@@ -4,7 +4,6 @@ import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
-import AddPersonModal from '../components/projects/AddPersonModal';
 import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
 import CreatePersonModal from '../components/projects/CreatePersonModal';
 import EditPersonModal from '../components/projects/EditPersonModal';
@@ -13,8 +12,11 @@ import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectDocumentsTab from '../components/projects/ProjectDocumentsTab';
 import ProjectFamilyMembersTab from '../components/projects/ProjectFamilyMembersTab';
 import ProjectOverviewTab from '../components/projects/ProjectOverviewTab';
+import ProjectRelationshipsTab from '../components/projects/ProjectRelationshipsTab';
+import ProjectResearchNotesTab from '../components/projects/ProjectResearchNotesTab';
 import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
+import { User } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
 
 const ProjectDetail = () => {
@@ -22,15 +24,19 @@ const ProjectDetail = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<ProjectDetailType | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'timeline' | 'family_members' | 'relationships' | 'research_notes'>('overview');
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+    // const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
     const [isCreatePersonModalOpen, setIsCreatePersonModalOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Person | null>(null);
     const [editingPersonDetails, setEditingPersonDetails] = useState<Person | null>(null);
     const [viewingPersonId, setViewingPersonId] = useState<string | null>(null);
     const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    // Get current user from localStorage to check if they are a manager
+    const currentUser: User = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const isManager = currentUser?.roles?.includes('manager');
 
     const handleOpenEditModal = () => {
         if (project) {
@@ -51,9 +57,9 @@ const ProjectDetail = () => {
         }, 3000);
     };
 
-    const handleAddPerson = () => {
-        setIsAddPersonModalOpen(true);
-    };
+    // const handleAddPerson = () => {
+    //     setIsAddPersonModalOpen(true);
+    // };
 
     const handleCreatePerson = () => {
         setIsCreatePersonModalOpen(true);
@@ -82,7 +88,8 @@ const ProjectDetail = () => {
             setSuccessMessage('Person removed from project successfully');
 
             // Refresh project data
-            const updatedProject = await projectsApi.getProjectById(projectId);
+            const updatedProject = await projectsApi.getProjectById(projectId, { includeEvents: true, includeDocuments: true, includeRelationships: true }); // Ensure all related data is included
+            console.log('Refreshed project data after person update:', updatedProject); // Log the data
             setProject(updatedProject);
 
             // Clear success message after 3 seconds
@@ -103,19 +110,19 @@ const ProjectDetail = () => {
         }
     };
 
-    const handlePersonAdded = async () => {
-        // Show success message
-        setSuccessMessage('Person added to project successfully');
+    // const handlePersonAdded = async () => {
+    //     // Show success message
+    //     setSuccessMessage('Person added to project successfully');
 
-        // Refresh project data
-        const updatedProject = await projectsApi.getProjectById(projectId);
-        setProject(updatedProject);
+    //     // Refresh project data
+    //     const updatedProject = await projectsApi.getProjectById(projectId);
+    //     setProject(updatedProject);
 
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-            setSuccessMessage(null);
-        }, 3000);
-    };
+    //     // Clear success message after 3 seconds
+    //     setTimeout(() => {
+    //         setSuccessMessage(null);
+    //     }, 3000);
+    // };
 
     const handlePersonCreated = async () => {
         // Show success message
@@ -136,7 +143,25 @@ const ProjectDetail = () => {
         setSuccessMessage('Person updated successfully');
 
         // Refresh project data
-        const updatedProject = await projectsApi.getProjectById(projectId);
+        const updatedProject = await projectsApi.getProjectById(projectId, { includeEvents: true, includeDocuments: true, includeRelationships: true }); // Ensure all related data is included
+        console.log('Refreshed project data after person update:', updatedProject); // Log the data
+        setProject(updatedProject);
+
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+        }, 3000);
+    };
+
+    const handleDocumentAdded = async () => {
+        // Show success message
+        setSuccessMessage('Document added successfully');
+
+        // Refresh project data with documents included
+        const updatedProject = await projectsApi.getProjectById(projectId, {
+            includeDocuments: true
+        });
+        console.log('Refreshed project data after document added:', updatedProject);
         setProject(updatedProject);
 
         // Clear success message after 3 seconds
@@ -162,7 +187,11 @@ const ProjectDetail = () => {
     useEffect(() => {
         const fetchProjectDetails = async () => {
             try {
-                const projectData = await projectsApi.getProjectById(projectId);
+                // Include relationships and documents when fetching project data
+                const projectData = await projectsApi.getProjectById(projectId, {
+                    includeRelationships: true,
+                    includeDocuments: true
+                });
                 setProject(projectData);
                 setIsLoading(false);
             } catch (err) {
@@ -232,20 +261,13 @@ const ProjectDetail = () => {
                     </Link>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{project.title}</h1>
                 </div>
-                <div className="flex space-x-2">
+                <div>
                     <button
                         className="btn-secondary"
                         onClick={handleOpenEditModal}
                         title={project.status === 'completed' ? 'You can only change the status of completed projects' : 'Edit project'}
                     >
                         Edit Project
-                    </button>
-                    <button 
-                        className={`btn-primary ${project.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={project.status === 'completed'}
-                        title={project.status === 'completed' ? 'Completed projects cannot be modified' : 'Add document'}
-                    >
-                        Add Document
                     </button>
                 </div>
             </div>
@@ -311,6 +333,24 @@ const ProjectDetail = () => {
                         >
                             Family Members {project.persons && `(${project.persons.length})`}
                         </button>
+                        <button
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
+                            onClick={() => setActiveTab('relationships')}
+                        >
+                            Relationships
+                        </button>
+                        <button
+                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'research_notes'
+                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                }`}
+                            onClick={() => setActiveTab('research_notes')}
+                        >
+                            Research Notes
+                        </button>
                     </nav>
                 </div>
 
@@ -321,7 +361,11 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'documents' && (
-                        <ProjectDocumentsTab project={project} />
+                        <ProjectDocumentsTab
+                            project={project}
+                            onDocumentAdded={handleDocumentAdded}
+                            onViewPerson={handleViewPerson}
+                        />
                     )}
 
                     {activeTab === 'timeline' && (
@@ -336,17 +380,17 @@ const ProjectDetail = () => {
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
                             {project.access_level === 'edit' && project.status !== 'completed' && (
                                 <div className="flex space-x-2">
-                                    <button
+                                    { /* <button
                                         className="btn-secondary"
-                                        onClick={handleCreatePerson}
-                                    >
-                                        Create New Person
-                                    </button>
-                                    <button
-                                        className="btn-primary"
                                         onClick={handleAddPerson}
                                     >
                                         Add Existing Person
+                                    </button> */ }
+                                    <button
+                                        className="btn-primary"
+                                        onClick={handleCreatePerson}
+                                    >
+                                        Create New Person
                                     </button>
                                 </div>
                             )}
@@ -366,6 +410,14 @@ const ProjectDetail = () => {
                             onRemovePerson={handleRemovePerson}
                         />
                     )}
+
+                    {activeTab === 'relationships' && (
+                        <ProjectRelationshipsTab project={project} />
+                    )}
+
+                    {activeTab === 'research_notes' && (
+                        <ProjectResearchNotesTab project={project} />
+                    )}
                 </div>
             </div>
 
@@ -379,7 +431,7 @@ const ProjectDetail = () => {
                 />
             )}
 
-            {/* Add Person Modal */}
+            {/* Add Person Modal
             {isAddPersonModalOpen && (
                 <AddPersonModal
                     projectId={projectId}
@@ -387,7 +439,7 @@ const ProjectDetail = () => {
                     onClose={() => setIsAddPersonModalOpen(false)}
                     onPersonAdded={handlePersonAdded}
                 />
-            )}
+            )} */}
 
             {/* Create Person Modal */}
             {isCreatePersonModalOpen && (
@@ -427,7 +479,9 @@ const ProjectDetail = () => {
                     isOpen={!!viewingPersonId}
                     onClose={() => setViewingPersonId(null)}
                     onEdit={handleEditPersonDetails}
+                    onViewRelatedPerson={handleViewPerson}
                     projectStatus={project.status}
+                    isManager={isManager}
                 />
             )}
 

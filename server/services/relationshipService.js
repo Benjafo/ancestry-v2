@@ -38,6 +38,11 @@ class RelationshipService {
      */
     async createRelationship(relationshipData) {
         return await TransactionManager.executeTransaction(async (transaction) => {
+            // Enforce that only 'parent' and 'spouse' relationships can be created directly
+            if (!['parent', 'spouse'].includes(relationshipData.relationship_type)) {
+                throw new Error(`Only 'parent' and 'spouse' relationships can be created directly. Other relationship types are derived automatically.`);
+            }
+            
             // Get both persons' data
             const [person1, person2] = await Promise.all([
                 personRepository.findById(relationshipData.person1_id, { transaction }),
@@ -50,6 +55,25 @@ class RelationshipService {
             
             if (!person2) {
                 throw new Error(`Person with id ${relationshipData.person2_id} not found`);
+            }
+            
+            // Check for existing relationships between these two people
+            const existingRelationships = await relationshipRepository.findBetweenPersons(
+                relationshipData.person1_id, 
+                relationshipData.person2_id,
+                { transaction }
+            );
+            
+            // If there's an existing relationship of the same type, prevent duplication
+            const duplicateRelationship = existingRelationships.find(rel => 
+                (rel.relationship_type === relationshipData.relationship_type) ||
+                // Also check for inverse relationships (parent-child)
+                (rel.relationship_type === 'parent' && relationshipData.relationship_type === 'parent' && 
+                 rel.person1_id === relationshipData.person2_id && rel.person2_id === relationshipData.person1_id)
+            );
+            
+            if (duplicateRelationship) {
+                throw new Error(`A relationship of type '${relationshipData.relationship_type}' already exists between these people`);
             }
             
             // Validate relationship based on type
@@ -124,6 +148,12 @@ class RelationshipService {
                 throw new Error(`Relationship with id ${id} not found`);
             }
             
+            // Enforce that only 'parent' and 'spouse' relationships can be updated
+            if (relationshipData.relationship_type && 
+                !['parent', 'spouse'].includes(relationshipData.relationship_type)) {
+                throw new Error(`Only 'parent' and 'spouse' relationships can be updated directly. Other relationship types are derived automatically.`);
+            }
+            
             // Get both persons' data
             const [person1, person2] = await Promise.all([
                 personRepository.findById(currentRelationship.person1_id, { transaction }),
@@ -135,6 +165,11 @@ class RelationshipService {
                 ...currentRelationship.toJSON(),
                 ...relationshipData
             };
+            
+            // Ensure the relationship type is still valid
+            if (!['parent', 'spouse', 'child'].includes(updatedData.relationship_type)) {
+                throw new Error(`Invalid relationship type. Only 'parent', 'child', and 'spouse' relationships are allowed.`);
+            }
             
             // Validate relationship based on type
             if (updatedData.relationship_type === 'spouse') {

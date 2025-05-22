@@ -20,13 +20,13 @@ const ProjectOverviewTab: React.FC<ProjectOverviewTabProps> = ({ project }) => {
         const fetchRecentActivity = async () => {
             try {
                 setIsLoading(true);
-                console.log(`Fetching recent activity for project ${project.id}`);
                 const data = await projectsApi.getProjectEvents(project.id, {
-                    limit: 3,
+                    limit: 5,
                     sortBy: 'createdAt',
-                    sortOrder: 'desc'
+                    sortOrder: 'desc',
+                    // We can't filter by multiple event types at once, so we'll fetch all events
+                    // and let the backend return all relevant events
                 });
-                console.log('Recent activity API response:', data);
                 setRecentActivity(data.events || []);
                 setIsLoading(false);
             } catch (err) {

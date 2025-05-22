@@ -29,11 +29,6 @@ const ActivityModal: React.FC<ActivityModalProps> = ({ isOpen, onClose, projectI
         totalPages: 1
     });
 
-    // Log when modal opens/closes
-    useEffect(() => {
-        console.log(`Modal isOpen: ${isOpen}, projectId: ${projectId}`);
-    }, [isOpen, projectId]);
-
     // Fetch activities
     useEffect(() => {
         if (!isOpen) return;
@@ -49,7 +44,7 @@ const ActivityModal: React.FC<ActivityModalProps> = ({ isOpen, onClose, projectI
                     limit: 5,
                     sortBy,
                     sortOrder,
-                    // eventType: filterType !== 'all' ? filterType : undefined
+                    eventType: filterType !== 'all' ? filterType : undefined
                 });
 
                 console.log('Modal API response:', data);
@@ -163,13 +158,13 @@ const ActivityModal: React.FC<ActivityModalProps> = ({ isOpen, onClose, projectI
                         {isLoading ? (
                             <LoadingSpinner containerClassName="h-[200px] flex items-center justify-center" size="md" />
                         ) : error ? (
-                            <ErrorAlert 
-                                message={error} 
+                            <ErrorAlert
+                                message={error}
                                 className="h-[200px] flex items-center justify-center"
                             />
                         ) : filteredActivities.length === 0 ? (
-                            <EmptyState 
-                                message="No activities found" 
+                            <EmptyState
+                                message="No activities found"
                                 className="h-[200px] flex items-center justify-center"
                             />
                         ) : (

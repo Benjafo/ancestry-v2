@@ -175,6 +175,11 @@ export interface Event {
     updated_at: string;
 }
 
+export interface NewEvent extends Omit<Event, 'event_id' | 'created_at' | 'updated_at'> {
+    // Any additional fields specific to new events
+    projectId?: string; // Optional project ID for notifications
+}
+
 export interface Document {
     document_id: string;
     title: string;
@@ -186,8 +191,18 @@ export interface Document {
     description?: string;
     source?: string;
     date_of_original?: string;
+    project_id?: string;
     created_at: string;
     updated_at: string;
+    persons?: {
+        person_id: string;
+        first_name: string;
+        last_name: string;
+        middle_name?: string;
+        gender?: string;
+        birth_date?: string;
+        death_date?: string;
+    }[];
 }
 
 export interface Relationship {
@@ -223,7 +238,14 @@ export interface Person {
         children?: Relationship[];
         spouses?: Relationship[];
         siblings?: Relationship[];
+        grandparents?: Relationship[]; // Added
+        grandchildren?: Relationship[]; // Added
+        auntsUncles?: Relationship[]; // Added
+        niecesNephews?: Relationship[]; // Added
+        cousins?: Relationship[]; // Added
     };
+    relationshipsAsSubject?: ApiRelationship[]; // Keep for now, might be used elsewhere
+    relationshipsAsObject?: ApiRelationship[]; // Keep for now, might be used elsewhere
 }
 
 export interface ProjectDetail extends Project {
@@ -236,8 +258,12 @@ export interface ProjectDetail extends Project {
         title: string;
         type: string;
         uploaded_at: string;
-        person_name?: string;
-        person_id?: string;
+        // Include an array of associated persons
+        persons?: {
+            person_id: string;
+            first_name: string;
+            last_name: string;
+        }[];
     }[];
     timeline: {
         id: string;
@@ -345,8 +371,18 @@ export const projectsApi = {
         return response.json();
     },
 
-    getProjectById: async (id: string): Promise<ProjectDetail> => {
-        const response = await apiClient.get(`projects/${id}`);
+    getProjectById: async (id: string, options?: {
+        includeEvents?: boolean;
+        includeDocuments?: boolean;
+        includeRelationships?: boolean;
+    }): Promise<ProjectDetail> => {
+        const queryParams = new URLSearchParams();
+        if (options?.includeEvents) queryParams.append('includeEvents', 'true');
+        if (options?.includeDocuments) queryParams.append('includeDocuments', 'true');
+        if (options?.includeRelationships) queryParams.append('includeRelationships', 'true');
+
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await apiClient.get(`projects/${id}${queryString}`);
         return response.json();
     },
 
@@ -410,14 +446,21 @@ export const projectsApi = {
         return response.json();
     },
 
-    createPerson: async (personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+    createPerson: async (personData: Partial<Person> & { events?: NewEvent[] }): Promise<Person> => {
         const response = await apiClient.post('persons', { json: personData });
-        return response.json();
+        console.log('Response:', response);
+        const result = await response.json<{ message: string; person: Person }>();
+        console.log('Created person:', result);
+        return result.person;
     },
 
-    updatePerson: async (personId: string, personData: Partial<Person>): Promise<{ message: string; person: Person }> => {
+    updatePerson: async (personId: string, personData: Partial<Person> & {
+        events?: (NewEvent | Event)[],
+        deletedEventIds?: string[]
+    }): Promise<Person> => {
         const response = await apiClient.put(`persons/${personId}`, { json: personData });
-        return response.json();
+        const result = await response.json<{ message: string; person: Person }>();
+        return result.person;
     },
 
     // Get project events
@@ -435,6 +478,33 @@ export const projectsApi = {
             searchParams: params
         });
         return response.json();
+    },
+
+    // Add a research note to a project
+    addResearchNote: async (projectId: string, note: string): Promise<{ message: string; event: UserEvent }> => {
+        const response = await apiClient.post('user-events', {
+            json: {
+                event_type: 'research_milestone',
+                message: note,
+                entity_id: projectId,
+                entity_type: 'project'
+            }
+        });
+        return response.json();
+    },
+
+    // Update a research note
+    updateResearchNote: async (noteId: string, message: string): Promise<{ message: string; event: UserEvent }> => {
+        const response = await apiClient.put(`user-events/${noteId}`, {
+            json: { message }
+        });
+        return response.json();
+    },
+
+    // Delete a research note
+    deleteResearchNote: async (noteId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`user-events/${noteId}`);
+        return response.json();
     }
 };
 
@@ -451,21 +521,7 @@ export interface Event {
     updated_at: string;
 }
 
-// Document types
-export interface Document {
-    document_id: string;
-    title: string;
-    document_type: string;
-    file_path: string;
-    upload_date: string;
-    file_size?: number;
-    mime_type?: string;
-    description?: string;
-    source?: string;
-    date_of_original?: string;
-    created_at: string;
-    updated_at: string;
-}
+// Document types (interface already defined above)
 
 export interface DocumentPersonAssociation {
     document_id: string;
@@ -510,18 +566,19 @@ export const eventsApi = {
         return response.json();
     },
 
-    createEvent: async (eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
+    createEvent: async (eventData: Partial<Event> & { projectId?: string }): Promise<{ message: string; event: Event }> => {
         const response = await apiClient.post('events', { json: eventData });
         return response.json();
     },
 
-    updateEvent: async (eventId: string, eventData: Partial<Event>): Promise<{ message: string; event: Event }> => {
+    updateEvent: async (eventId: string, eventData: Partial<Event> & { projectId?: string }): Promise<{ message: string; event: Event }> => {
         const response = await apiClient.put(`events/${eventId}`, { json: eventData });
         return response.json();
     },
 
-    deleteEvent: async (eventId: string): Promise<{ message: string }> => {
-        const response = await apiClient.delete(`events/${eventId}`);
+    deleteEvent: async (eventId: string, projectId?: string): Promise<{ message: string }> => {
+        const queryParams = projectId ? `?projectId=${projectId}` : '';
+        const response = await apiClient.delete(`events/${eventId}${queryParams}`);
         return response.json();
     },
 
@@ -563,8 +620,27 @@ export const documentsApi = {
         return response.json();
     },
 
+    uploadFile: async (file: File): Promise<{ message: string; file: { originalname: string; filename: string; mimetype: string; size: number; path: string } }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await apiClient.post('documents/upload', { body: formData });
+        return response.json();
+    },
+
     createDocument: async (documentData: Partial<Document>): Promise<{ message: string; document: Document }> => {
         const response = await apiClient.post('documents', { json: documentData });
+        return response.json();
+    },
+
+    getDocumentsByProjectId: async (projectId: string, options?: { includePersons?: boolean }): Promise<Document[]> => {
+        const params = new URLSearchParams();
+        if (options?.includePersons) {
+            params.append('includePersons', 'true');
+        }
+
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`projects/${projectId}/documents${queryString}`);
         return response.json();
     },
 
@@ -627,6 +703,100 @@ export const documentsApi = {
 
     getDocumentPersonAssociation: async (documentId: string, personId: string): Promise<DocumentPersonAssociation> => {
         const response = await apiClient.get(`documents/association/${documentId}/${personId}`);
+        return response.json();
+    }
+};
+
+// Interface for relationship objects returned by the API
+export interface ApiRelationship {
+    id: string;
+    person1_id: string;
+    person2_id: string;
+    relationship_type: string;
+    relationship_qualifier?: string;
+    start_date?: string;
+    end_date?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+    person1?: Person; // Nested Person object
+    person2?: Person; // Nested Person object
+}
+
+// Interface for relationship objects returned by the API
+export interface ApiRelationship {
+    id: string;
+    person1_id: string;
+    person2_id: string;
+    relationship_type: string;
+    relationship_qualifier?: string;
+    start_date?: string;
+    end_date?: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+    person1?: Person; // Nested Person object
+    person2?: Person; // Nested Person object
+}
+
+// Relationship API service
+export const relationshipsApi = {
+    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: ApiRelationship[]; metadata: ApiMetadata }> => {
+        const response = await apiClient.get('relationships', { searchParams: params });
+        return response.json();
+    },
+
+    getRelationshipById: async (relationshipId: string): Promise<ApiRelationship> => {
+        const response = await apiClient.get(`relationships/${relationshipId}`);
+        return response.json();
+    },
+
+    createRelationship: async (relationshipData: {
+        person1_id: string;
+        person2_id: string;
+        relationship_type: string;
+        relationship_qualifier?: string;
+        start_date?: string;
+        end_date?: string;
+        notes?: string;
+    }): Promise<{ message: string; relationship: ApiRelationship }> => {
+        const response = await apiClient.post('relationships', { json: relationshipData });
+        return response.json();
+    },
+
+    updateRelationship: async (relationshipId: string, relationshipData: Partial<{
+        relationship_type: string;
+        relationship_qualifier?: string;
+        start_date?: string;
+        end_date?: string;
+        notes?: string;
+    }>): Promise<{ message: string; relationship: ApiRelationship }> => {
+        const response = await apiClient.put(`relationships/${relationshipId}`, { json: relationshipData });
+        return response.json();
+    },
+
+    deleteRelationship: async (relationshipId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`relationships/${relationshipId}`);
+        return response.json();
+    },
+
+    getRelationshipsByPersonId: async (personId: string): Promise<ApiRelationship[]> => {
+        const response = await apiClient.get(`relationships/person/${personId}`);
+        return response.json();
+    },
+
+    getRelationshipsByType: async (type: string): Promise<ApiRelationship[]> => {
+        const response = await apiClient.get(`relationships/type/${type}`);
+        return response.json();
+    },
+
+    getRelationshipsBetweenPersons: async (person1Id: string, person2Id: string): Promise<ApiRelationship[]> => {
+        const response = await apiClient.get(`relationships/between/${person1Id}/${person2Id}`);
+        return response.json();
+    },
+
+    getRelationshipsByProjectId: async (projectId: string): Promise<ApiRelationship[]> => {
+        const response = await apiClient.get(`projects/${projectId}/relationships`);
         return response.json();
     }
 };

@@ -65,6 +65,16 @@ class DocumentService {
                 }
             }
             
+            // If project_id is provided, verify the project exists
+            if (documentData.project_id) {
+                const projectRepository = require('../repositories/projectRepository');
+                const projectExists = await projectRepository.exists(documentData.project_id, { transaction });
+                
+                if (!projectExists) {
+                    throw new Error(`Project with id ${documentData.project_id} not found`);
+                }
+            }
+            
             // Create the document
             const document = await documentRepository.create(documentData, { transaction });
             
@@ -188,6 +198,25 @@ class DocumentService {
     }
 
     /**
+     * Get documents by project ID
+     * 
+     * @param {String} projectId - Project ID
+     * @param {Object} options - Query options
+     * @returns {Promise<Array>} Array of documents
+     */
+    async getDocumentsByProjectId(projectId, options = {}) {
+        // Check if project exists
+        const projectRepository = require('../repositories/projectRepository');
+        const projectExists = await projectRepository.exists(projectId);
+        
+        if (!projectExists) {
+            throw new Error(`Project with id ${projectId} not found`);
+        }
+        
+        return await documentRepository.findDocumentsByProjectId(projectId, options);
+    }
+
+    /**
      * Associate a document with a person
      * 
      * @param {String} documentId - Document ID
@@ -196,6 +225,7 @@ class DocumentService {
      * @returns {Promise<Object>} Created association
      */
     async associateDocumentWithPerson(documentId, personId, data = {}) {
+        console.log('Attempting to associate document', documentId, 'with person', personId);
         return await TransactionManager.executeTransaction(async (transaction) => {
             // Check if document exists
             const document = await documentRepository.findById(documentId, { transaction });
@@ -234,8 +264,12 @@ class DocumentService {
                 { transaction }
             );
             
+            console.log('Document-person association created successfully:', association.document_id, association.person_id);
             return association;
         });
+    } catch (error) {
+        console.error('Error during document-person association transaction:', error);
+        throw error; // Re-throw the error
     }
 
     /**
