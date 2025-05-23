@@ -125,7 +125,9 @@ const Projects = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Research Projects</h1>
-                <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
+                {isManager && (
+                    <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
+                )}
             </div>
 
             {successMessage && <SuccessAlert message={successMessage} />}

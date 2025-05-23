@@ -53,7 +53,7 @@ project:
 other:
   active:
     Dashboard: add icons to notifications
-    Dashboard: clients should not be able to create a project and managers should have a button to create a project
+    Settings: confirm reset password functionality
     Client assignment: add search bar
     Manager dashboard: pending tasks
     Manager dashboard: update stats at top to remove redundant active projects info
@@ -68,6 +68,7 @@ other:
     Dashboard: recent activity (NOTE Consolidated with notifications)
     Dashboard: notifications
     Dashboard: your projects section should be limited to three and include a link to view all projects
+    Dashboard: clients should not be able to create a project and managers should have a button to create a project
     Profile: form submission (NOTE Consolidated with settings page)
     Settings: delete account form submission (NOTE Commented out section)
     Settings: validation for fields
