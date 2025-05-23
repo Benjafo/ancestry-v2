@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { ApiError, Document, Event, Person, documentsApi, projectsApi } from '../../api/client';
+import ErrorAlert from '../common/ErrorAlert';
+import LoadingSpinner from '../common/LoadingSpinner';
+import BaseModal from '../common/BaseModal'; // Import BaseModal
 import DocumentForm from '../documents/DocumentForm';
 import DocumentList from '../documents/DocumentList';
 import EventForm from '../events/EventForm';
 import EventList from '../events/EventList';
 import AddExistingDocumentToPersonModal from './AddExistingDocumentToPersonModal';
-import ErrorAlert from '../common/ErrorAlert';
-import LoadingSpinner from '../common/LoadingSpinner';
 
 interface EditPersonModalProps {
     person: Person;
@@ -292,371 +293,355 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        Edit Person: {person.first_name} {person.last_name}
-                    </h2>
+        <BaseModal isOpen={isOpen} onClose={onClose} title={`Edit Person: ${person.first_name} ${person.last_name}`} size="4xl">
+            {/* Tabs */}
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+                <nav className="flex -mb-px">
                     <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
+                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                            }`}
+                        onClick={() => setActiveTab('info')}
                     >
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        Biographical Info
                     </button>
-                </div>
+                    <button
+                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
+                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                            }`}
+                        onClick={() => setActiveTab('events')}
+                    >
+                        Events
+                    </button>
+                    <button
+                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
+                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                            }`}
+                        onClick={() => setActiveTab('documents')}
+                    >
+                        Documents
+                    </button>
+                    <button
+                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
+                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                            }`}
+                        onClick={() => setActiveTab('relationships')}
+                    >
+                        Relationships
+                    </button>
+                </nav>
+            </div>
 
-                {/* Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-                    <nav className="flex -mb-px">
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('info')}
-                        >
-                            Biographical Info
-                        </button>
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('events')}
-                        >
-                            Events
-                        </button>
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('documents')}
-                        >
-                            Documents
-                        </button>
-                        <button
-                            className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
-                                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                }`}
-                            onClick={() => setActiveTab('relationships')}
-                        >
-                            Relationships
-                        </button>
-                    </nav>
-                </div>
+            {/* Loading state */}
+            {isFetchingData && <LoadingSpinner containerClassName="h-64" size="lg" />}
 
-                {/* Loading state */}
-                {isFetchingData && <LoadingSpinner containerClassName="h-64" size="lg" />}
+            {/* Error state */}
+            {error && !isFetchingData && <ErrorAlert message={error} />}
 
-                {/* Error state */}
-                {error && !isFetchingData && <ErrorAlert message={error} />}
-
-                {/* Tab content */}
-                {!isFetchingData && (
-                    <div>
-                        {/* Biographical Info Tab */}
-                        {activeTab === 'info' && (
-                            <form onSubmit={handleSubmit}>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            First Name *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="first_name"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.first_name}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Middle Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="middle_name"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.middle_name}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Last Name *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="last_name"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.last_name}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Maiden Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="maiden_name"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.maiden_name}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Gender *
-                                        </label>
-                                        <select
-                                            name="gender"
-                                            className="form-select w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.gender}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="" disabled>Select Gender</option>
-                                            <option value="male">Male</option>
-                                            <option value="female">Female</option>
-                                            <option value="other">Other</option>
-                                            <option value="unknown">Unknown</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Birth Date *
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="birth_date"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.birth_date}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Birth Location
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="birth_location"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.birth_location}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Death Date
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="death_date"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.death_date}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Death Location
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="death_location"
-                                            className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                            value={formData.death_location}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
+            {/* Tab content */}
+            {!isFetchingData && (
+                <div>
+                    {/* Biographical Info Tab */}
+                    {activeTab === 'info' && (
+                        <form onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Notes
+                                        First Name *
                                     </label>
-                                    <textarea
-                                        name="notes"
-                                        className="form-textarea w-full dark:bg-gray-700 dark:text-white"
-                                        rows={4}
-                                        value={formData.notes}
+                                    <input
+                                        type="text"
+                                        name="first_name"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.first_name}
                                         onChange={handleChange}
-                                        placeholder="Add any additional notes about this person..."
+                                        required
                                     />
                                 </div>
-                            </form>
-                        )}
 
-                        {/* Events Tab */}
-                        {activeTab === 'events' && (
-                            <div>
-                                {isAddingEvent || editingEventId ? (
-                                    <EventForm
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Middle Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="middle_name"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.middle_name}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Last Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="last_name"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.last_name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Maiden Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="maiden_name"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.maiden_name}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Gender *
+                                    </label>
+                                    <select
+                                        name="gender"
+                                        className="form-select w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.gender}
+                                        onChange={handleChange}
+                                        required
+                                    >
+                                        <option value="" disabled>Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                        <option value="unknown">Unknown</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Birth Date *
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="birth_date"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.birth_date}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Birth Location
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="birth_location"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.birth_location}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Death Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="death_date"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.death_date}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Death Location
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="death_location"
+                                        className="form-input w-full dark:bg-gray-700 dark:text-white"
+                                        value={formData.death_location}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Notes
+                                </label>
+                                <textarea
+                                    name="notes"
+                                    className="form-textarea w-full dark:bg-gray-700 dark:text-white"
+                                    rows={4}
+                                    value={formData.notes}
+                                    onChange={handleChange}
+                                    placeholder="Add any additional notes about this person..."
+                                />
+                            </div>
+                        </form>
+                    )}
+
+                    {/* Events Tab */}
+                    {activeTab === 'events' && (
+                        <div>
+                            {isAddingEvent || editingEventId ? (
+                                <EventForm
+                                    personId={person.person_id}
+                                    projectId={person.project_persons && Array.isArray(person.project_persons)
+                                        ? person.project_persons[0]?.project_id
+                                        : undefined}
+                                    eventId={editingEventId || undefined}
+                                    onSuccess={handleEventSaved}
+                                    onCancel={() => {
+                                        setIsAddingEvent(false);
+                                        setEditingEventId(null);
+                                    }}
+                                />
+                            ) : (
+                                <div>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Events</h3>
+                                        <button
+                                            type="button"
+                                            className="btn-primary"
+                                            onClick={handleAddEvent}
+                                        >
+                                            Add Event
+                                        </button>
+                                    </div>
+
+                                    <EventList
                                         personId={person.person_id}
                                         projectId={person.project_persons && Array.isArray(person.project_persons)
                                             ? person.project_persons[0]?.project_id
                                             : undefined}
-                                        eventId={editingEventId || undefined}
-                                        onSuccess={handleEventSaved}
-                                        onCancel={() => {
-                                            setIsAddingEvent(false);
-                                            setEditingEventId(null);
-                                        }}
+                                        onEditEvent={handleEditEvent}
+                                        onDeleteEvent={handleDeleteEvent}
                                     />
-                                ) : (
-                                    <div>
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Events</h3>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Documents Tab */}
+                    {activeTab === 'documents' && (
+                        <div>
+                            {isAddingDocument || editingDocumentId ? (
+                                <DocumentForm
+                                    documentId={editingDocumentId || undefined}
+                                    onSuccess={handleDocumentSaved}
+                                    onCancel={() => {
+                                        setIsAddingDocument(false);
+                                        setEditingDocumentId(null);
+                                    }}
+                                />
+                            ) : (
+                                <div>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                type="button"
+                                                className="btn-secondary"
+                                                onClick={() => setIsAddExistingDocumentModalOpen(true)}
+                                            >
+                                                Add Existing Document
+                                            </button>
                                             <button
                                                 type="button"
                                                 className="btn-primary"
-                                                onClick={handleAddEvent}
+                                                onClick={handleAddDocument}
                                             >
-                                                Add Event
+                                                Add Document
                                             </button>
                                         </div>
-
-                                        <EventList
-                                            personId={person.person_id}
-                                            projectId={person.project_persons && Array.isArray(person.project_persons)
-                                                ? person.project_persons[0]?.project_id
-                                                : undefined}
-                                            onEditEvent={handleEditEvent}
-                                            onDeleteEvent={handleDeleteEvent}
-                                        />
                                     </div>
-                                )}
-                            </div>
-                        )}
 
-                        {/* Documents Tab */}
-                        {activeTab === 'documents' && (
-                            <div>
-                                {isAddingDocument || editingDocumentId ? (
-                                    <DocumentForm
-                                        documentId={editingDocumentId || undefined}
-                                        onSuccess={handleDocumentSaved}
-                                        onCancel={() => {
-                                            setIsAddingDocument(false);
-                                            setEditingDocumentId(null);
-                                        }}
+                                    <DocumentList
+                                        documents={documents} // Pass documents state as prop
+                                        isLoading={loading} // Pass loading state as prop
+                                        error={error} // Pass error state as prop
+                                        personId={person.person_id}
+                                        onEditDocument={handleEditDocument}
+                                        onDeleteDocument={handleDeleteDocument}
                                     />
-                                ) : (
-                                    <div>
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    type="button"
-                                                    className="btn-secondary"
-                                                    onClick={() => setIsAddExistingDocumentModalOpen(true)}
-                                                >
-                                                    Add Existing Document
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn-primary"
-                                                    onClick={handleAddDocument}
-                                                >
-                                                    Add Document
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <DocumentList
-                                            documents={documents} // Pass documents state as prop
-                                            isLoading={loading} // Pass loading state as prop
-                                            error={error} // Pass error state as prop
-                                            personId={person.person_id}
-                                            onEditDocument={handleEditDocument}
-                                            onDeleteDocument={handleDeleteDocument}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Relationships Tab (Read-only) */}
-                        {activeTab === 'relationships' && (
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
-
-                                <div className="text-center py-8">
-                                    <p className="text-gray-500 dark:text-gray-400">No relationships found for this person.</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                        You can add parent and spouse relationships from the person's detail view.
-                                    </p>
                                 </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Relationships Tab (Read-only) */}
+                    {activeTab === 'relationships' && (
+                        <div>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
+
+                            <div className="text-center py-8">
+                                <p className="text-gray-500 dark:text-gray-400">No relationships found for this person.</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                    You can add parent and spouse relationships from the person's detail view.
+                                </p>
                             </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Footer with action buttons */}
-                <div className="mt-6 flex justify-end space-x-2">
-                    <button
-                        type="button"
-                        className="btn-secondary"
-                        onClick={onClose}
-                        disabled={loading}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn-primary"
-                        onClick={handleSubmit}
-                        disabled={loading}
-                    >
-                        {loading ? 'Saving...' : 'Save Changes'}
-                    </button>
+                        </div>
+                    )}
                 </div>
+            )}
 
-                {/* Add Existing Document Modal */}
-                <AddExistingDocumentToPersonModal
-                    isOpen={isAddExistingDocumentModalOpen}
-                    onClose={() => setIsAddExistingDocumentModalOpen(false)}
-                    personId={person.person_id}
-                    onDocumentAssociated={() => {
-                        // Refresh person details to get updated documents
-                        const fetchPersonDetails = async () => {
-                            try {
-                                const personData = await projectsApi.getPersonById(person.person_id, {
-                                    includeDocuments: true
-                                });
-
-                                if (personData.documents) {
-                                    setDocuments(personData.documents);
-                                }
-                            } catch (err) {
-                                console.error('Error refreshing person documents:', err);
-                            }
-                        };
-
-                        fetchPersonDetails();
-                    }}
-                />
+            {/* Footer with action buttons */}
+            <div className="mt-6 flex justify-end space-x-2">
+                <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={onClose}
+                    disabled={loading}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                </button>
             </div>
-        </div>
+
+            {/* Add Existing Document Modal */}
+            <AddExistingDocumentToPersonModal
+                isOpen={isAddExistingDocumentModalOpen}
+                onClose={() => setIsAddExistingDocumentModalOpen(false)}
+                personId={person.person_id}
+                onDocumentAssociated={() => {
+                    // Refresh person details to get updated documents
+                    const fetchPersonDetails = async () => {
+                        try {
+                            const personData = await projectsApi.getPersonById(person.person_id, {
+                                includeDocuments: true
+                            });
+
+                            if (personData.documents) {
+                                setDocuments(personData.documents);
+                            }
+                        } catch (err) {
+                            console.error('Error refreshing person documents:', err);
+                        }
+                    };
+
+                    fetchPersonDetails();
+                }}
+            />
+        </BaseModal>
     );
 };
 
