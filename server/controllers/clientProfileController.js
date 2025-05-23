@@ -70,7 +70,7 @@ exports.updateProfile = async (req, res) => {
         await UserEventService.createEvent(
             userId,                // The user receiving the notification (the user themselves)
             userId,                // The actor (the user themselves)
-            'profile_updated',     // Event type
+            'user_updated',     // Event type
             'You updated your profile information', // Message for the user
             userId,                // Entity ID (the user's ID)
             'user'                 // Entity type
@@ -91,7 +91,7 @@ exports.updateProfile = async (req, res) => {
             await UserEventService.createEventForMultipleUsers(
                 managerIds,
                 userId,
-                'client_profile_updated',
+                'user_updated',
                 `Client ${req.user.first_name} ${req.user.last_name} updated their profile`,
                 userId,
                 'user'

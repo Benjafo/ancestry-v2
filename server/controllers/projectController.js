@@ -471,7 +471,7 @@ exports.updateProjectPerson = async (req, res) => {
             await UserEventService.createEvent(
                 req.user.user_id,
                 req.user.user_id,
-                'project_person_updated',
+                'person_updated',
                 `Updated project notes for person: ${person.first_name} ${person.last_name}`,
                 id,
                 'project'
@@ -481,7 +481,7 @@ exports.updateProjectPerson = async (req, res) => {
             await UserEventService.createEventForProjectUsers(
                 id,
                 req.user.user_id,
-                'project_person_updated',
+                'person_updated',
                 `Notes updated for ${person.first_name} ${person.last_name} in this project`,
                 id,
                 'project'

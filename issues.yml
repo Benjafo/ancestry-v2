@@ -60,6 +60,7 @@ other:
     General: add base modal class and close modal with escape key
     General: add toggles between list and grid view for all list pages
     General: refactor and reduce reused code
+    General: add user events for removing person to project, updating user
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)

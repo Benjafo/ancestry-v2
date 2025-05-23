@@ -130,10 +130,14 @@ $$ LANGUAGE plpgsql;
 -- Create triggers for tables with updated_at columns
 DO $$
 DECLARE
-    tables TEXT[] := ARRAY['users', 'roles', 'user_roles', 'projects', 'project_users', 
-                          'persons', 'events', 'documents', 'relationships',
-                          'person_events', 'project_events', 'document_persons', 'project_persons',
-                          'client_profiles', 'user_events', 'password_reset_tokens'];
+    tables TEXT[] := ARRAY[
+        'user_created', 'user_updated', 'user_deleted', 'user_deactivated', 'user_reactivated', 'roles', 'user_roles', 'password_reset',
+        'project_created', 'project_updated', 'person_added_to_project', 'person_removed_from_project', 'project_assigned', 'project_removed',
+        'person_created', 'person_updated', 'person_deleted',
+        'event_created', 'event_updated', 'event_deleted',
+        'document_created', 'document_updated', 'document_deleted', 'document_associated', 'document_removed',
+        'relationship_created', 'relationship_updated', 'relationship_deleted'
+    ];
     t TEXT;
 BEGIN
     FOREACH t IN ARRAY tables
