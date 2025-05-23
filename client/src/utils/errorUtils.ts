@@ -17,6 +17,8 @@ export const getApiErrorMessage = async (error: unknown): Promise<string> => {
                 return errorBody.message;
             }
         } catch (parseError) {
+            console.log('Failed to parse error response as JSON:', parseError);
+
             // Fallback to text if JSON parsing fails
             try {
                 const errorText = await error.response.text();
@@ -24,6 +26,8 @@ export const getApiErrorMessage = async (error: unknown): Promise<string> => {
                     return errorText;
                 }
             } catch (textError) {
+                console.log('Failed to parse error response as text:', textError);
+
                 // If even text parsing fails, use status text
                 return error.response.statusText || `HTTP Error: ${error.response.status}`;
             }

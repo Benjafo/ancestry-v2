@@ -323,16 +323,3 @@ export const validateRelationship = (
 
     return undefined;
 };
-
-// Placeholder for document-person association validation
-export const validateDocumentPerson = (documentId: string, personId: string, existingAssociations: any[]): string | undefined => {
-    // This is a simplified placeholder. In a real scenario, you might check if the document is already associated
-    // with the person, or if there are any constraints on document types per person.
-    const isAlreadyAssociated = existingAssociations.some(assoc =>
-        assoc.document_id === documentId && assoc.person_id === personId
-    );
-    if (isAlreadyAssociated) {
-        return 'This document is already associated with this person.';
-    }
-    return undefined;
-};

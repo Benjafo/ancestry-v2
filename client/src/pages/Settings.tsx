@@ -5,11 +5,12 @@ import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
 import { getApiErrorMessage } from '../utils/errorUtils';
 import {
-    validatePhone,
-    validateZipCode,
-    validateRequired, // Add this import
     validateLengthRange, // Add this import
     validatePasswordStrength // Add this import
+    ,
+    validatePhone,
+    validateRequired,
+    validateZipCode
 } from '../utils/formValidation'; // Import new validation utilities
 import { STATES_BY_COUNTRY } from '../utils/locationData';
 // Remove the old validationUtils import if no longer needed
@@ -256,7 +257,7 @@ const Settings = () => {
         setPasswordSuccess(null);
 
         // Validate passwords
-        let error = validatePasswordStrength(passwordData.newPassword);
+        const error = validatePasswordStrength(passwordData.newPassword);
         if (error) {
             setPasswordError(error);
             return;
