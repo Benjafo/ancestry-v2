@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { managerApi } from '../api/client';
 import BaseModal from './common/BaseModal'; // Import BaseModal
+import {
+    validateEmail,
+    validatePasswordStrength,
+    validateRequired,
+    validateLengthRange,
+    validateRole
+} from '../utils/formValidation'; // Import validation utilities
 
 interface CreateUserModalProps {
     isOpen: boolean;
@@ -30,42 +37,24 @@ const CreateUserModal = ({ isOpen, onClose, onSuccess, defaultRole = 'client' }:
     const validateForm = () => {
         const errors: Record<string, string> = {};
 
-        // Email validation
-        if (!formData.email) {
-            errors.email = 'Email is required';
-        } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
-            errors.email = 'Email is invalid';
-        }
+        let error = validateEmail(formData.email);
+        if (error) errors.email = error;
 
-        // Password validation
-        if (!formData.password) {
-            errors.password = 'Password is required';
-        } else if (formData.password.length < 8) {
-            errors.password = 'Password must be at least 8 characters';
-        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-            errors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
-        }
+        error = validatePasswordStrength(formData.password);
+        if (error) errors.password = error;
 
-        // First name validation
-        if (!formData.first_name) {
-            errors.first_name = 'First name is required';
-        } else if (formData.first_name.length < 2 || formData.first_name.length > 50) {
-            errors.first_name = 'First name must be between 2 and 50 characters';
-        }
+        error = validateRequired(formData.first_name, 'First name');
+        if (error) errors.first_name = error;
+        error = validateLengthRange(formData.first_name, 2, 50, 'First name');
+        if (error) errors.first_name = error;
 
-        // Last name validation
-        if (!formData.last_name) {
-            errors.last_name = 'Last name is required';
-        } else if (formData.last_name.length < 2 || formData.last_name.length > 50) {
-            errors.last_name = 'Last name must be between 2 and 50 characters';
-        }
+        error = validateRequired(formData.last_name, 'Last name');
+        if (error) errors.last_name = error;
+        error = validateLengthRange(formData.last_name, 2, 50, 'Last name');
+        if (error) errors.last_name = error;
 
-        // Role validation
-        if (!formData.role) {
-            errors.role = 'Role is required';
-        } else if (!['client', 'manager'].includes(formData.role)) {
-            errors.role = 'Role must be either "client" or "manager"';
-        }
+        error = validateRole(formData.role);
+        if (error) errors.role = error;
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;

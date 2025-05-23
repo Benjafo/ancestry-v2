@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { ApiRelationship, Person, relationshipsApi } from '../../api/client';
 import { getApiErrorMessage } from '../../utils/errorUtils';
+import {
+    validateRelationship,
+    validateRelationshipDates,
+    validateRequired
+} from '../../utils/formValidation'; // Import validation utilities
 import BaseModal from '../common/BaseModal'; // Import BaseModal
 import ErrorAlert from '../common/ErrorAlert'; // Import ErrorAlert
 
@@ -91,84 +96,26 @@ const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
         setFormData((prev) => ({ ...prev, person2Id: personId }));
     };
 
-    // Check for duplicate relationships
-    const checkForDuplicateRelationship = (relationships: ApiRelationship[]): ApiRelationship | undefined => {
-        if (!formData.person1Id || !formData.person2Id || !formData.relationshipType) {
-            return undefined; // Not enough data to check, return undefined instead of false
-        }
-
-        // Check if a relationship of the same type already exists between these people
-        return relationships.find(rel =>
-            // Check direct match (person1 -> person2)
-            ((rel.person1_id === formData.person1Id && rel.person2_id === formData.person2Id &&
-                rel.relationship_type === formData.relationshipType) ||
-                // Check reverse match (person2 -> person1)
-                (rel.person1_id === formData.person2Id && rel.person2_id === formData.person1Id &&
-                    rel.relationship_type === formData.relationshipType)) ||
-            // Check for inverse relationships (parent-child, child-parent)
-            (formData.relationshipType === 'parent' && rel.relationship_type === 'child' &&
-                rel.person1_id === formData.person2Id && rel.person2_id === formData.person1Id) ||
-            (formData.relationshipType === 'child' && rel.relationship_type === 'parent' &&
-                rel.person1_id === formData.person2Id && rel.person2_id === formData.person1Id)
-        );
-    };
-
-    // Check for duplicates when form data changes
-    React.useEffect(() => {
-        const duplicateRelationship = checkForDuplicateRelationship(relationships as ApiRelationship[]);
-        if (duplicateRelationship) {
-            setError(`A relationship of type '${formData.relationshipType}' already exists between these people`);
-        } else {
-            setError(null);
-        }
-    }, [formData.person1Id, formData.person2Id, formData.relationshipType, relationships]); // Added relationships to dependency array
-
     // Form validation
     const validateForm = () => {
-        if (!formData.person1Id) {
-            setError('Person 1 is required');
-            return false;
-        }
+        let currentError: string | undefined;
 
-        if (!formData.person2Id) {
-            setError('Person 2 is required');
-            return false;
-        }
+        currentError = validateRequired(formData.person1Id, 'Person 1');
+        if (currentError) { setError(currentError); return false; }
 
-        if (formData.person1Id === formData.person2Id) {
-            setError('Person 1 and Person 2 cannot be the same');
-            return false;
-        }
+        currentError = validateRequired(formData.person2Id, 'Person 2');
+        if (currentError) { setError(currentError); return false; }
 
-        if (!formData.relationshipType) {
-            setError('Relationship type is required');
-            return false;
-        }
+        currentError = validateRelationship(formData.person1Id, formData.person2Id, formData.relationshipType, relationships);
+        if (currentError) { setError(currentError); return false; }
 
-        // Check for duplicate relationships
-        const duplicateRelationship = checkForDuplicateRelationship(relationships as ApiRelationship[]);
-        if (duplicateRelationship) {
-            setError(`A relationship of type '${formData.relationshipType}' already exists between these people`);
-            return false;
-        }
+        currentError = validateRequired(formData.relationshipType, 'Relationship type');
+        if (currentError) { setError(currentError); return false; }
 
-        // Validate dates if both are provided
-        if (formData.startDate && formData.endDate) {
-            const startDate = new Date(formData.startDate);
-            const endDate = new Date(formData.endDate);
+        currentError = validateRelationshipDates(formData.startDate, formData.endDate, formData.relationshipType);
+        if (currentError) { setError(currentError); return false; }
 
-            if (endDate < startDate) {
-                setError('End date cannot be before start date');
-                return false;
-            }
-        }
-
-        // Validate that marriage relationships have a start date
-        if (formData.relationshipType === 'spouse' && !formData.startDate) {
-            setError('Marriage date (start date) is required for spouse relationships');
-            return false;
-        }
-
+        setError(null); // Clear any previous errors if all validations pass
         return true;
     };
 

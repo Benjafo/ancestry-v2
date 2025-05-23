@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { Person, projectsApi } from '../../api/client';
 import { getApiErrorMessage } from '../../utils/errorUtils';
-import ErrorAlert from '../common/ErrorAlert';
+import {
+    validateGender,
+    validateLengthRange,
+    validatePersonDates,
+    validateRequired
+} from '../../utils/formValidation'; // Import validation utilities
 import BaseModal from '../common/BaseModal'; // Import BaseModal
+import ErrorAlert from '../common/ErrorAlert';
 
 interface CreatePersonModalProps {
     projectId?: string; // Optional: if provided, will add the person to this project
@@ -44,37 +50,25 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
     };
 
     const validateForm = () => {
-        if (!formData.first_name.trim()) {
-            setError('First name is required');
-            return false;
-        }
+        let currentError: string | undefined;
 
-        if (!formData.last_name.trim()) {
-            setError('Last name is required');
-            return false;
-        }
+        currentError = validateRequired(formData.first_name, 'First name');
+        if (currentError) { setError(currentError); return false; }
+        currentError = validateLengthRange(formData.first_name, 1, 100, 'First name');
+        if (currentError) { setError(currentError); return false; }
 
-        if (!formData.gender) {
-            setError('Gender is required');
-            return false;
-        }
+        currentError = validateRequired(formData.last_name, 'Last name');
+        if (currentError) { setError(currentError); return false; }
+        currentError = validateLengthRange(formData.last_name, 1, 100, 'Last name');
+        if (currentError) { setError(currentError); return false; }
 
-        if (!formData.birth_date) {
-            setError('Birth date is required');
-            return false;
-        }
+        currentError = validateGender(formData.gender);
+        if (currentError) { setError(currentError); return false; }
 
-        // Check if death date is after birth date if both are provided
-        if (formData.birth_date && formData.death_date) {
-            const birthDate = new Date(formData.birth_date);
-            const deathDate = new Date(formData.death_date);
+        currentError = validatePersonDates(formData.birth_date, formData.death_date);
+        if (currentError) { setError(currentError); return false; }
 
-            if (deathDate < birthDate) {
-                setError('Death date cannot be before birth date');
-                return false;
-            }
-        }
-
+        setError(null); // Clear any previous errors if all validations pass
         return true;
     };
 
@@ -135,161 +129,161 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
             {/* Biographical Information Form */}
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    First Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="first_name"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.first_name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            First Name *
+                        </label>
+                        <input
+                            type="text"
+                            name="first_name"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.first_name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Middle Name
-                                </label>
-                                <input
-                                    type="text"
-                                    name="middle_name"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.middle_name}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Middle Name
+                        </label>
+                        <input
+                            type="text"
+                            name="middle_name"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.middle_name}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Last Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="last_name"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.last_name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Last Name *
+                        </label>
+                        <input
+                            type="text"
+                            name="last_name"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.last_name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Maiden Name
-                                </label>
-                                <input
-                                    type="text"
-                                    name="maiden_name"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.maiden_name}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Maiden Name
+                        </label>
+                        <input
+                            type="text"
+                            name="maiden_name"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.maiden_name}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Gender *
-                                </label>
-                                <select
-                                    name="gender"
-                                    className="form-select w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.gender}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="" disabled>Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                    <option value="unknown">Unknown</option>
-                                </select>
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Gender *
+                        </label>
+                        <select
+                            name="gender"
+                            className="form-select w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.gender}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="" disabled>Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                            <option value="unknown">Unknown</option>
+                        </select>
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Birth Date *
-                                </label>
-                                <input
-                                    type="date"
-                                    name="birth_date"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.birth_date}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Birth Date *
+                        </label>
+                        <input
+                            type="date"
+                            name="birth_date"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.birth_date}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Birth Location
-                                </label>
-                                <input
-                                    type="text"
-                                    name="birth_location"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.birth_location}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Birth Location
+                        </label>
+                        <input
+                            type="text"
+                            name="birth_location"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.birth_location}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Death Date
-                                </label>
-                                <input
-                                    type="date"
-                                    name="death_date"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.death_date}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Death Date
+                        </label>
+                        <input
+                            type="date"
+                            name="death_date"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.death_date}
+                            onChange={handleChange}
+                        />
+                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Death Location
-                                    </label>
-                                <input
-                                    type="text"
-                                    name="death_location"
-                                    className="form-input w-full dark:bg-gray-700 dark:text-white"
-                                    value={formData.death_location}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Death Location
+                        </label>
+                        <input
+                            type="text"
+                            name="death_location"
+                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            value={formData.death_location}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </div>
 
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Notes
-                            </label>
-                            <textarea
-                                name="notes"
-                                className="form-textarea w-full dark:bg-gray-700 dark:text-white"
-                                rows={4}
-                                value={formData.notes}
-                                onChange={handleChange}
-                                placeholder="Add any additional notes about this person..."
-                            />
-                        </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Notes
+                    </label>
+                    <textarea
+                        name="notes"
+                        className="form-textarea w-full dark:bg-gray-700 dark:text-white"
+                        rows={4}
+                        value={formData.notes}
+                        onChange={handleChange}
+                        placeholder="Add any additional notes about this person..."
+                    />
+                </div>
 
-                        {projectId && (
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Project-Specific Notes
-                                </label>
-                                <textarea
-                                    className="form-textarea w-full dark:bg-gray-700 dark:text-white"
-                                    rows={3}
-                                    value={projectNotes}
-                                    onChange={(e) => setProjectNotes(e.target.value)}
-                                    placeholder="Add notes about this person's role in the project..."
-                                />
-                            </div>
-                        )}
+                {projectId && (
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Project-Specific Notes
+                        </label>
+                        <textarea
+                            className="form-textarea w-full dark:bg-gray-700 dark:text-white"
+                            rows={3}
+                            value={projectNotes}
+                            onChange={(e) => setProjectNotes(e.target.value)}
+                            placeholder="Add notes about this person's role in the project..."
+                        />
+                    </div>
+                )}
             </form>
 
             {/* Footer with action buttons */}

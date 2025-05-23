@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ApiRelationship, relationshipsApi } from '../../api/client';
 import { getApiErrorMessage } from '../../utils/errorUtils';
+import {
+    validateRelationshipDates,
+    validateRequired
+} from '../../utils/formValidation'; // Import validation utilities
 import BaseModal from '../common/BaseModal'; // Import BaseModal
 import ErrorAlert from '../common/ErrorAlert'; // Import ErrorAlert
 
@@ -53,28 +57,15 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
 
     // Form validation
     const validateForm = () => {
-        if (!formData.relationshipType) {
-            setError('Relationship type is required');
-            return false;
-        }
+        let currentError: string | undefined;
 
-        // Validate dates if both are provided
-        if (formData.startDate && formData.endDate) {
-            const startDate = new Date(formData.startDate);
-            const endDate = new Date(formData.endDate);
+        currentError = validateRequired(formData.relationshipType, 'Relationship type');
+        if (currentError) { setError(currentError); return false; }
 
-            if (endDate < startDate) {
-                setError('End date cannot be before start date');
-                return false;
-            }
-        }
+        currentError = validateRelationshipDates(formData.startDate, formData.endDate, formData.relationshipType);
+        if (currentError) { setError(currentError); return false; }
 
-        // Validate that marriage relationships have a start date
-        if (formData.relationshipType === 'spouse' && !formData.startDate) {
-            setError('Marriage date (start date) is required for spouse relationships');
-            return false;
-        }
-
+        setError(null); // Clear any previous errors if all validations pass
         return true;
     };
 

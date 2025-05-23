@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { UserDetails, managerApi } from '../api/client';
 import BaseModal from './common/BaseModal'; // Import BaseModal
+import {
+    validateRequired,
+    validateLengthRange,
+    validateRole
+} from '../utils/formValidation'; // Import validation utilities
 
 interface EditUserModalProps {
     isOpen: boolean;
@@ -31,26 +36,18 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, onResetPassword }: Ed
     const validateForm = () => {
         const errors: Record<string, string> = {};
 
-        // First name validation
-        if (!formData.first_name) {
-            errors.first_name = 'First name is required';
-        } else if (formData.first_name.length < 2 || formData.first_name.length > 50) {
-            errors.first_name = 'First name must be between 2 and 50 characters';
-        }
+        let error = validateRequired(formData.first_name, 'First name');
+        if (error) errors.first_name = error;
+        error = validateLengthRange(formData.first_name, 2, 50, 'First name');
+        if (error) errors.first_name = error;
 
-        // Last name validation
-        if (!formData.last_name) {
-            errors.last_name = 'Last name is required';
-        } else if (formData.last_name.length < 2 || formData.last_name.length > 50) {
-            errors.last_name = 'Last name must be between 2 and 50 characters';
-        }
+        error = validateRequired(formData.last_name, 'Last name');
+        if (error) errors.last_name = error;
+        error = validateLengthRange(formData.last_name, 2, 50, 'Last name');
+        if (error) errors.last_name = error;
 
-        // Role validation
-        if (!formData.role) {
-            errors.role = 'Role is required';
-        } else if (!['client', 'manager'].includes(formData.role)) {
-            errors.role = 'Role must be either "client" or "manager"';
-        }
+        error = validateRole(formData.role);
+        if (error) errors.role = error;
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
