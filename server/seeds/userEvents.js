@@ -65,27 +65,27 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
 
     for (const { doc, message } of documentAdditions) {
         clientEvents.push(await createClientEvent(
-            'document_added',
+            'document_created',
             message,
             doc.document_id,
             'document'
         ));
     }
 
-    // Person discovery events
-    const personDiscoveries = Object.entries(persons).map(([key, person]) => ({
-        person,
-        message: `New family member discovered: ${person.first_name} ${person.last_name}`
-    }));
+    // // Person discovery events
+    // const personDiscoveries = Object.entries(persons).map(([key, person]) => ({
+    //     person,
+    //     message: `New family member discovered: ${person.first_name} ${person.last_name}`
+    // }));
 
-    for (const { person, message } of personDiscoveries) {
-        clientEvents.push(await createClientEvent(
-            'person_discovered',
-            message,
-            person.person_id,
-            'person'
-        ));
-    }
+    // for (const { person, message } of personDiscoveries) {
+    //     clientEvents.push(await createClientEvent(
+    //         'person_discovered',
+    //         message,
+    //         person.person_id,
+    //         'person'
+    //     ));
+    // }
 
     // Event recording events
     const eventRecordings = [
@@ -127,7 +127,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
 
     for (const { message } of relationshipEstablishments) {
         clientEvents.push(await createClientEvent(
-            'relationship_established',
+            'relationship_created',
             message,
             null,
             'relationship'
@@ -152,20 +152,20 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         ));
     }
 
-    // Project updates
-    const projectUpdates = [
-        'New research findings added to your project',
-        'Timeline updated with new events'
-    ];
+    // // Project updates
+    // const projectUpdates = [
+    //     'New research findings added to your project',
+    //     'Timeline updated with new events'
+    // ];
 
-    for (const message of projectUpdates) {
-        clientEvents.push(await createClientEvent(
-            'project_update',
-            message,
-            project1.id,
-            'project'
-        ));
-    }
+    // for (const message of projectUpdates) {
+    //     clientEvents.push(await createClientEvent(
+    //         'project_update',
+    //         message,
+    //         project1.id,
+    //         'project'
+    //     ));
+    // }
 
     // ===== ADMIN USER EVENTS =====
     console.log('Creating user events for admin...');
@@ -225,7 +225,7 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
 
     for (const { doc, message } of documentManagement) {
         adminEvents.push(await createAdminEvent(
-            'document_uploaded',
+            'document_created',
             message,
             doc.document_id,
             'document'

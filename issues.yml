@@ -5,6 +5,7 @@ project:
     Project -> overview: person and event and document events are not displayed in recent activity, only relationship events
     Project -> documents: family documents with 0 people attached disappear after creation and reload
     Project -> documents: delete document does not work
+    Project -> documents: add missing icons for census, military, etc
     Project -> document list: search returns all documents
     Project -> document list: remove association notes
     Project -> relationships: add link to view person modal from list
@@ -52,14 +53,15 @@ project:
 other:
   active:
     Dashboard: add icons to notifications
+    Dashboard: clients should not be able to create a project and managers should have a button to create a project
     Client assignment: add search bar
     Manager dashboard: pending tasks
     Manager dashboard: update stats at top to remove redundant active projects info
     Notifications: add icons to notifications
+    General: recreate seed data
     General: implement the task feature
     General: add base modal class and close modal with escape key
     General: add toggles between list and grid view for all list pages
-    General: refactor and reduce reused code
     General: add user events for removing person to project, updating user
   finished:
     Dashboard: research summary
@@ -97,10 +99,10 @@ other:
     General: the default / route should redirect to the dashboard
     General: user events need to be logged in the backend
     General: once a project is "completed", it should not be editable
+    General: refactor and reduce reused code
 future_functionality:
   active:
     Api Client: rename Relationship and ApiRelationship
-    General: recreate seed data
     General: mass document upload page
     General: import GEDCOM file page
     General: links
