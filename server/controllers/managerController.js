@@ -326,6 +326,29 @@ exports.updateUser = async (req, res) => {
             attributes: { exclude: ['password'] }
         });
 
+        // Create user event for the updated user
+        const manager = req.user; // The manager performing the update
+        const message = `Your profile was updated`;
+        await UserEventService.createEvent(
+            updatedUser.user_id, // User receiving the event (the updated user)
+            manager.user_id, // Actor (the manager)
+            'user_updated',
+            message,
+            updatedUser.user_id,
+            'user'
+        );
+
+        // Create user event for the manager (actor)
+        const managerMessage = `Updated user: ${updatedUser.first_name} ${updatedUser.last_name}.`;
+        await UserEventService.createEvent(
+            manager.user_id, // User receiving the event (the manager)
+            manager.user_id, // Actor (the manager)
+            'user_updated',
+            managerMessage,
+            updatedUser.user_id,
+            'user'
+        );
+
         // Format user to include roles
         const userData = updatedUser.toJSON();
         const formattedUser = {

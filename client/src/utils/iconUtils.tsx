@@ -197,6 +197,7 @@ export const getActivityIcon = (type: string) => {
                 </div>
             );
         case 'client_profile_updated':
+        case 'user_updated': // New event type
             return (
                 <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
                     <svg className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

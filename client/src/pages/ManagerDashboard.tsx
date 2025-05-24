@@ -7,8 +7,8 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { formatDate } from '../utils/dateUtils';
-import { getActivityIcon } from '../utils/iconUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { getActivityIcon } from '../utils/iconUtils';
 
 const ManagerDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -159,15 +159,6 @@ const ManagerDashboard = () => {
                                             )}
                                         </div>
                                     </div>
-                                    {activity.projectId && (
-                                        <Link
-                                            to="/projects/:projectId"
-                                            params={{ projectId: activity.projectId }}
-                                            className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
-                                        >
-                                            View
-                                        </Link>
-                                    )}
                                 </div>
                             ))}
 

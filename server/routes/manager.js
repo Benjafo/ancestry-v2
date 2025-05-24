@@ -3,8 +3,8 @@ const router = express.Router();
 const managerController = require('../controllers/managerController');
 const { verifyToken, hasRole } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
-const { 
-    createUserValidation, 
+const {
+    createUserValidation,
     updateUserValidation,
     clientIdValidation,
     projectIdValidation,

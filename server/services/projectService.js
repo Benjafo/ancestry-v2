@@ -55,7 +55,7 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${id} not found`);
             }
-            
+
             // Update the project
             const project = await projectRepository.update(id, projectData, { transaction });
             return project;
@@ -75,7 +75,7 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${id} not found`);
             }
-            
+
             // Delete the project
             return await projectRepository.delete(id, { transaction });
         });
@@ -92,7 +92,7 @@ class ProjectService {
         if (!projectExists) {
             throw new Error(`Project with id ${projectId} not found`);
         }
-        
+
         return await projectRepository.getProjectPersons(projectId);
     }
 
@@ -110,19 +110,19 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${projectId} not found`);
             }
-            
+
             // Check if person exists
             const person = await personRepository.findById(personId, { transaction });
             if (!person) {
                 throw new Error(`Person with id ${personId} not found`);
             }
-            
+
             // Check if person is already in project
             const isInProject = await projectRepository.isPersonInProject(projectId, personId);
             if (isInProject) {
                 throw new Error(`Person with id ${personId} is already in project ${projectId}`);
             }
-            
+
             // Add person to project
             return await projectRepository.addPersonToProject(projectId, personId, data, { transaction });
         });
@@ -142,19 +142,19 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${projectId} not found`);
             }
-            
+
             // Check if person exists
             const person = await personRepository.findById(personId, { transaction });
             if (!person) {
                 throw new Error(`Person with id ${personId} not found`);
             }
-            
+
             // Check if person is in project
             const isInProject = await projectRepository.isPersonInProject(projectId, personId);
             if (!isInProject) {
                 throw new Error(`Person with id ${personId} is not in project ${projectId}`);
             }
-            
+
             // Update association
             return await projectRepository.updateProjectPerson(projectId, personId, data, { transaction });
         });
@@ -173,13 +173,13 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${projectId} not found`);
             }
-            
+
             // Check if person is in project
             const isInProject = await projectRepository.isPersonInProject(projectId, personId);
             if (!isInProject) {
                 throw new Error(`Person with id ${personId} is not in project ${projectId}`);
             }
-            
+
             // Remove person from project
             return await projectRepository.removePersonFromProject(projectId, personId, { transaction });
         });
