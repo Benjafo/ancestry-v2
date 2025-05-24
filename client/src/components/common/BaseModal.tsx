@@ -15,7 +15,7 @@ const BaseModal: React.FC<BaseModalProps> = ({
     children,
     size = 'md'
 }) => {
-    if (!isOpen) return null;
+    if (!isOpen) return;
 
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
@@ -30,6 +30,8 @@ const BaseModal: React.FC<BaseModalProps> = ({
             document.removeEventListener('keydown', handleEscape);
         };
     }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
 
     const maxWidthClass = {
         sm: 'max-w-sm',
