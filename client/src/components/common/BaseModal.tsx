@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface BaseModalProps {
     isOpen: boolean;
@@ -16,6 +16,20 @@ const BaseModal: React.FC<BaseModalProps> = ({
     size = 'md'
 }) => {
     if (!isOpen) return null;
+
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isOpen, onClose]);
 
     const maxWidthClass = {
         sm: 'max-w-sm',

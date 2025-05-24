@@ -6,9 +6,10 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ProjectList from '../components/projects/ProjectList';
 import { getUser } from '../utils/auth';
-import { formatSnakeCase } from '../utils/formatUtils';
 import { formatDate } from '../utils/dateUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { formatSnakeCase } from '../utils/formatUtils';
+import { getActivityIcon } from '../utils/iconUtils';
 
 const Dashboard = () => {
     const user = getUser();
@@ -143,20 +144,25 @@ const Dashboard = () => {
                         notifications.slice(0, 5).map(notification => (
                             <div
                                 key={notification.id}
-                                className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2"
+                                className="flex items-start space-x-4 border-l-4 border-gray-300 dark:border-gray-600 pl-5 py-3"
                             >
-                                <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">{formatSnakeCase(notification.event_type)}</span>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {formatDate(notification.createdAt, 'No date')}
-                                    </span>
+                                <div className="flex-shrink-0 mt-0.5">
+                                    {getActivityIcon(notification.event_type)}
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
-                                {notification.actor && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        By {notification.actor.first_name} {notification.actor.last_name}
-                                    </p>
-                                )}
+                                <div className="flex-1">
+                                    <div className="flex justify-between">
+                                        <span className="font-medium dark:text-white">{formatSnakeCase(notification.event_type)}</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            {formatDate(notification.createdAt, 'No date')}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                                    {notification.actor && (
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            By {notification.actor.first_name} {notification.actor.last_name}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         )))}
                 </div>

@@ -52,23 +52,23 @@ project:
     Project -> timeline: duplicate events in timeline
 other:
   active:
-    Dashboard: add icons to notifications
     Settings: confirm reset password functionality
-    Client assignment: add search bar
-    Manager dashboard: pending tasks
     Manager dashboard: update stats at top to remove redundant active projects info
-    Notifications: add icons to notifications
+    Client assignment: missing clients
+    Login: do not refresh page on invalid login, display error message
+    General: clean up code
     General: recreate seed data
     General: implement the task feature
-    General: add base modal class and close modal with escape key
     General: add toggles between list and grid view for all list pages
     General: add user events for removing person to project, updating user
+    General: update order of returned records in projects, persons, etc
   finished:
     Dashboard: research summary
     Dashboard: recent activity (NOTE Consolidated with notifications)
     Dashboard: notifications
     Dashboard: your projects section should be limited to three and include a link to view all projects
     Dashboard: clients should not be able to create a project and managers should have a button to create a project
+    Dashboard: add icons to notifications
     Profile: form submission (NOTE Consolidated with settings page)
     Settings: delete account form submission (NOTE Commented out section)
     Settings: validation for fields
@@ -79,6 +79,7 @@ other:
     Projects: projects should be sorted by last updated date, and there should be a search and sort by date created feature
     Projects List: the date and status should be aligned to the bottom of the card
     Projects List: the height of each card should be the same
+    Notifications: add icons to notifications
     Manager dashboard: recent activity should be accurate
     Manager dashboard: new project button should open the create project modal, but not redirect to the project page
     Manager dashboard: add a quick actions button to create a task
@@ -95,12 +96,15 @@ other:
     Client assignment: replace back to dashboard with add user button
     Client assignment: add pagination and limit to three rows of users in the select client card
     Client assignment: assignment history should be accurate
+    Client assignment: add search bar
     General: move reused code into utility functions
     General: success and error messages are not displayed properly
     General: the default / route should redirect to the dashboard
     General: user events need to be logged in the backend
     General: once a project is "completed", it should not be editable
     General: refactor and reduce reused code
+    General: add base modal class and close modal with escape key
+    General: implement base modal for all modals
 future_functionality:
   active:
     Api Client: rename Relationship and ApiRelationship

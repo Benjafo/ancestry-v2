@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Person, Relationship, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
-import DocumentList from '../documents/DocumentList';
+import BaseModal from '../common/BaseModal';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
+import DocumentList from '../documents/DocumentList';
 
 interface ViewPersonModalProps {
     personId: string;
@@ -140,16 +141,17 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                {/* Modal header with close button */}
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {loading ? 'Loading...' : person ? `${person.first_name} ${person.last_name}` : 'Person Details'}
-                    </h2>
+        <BaseModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={loading ? 'Loading...' : person ? `${person.first_name} ${person.last_name}` : 'Person Details'}
+            size="4xl"
+        >
+            {/* All content here must be wrapped in a single parent element */}
+            <div> {/* This div will be the single child of BaseModal */}
+                {/* Modal header content (excluding title and close button, which BaseModal handles) */}
+                <div className="flex justify-end items-center mb-4">
                     <div className="flex items-center space-x-2">
                         {!loading && person && onEdit && projectStatus !== 'completed' && isManager && (
                             <button
@@ -170,14 +172,6 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                 Read-only
                             </span>
                         )}
-                        <button
-                            onClick={onClose}
-                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                        >
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
 
@@ -323,19 +317,19 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                         </svg>
                                                                     </span>
                                                                 </div>
-                                                                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                                    <div>
-                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
-                                                                        {event.description && (
-                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
-                                                                        )}
-                                                                        {event.event_location && (
-                                                                            <p className="text-sm text-gray-500 dark:text-gray-400">{event.event_location}</p>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                                        <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
-                                                                    </div>
+                                                            </div>
+                                                            <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
+                                                                    {event.description && (
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
+                                                                    )}
+                                                                    {event.event_location && (
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{event.event_location}</p>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                                    <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -611,7 +605,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                     </>
                 )}
             </div>
-        </div>
+        </BaseModal>
     );
 };
 
