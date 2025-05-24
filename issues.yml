@@ -90,6 +90,8 @@ general:
 
 other:
   active:
+    User management:
+      - sorting should not make api requests
     Client assignment:
       - missing clients
     Login:

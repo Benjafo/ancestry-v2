@@ -7,6 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import ViewToggle from '../components/common/ViewToggle';
 import { getApiErrorMessage } from '../utils/errorUtils';
 
 // Assignment History Component
@@ -81,10 +82,18 @@ const ClientAssignment = () => {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        return (localStorage.getItem('clientAssignmentViewMode') as 'grid' | 'list') || 'grid';
+    });
     
     // Pagination for client cards (3 rows x 3 columns = 9 clients per page)
     const [currentPage, setCurrentPage] = useState(1);
     const clientsPerPage = 9;
+
+    const handleToggleView = (newView: 'grid' | 'list') => {
+        setViewMode(newView);
+        localStorage.setItem('clientAssignmentViewMode', newView);
+    };
 
     useEffect(() => {
         fetchInitialData();
@@ -223,9 +232,9 @@ const ClientAssignment = () => {
                     )}
                 </div>
                 
-                {/* Search Bar */}
-                <div className="mb-6">
-                    <div className="relative">
+                {/* Search Bar and View Toggle */}
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                    <div className="relative flex-1 sm:max-w-md">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -249,14 +258,14 @@ const ClientAssignment = () => {
                             </button>
                         )}
                     </div>
+                    <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredClients.length === 0 ? (
-                        <EmptyState message={searchTerm ? "No clients match your search" : "No clients found"} />
-                    ) : (
-                        // Display only clients for the current page
-                        filteredClients
+                {filteredClients.length === 0 ? (
+                    <EmptyState message={searchTerm ? "No clients match your search" : "No clients found"} />
+                ) : viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredClients
                             .slice((currentPage - 1) * clientsPerPage, currentPage * clientsPerPage)
                             .map(client => (
                                 <div
@@ -282,8 +291,78 @@ const ClientAssignment = () => {
                                     </div>
                                 </div>
                             ))
-                    )}
-                </div>
+                        }
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Client
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Email
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Selected
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                {filteredClients
+                                    .slice((currentPage - 1) * clientsPerPage, currentPage * clientsPerPage)
+                                    .map(client => (
+                                        <tr 
+                                            key={client.user_id} 
+                                            className={`cursor-pointer transition-colors ${selectedClient === client.user_id
+                                                ? 'bg-primary-50 dark:bg-primary-900'
+                                                : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                }`}
+                                            onClick={() => setSelectedClient(client.user_id)}
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                                        <span className="text-primary-800 dark:text-primary-200 font-medium">
+                                                            {client.first_name.charAt(0)}{client.last_name.charAt(0)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="ml-4">
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {client.first_name} {client.last_name}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900 dark:text-white">{client.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${client.is_active
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                    }`}>
+                                                    {client.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                {selectedClient === client.user_id ? (
+                                                    <span className="text-primary-600 dark:text-primary-400 font-medium">Selected</span>
+                                                ) : (
+                                                    <span className="text-gray-400 dark:text-gray-500">Click to select</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                )}
                 
                 {/* Pagination Controls */}
                 {filteredClients.length > clientsPerPage && (

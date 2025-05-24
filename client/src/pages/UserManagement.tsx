@@ -7,6 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import InfoAlert from '../components/common/InfoAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
+import ViewToggle from '../components/common/ViewToggle';
 import { formatDateTime } from '../utils/dateUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
 
@@ -24,12 +25,20 @@ const UserManagement = () => {
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        return (localStorage.getItem('userManagementViewMode') as 'grid' | 'list') || 'list';
+    });
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalUsers, setTotalUsers] = useState(0);
     const pageSize = 10; // Number of users per page
+
+    const handleToggleView = (newView: 'grid' | 'list') => {
+        setViewMode(newView);
+        localStorage.setItem('userManagementViewMode', newView);
+    };
 
     useEffect(() => {
         fetchUsers();
@@ -159,131 +168,201 @@ const UserManagement = () => {
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Search users..."
-                                className="form-input py-2 pl-10 pr-4 rounded-md w-full md:w-64"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
+                        <div className="flex items-center space-x-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search users..."
+                                    className="form-input py-2 pl-10 pr-4 rounded-md w-full md:w-64"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
                             </div>
+                            <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
                         </div>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                                    onClick={() => handleSort('name')}
-                                >
-                                    Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                                    onClick={() => handleSort('email')}
-                                >
-                                    Email {sortField === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                                    onClick={() => handleSort('role')}
-                                >
-                                    Role {sortField === 'role' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                                    onClick={() => handleSort('status')}
-                                >
-                                    Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                                    onClick={() => handleSort('last_login')}
-                                >
-                                    Last Login {sortField === 'last_login' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    {/* Action */}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredUsers.length === 0 ? (
+                {viewMode === 'list' ? (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-4">
-                                        <EmptyState message="No users found" />
-                                    </td>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                        onClick={() => handleSort('email')}
+                                    >
+                                        Email {sortField === 'email' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                        onClick={() => handleSort('role')}
+                                    >
+                                        Role {sortField === 'role' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                                        onClick={() => handleSort('last_login')}
+                                    >
+                                        Last Login {sortField === 'last_login' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        {/* Action */}
+                                    </th>
                                 </tr>
-                            ) : (
-                                filteredUsers.map((user: UserDetails) => (
-                                    <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50 dark:bg-gray-700' : ''}>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-                                                    <span className="text-primary-800 dark:text-primary-200 font-medium">
-                                                        {user.first_name.charAt(0)}{user.last_name.charAt(0)}
-                                                    </span>
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {user.first_name} {user.last_name}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            {user.roles.map((role: string) => (
-                                                <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                    {role}
-                                                </span>
-                                            ))}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_active
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                }`}>
-                                                {user.is_active ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {user.last_login
-                                                ? formatDateTime(user.last_login)
-                                                : 'Never'
-                                            }
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end space-x-2">
-                                                <button
-                                                    className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
-                                                    onClick={() => openEditModal(user)}
-                                                >
-                                                    Edit
-                                                </button>
-                                            </div>
+                            </thead>
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                {filteredUsers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-4">
+                                            <EmptyState message="No users found" />
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ) : (
+                                    filteredUsers.map((user: UserDetails) => (
+                                        <tr key={user.user_id} className={!user.is_active ? 'bg-gray-50 dark:bg-gray-700' : ''}>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-10 w-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                                        <span className="text-primary-800 dark:text-primary-200 font-medium">
+                                                            {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="ml-4">
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {user.first_name} {user.last_name}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900 dark:text-white">{user.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {user.roles.map((role: string) => (
+                                                    <span key={role} className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                        {role}
+                                                    </span>
+                                                ))}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_active
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                    }`}>
+                                                    {user.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                {user.last_login
+                                                    ? formatDateTime(user.last_login)
+                                                    : 'Never'
+                                                }
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex justify-end space-x-2">
+                                                    <button
+                                                        className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                                                        onClick={() => openEditModal(user)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="p-6">
+                        {filteredUsers.length === 0 ? (
+                            <EmptyState message="No users found" />
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {filteredUsers.map((user: UserDetails) => (
+                                    <div
+                                        key={user.user_id}
+                                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${!user.is_active
+                                            ? 'border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-700'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:bg-gray-50 dark:hover:border-primary-500 dark:hover:bg-gray-700'
+                                            }`}
+                                        onClick={() => openEditModal(user)}
+                                    >
+                                        <div className="flex items-center mb-3">
+                                            <div className="flex-shrink-0 h-12 w-12 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                                                <span className="text-primary-800 dark:text-primary-200 font-medium text-lg">
+                                                    {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                                                </span>
+                                            </div>
+                                            <div className="ml-4 flex-1">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    {user.first_name} {user.last_name}
+                                                </div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {user.email}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">Role:</span>
+                                                <div className="flex space-x-1">
+                                                    {user.roles.map((role: string) => (
+                                                        <span key={role} className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                            {role}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">Status:</span>
+                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.is_active
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                    }`}>
+                                                    {user.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">Last Login:</span>
+                                                <span className="text-xs text-gray-600 dark:text-gray-300">
+                                                    {user.last_login ? formatDateTime(user.last_login) : 'Never'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
