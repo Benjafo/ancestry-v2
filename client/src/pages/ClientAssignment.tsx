@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Project, UserDetails, UserEvent, managerApi, projectsApi } from '../api/client';
+import EmptyState from '../components/common/EmptyState';
+import ErrorAlert from '../components/common/ErrorAlert';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import SuccessAlert from '../components/common/SuccessAlert';
+import ViewToggle from '../components/common/ViewToggle';
 import CreateUserModal from '../components/CreateUserModal';
 import { formatDateTime } from '../utils/dateUtils';
-import { formatSnakeCase, formatStatus } from '../utils/formatUtils';
-import ErrorAlert from '../components/common/ErrorAlert';
-import SuccessAlert from '../components/common/SuccessAlert';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import EmptyState from '../components/common/EmptyState';
-import ViewToggle from '../components/common/ViewToggle';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { formatSnakeCase, formatStatus } from '../utils/formatUtils';
 
 // Assignment History Component
 const AssignmentHistory = ({ clientId }: { clientId: string }) => {
@@ -67,7 +67,7 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
         </div>
     );
 };
-  
+
 const ClientAssignment = () => {
     const [clients, setClients] = useState<UserDetails[]>([]);
     const [filteredClients, setFilteredClients] = useState<UserDetails[]>([]);
@@ -85,14 +85,16 @@ const ClientAssignment = () => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         return (localStorage.getItem('clientAssignmentViewMode') as 'grid' | 'list') || 'grid';
     });
-    
-    // Pagination for client cards (3 rows x 3 columns = 9 clients per page)
+
+    // Pagination for client cards (3 rows x 3 columns = 9 clients per page for grid, 5 for list)
     const [currentPage, setCurrentPage] = useState(1);
-    const clientsPerPage = 9;
+    const clientsPerPage = viewMode === 'grid' ? 9 : 5;
 
     const handleToggleView = (newView: 'grid' | 'list') => {
         setViewMode(newView);
         localStorage.setItem('clientAssignmentViewMode', newView);
+        // Reset to first page when changing views since page sizes are different
+        setCurrentPage(1);
     };
 
     useEffect(() => {
@@ -113,7 +115,7 @@ const ClientAssignment = () => {
             setFilteredClients(clients);
         } else {
             const term = searchTerm.toLowerCase();
-            const filtered = clients.filter(client => 
+            const filtered = clients.filter(client =>
                 client.first_name.toLowerCase().includes(term) ||
                 client.last_name.toLowerCase().includes(term) ||
                 client.email.toLowerCase().includes(term) ||
@@ -231,7 +233,7 @@ const ClientAssignment = () => {
                         </span>
                     )}
                 </div>
-                
+
                 {/* Search Bar and View Toggle */}
                 <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                     <div className="relative flex-1 sm:max-w-md">
@@ -316,8 +318,8 @@ const ClientAssignment = () => {
                                 {filteredClients
                                     .slice((currentPage - 1) * clientsPerPage, currentPage * clientsPerPage)
                                     .map(client => (
-                                        <tr 
-                                            key={client.user_id} 
+                                        <tr
+                                            key={client.user_id}
                                             className={`cursor-pointer transition-colors ${selectedClient === client.user_id
                                                 ? 'bg-primary-50 dark:bg-primary-900'
                                                 : 'hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -363,7 +365,7 @@ const ClientAssignment = () => {
                         </table>
                     </div>
                 )}
-                
+
                 {/* Pagination Controls */}
                 {filteredClients.length > clientsPerPage && (
                     <div className="mt-4 flex justify-center">
@@ -371,41 +373,38 @@ const ClientAssignment = () => {
                             <button
                                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                 disabled={currentPage === 1}
-                                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${
-                                    currentPage === 1
+                                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === 1
                                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                                         : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                }`}
+                                    }`}
                             >
                                 <span className="sr-only">Previous</span>
                                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                             </button>
-                            
+
                             {/* Page Numbers */}
                             {Array.from({ length: Math.ceil(filteredClients.length / clientsPerPage) }, (_, i) => (
                                 <button
                                     key={i + 1}
                                     onClick={() => setCurrentPage(i + 1)}
-                                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${
-                                        currentPage === i + 1
+                                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === i + 1
                                             ? 'z-10 bg-primary-50 dark:bg-primary-900 border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-200'
                                             : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                    }`}
+                                        }`}
                                 >
                                     {i + 1}
                                 </button>
                             ))}
-                            
+
                             <button
                                 onClick={() => setCurrentPage(Math.min(Math.ceil(filteredClients.length / clientsPerPage), currentPage + 1))}
                                 disabled={currentPage === Math.ceil(filteredClients.length / clientsPerPage)}
-                                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${
-                                    currentPage === Math.ceil(filteredClients.length / clientsPerPage)
+                                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === Math.ceil(filteredClients.length / clientsPerPage)
                                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                                         : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                }`}
+                                    }`}
                             >
                                 <span className="sr-only">Next</span>
                                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

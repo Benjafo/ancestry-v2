@@ -75,7 +75,6 @@ general:
   active:
     - recreate seed data
     - implement the task feature
-    - add toggles between list and grid view user management and client assignment
     - update order of returned records in projects, persons, etc
   finished:
     - move reused code into utility functions
@@ -87,9 +86,12 @@ general:
     - add base modal class and close modal with escape key
     - implement base modal for all modals
     - add user events for removing person to project, updating user
+    - add toggles between list and grid view user management and client assignment
 
 other:
   active:
+    Manager dashboard:
+      - replace recent activity section
     User management:
       - sorting should not make api requests
     Client assignment:
