@@ -73,10 +73,9 @@ project:
 
 general:
   active:
-    - clean up code
     - recreate seed data
     - implement the task feature
-    - add toggles between list and grid view for all list pages
+    - add toggles between list and grid view user management and client assignment
     - update order of returned records in projects, persons, etc
   finished:
     - move reused code into utility functions
@@ -149,6 +148,7 @@ future_functionality:
   Project -> documents:
     - preview and download document modal functionality, allow uploading larger files
   General:
+    - clean up code
     - mass document upload page
     - import GEDCOM file page
     - links
