@@ -118,6 +118,7 @@ const Dashboard = () => {
                     projects={projects.slice(0, 3)}
                     isLoading={projectsLoading}
                     error={projectsError}
+                    viewMode="grid"
                 />
                 {projects.length > 3 && (
                     <div className="mt-4 text-center">

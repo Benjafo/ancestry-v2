@@ -18,9 +18,10 @@ interface DocumentListProps {
     onDeleteDocument?: (documentId: string) => void;
     onSelectDocument?: (document: Document) => void;
     readOnly?: boolean;
+    viewMode: 'grid' | 'list'; // New prop for view mode
 }
 
-const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDocument, onSelectDocument, readOnly = false }: DocumentListProps) => {
+const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDocument, onSelectDocument, readOnly = false, viewMode }: DocumentListProps) => {
     const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
@@ -149,19 +150,22 @@ const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDoc
                 <EmptyState message="No documents found." />
             ) : (
                 <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <ul className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4" : "divide-y divide-gray-200 dark:divide-gray-700"}>
                         {filteredDocuments.map(document => (
-                            <li key={document.document_id}>
+                            <li key={document.document_id} className={viewMode === 'grid' ? "bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm" : ""}>
                                 <div
-                                    className="px-4 py-4 sm:px-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    className={viewMode === 'grid'
+                                        ? "block p-4 cursor-pointer relative"
+                                        : "px-4 py-4 sm:px-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    }
                                     onClick={() => handleSelect(document)}
                                 >
-                                    <div className="flex items-center justify-between">
+                                    <div className={viewMode === 'grid' ? "flex flex-col items-center justify-center text-center" : "flex items-center justify-between"}>
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0">
                                                 {getDocumentTypeIcon(document.document_type)}
                                             </div>
-                                            <div className="ml-4">
+                                            <div className={viewMode === 'grid' ? "mt-2" : "ml-4"}>
                                                 <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">
                                                     {document.title}
                                                 </p>
@@ -171,43 +175,45 @@ const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDoc
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col items-end">
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {formatDate(document.upload_date, 'Unknown date')}
-                                            </p>
+                                        {viewMode === 'list' && (
+                                            <div className="flex flex-col items-end">
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {formatDate(document.upload_date, 'Unknown date')}
+                                                </p>
 
-                                            {!readOnly && (
-                                                <div className="mt-2 flex space-x-2">
-                                                    {onEditDocument && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleEdit(document.document_id);
-                                                            }}
-                                                            className="text-primary-600 hover:text-primary-900"
-                                                        >
-                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
+                                                {!readOnly && (
+                                                    <div className="mt-2 flex space-x-2">
+                                                        {onEditDocument && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEdit(document.document_id);
+                                                                }}
+                                                                className="text-primary-600 hover:text-primary-900"
+                                                            >
+                                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
 
-                                                    {onDeleteDocument && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDelete(document.document_id);
-                                                            }}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
+                                                        {onDeleteDocument && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDelete(document.document_id);
+                                                                }}
+                                                                className="text-red-600 hover:text-red-900"
+                                                            >
+                                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {document.description && (
@@ -230,6 +236,36 @@ const DocumentList = ({ documents, isLoading, error, onEditDocument, onDeleteDoc
                                         </div>
                                     )}
                                 </div>
+                                {viewMode === 'grid' && !readOnly && (
+                                    <div className="flex justify-center space-x-2 p-4 border-t border-gray-200 dark:border-gray-700">
+                                        {onEditDocument && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEdit(document.document_id);
+                                                }}
+                                                className="text-primary-600 hover:text-primary-900"
+                                            >
+                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {onDeleteDocument && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(document.document_id);
+                                                }}
+                                                className="text-red-600 hover:text-red-900"
+                                            >
+                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </li>
                         ))}
                     </ul>

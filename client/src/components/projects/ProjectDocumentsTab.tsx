@@ -4,6 +4,7 @@ import { formatDate } from '../../utils/dateUtils';
 import { getDocumentTypeIcon } from '../../utils/iconUtils';
 import DocumentForm from '../documents/DocumentForm';
 import ViewDocumentModal from '../documents/ViewDocumentModal';
+import ViewToggle from '../common/ViewToggle';
 
 interface ProjectDocumentsTabProps {
     project: ProjectDetail;
@@ -68,6 +69,14 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
     const [filteredDocuments, setFilteredDocuments] = useState<ProjectDetail['documents']>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        return (localStorage.getItem('projectDocumentsViewMode') as 'grid' | 'list') || 'list';
+    });
+
+    const handleToggleView = (newView: 'grid' | 'list') => {
+        setViewMode(newView);
+        localStorage.setItem('projectDocumentsViewMode', newView);
+    };
 
     // State for document viewing modal
     const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
@@ -242,91 +251,123 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                             </svg>
                         </div>
                     </div>
+                    <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
                 </div>
             </div>
             <div className="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md">
                 {filteredDocuments.length > 0 ? (
-                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <ul className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4" : "divide-y divide-gray-200 dark:divide-gray-700"}>
                         {filteredDocuments.map((document) => (
-                            <li key={document.id || document.id}>
+                            <li key={document.id || document.id} className={viewMode === 'grid' ? "bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm" : ""}>
                                 <div
-                                    className="block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer relative"
+                                    className={viewMode === 'grid'
+                                        ? "block p-4 cursor-pointer relative"
+                                        : "block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer relative"
+                                    }
                                     onClick={() => handleViewDocument(document.id)}
                                     onMouseEnter={() => setHoveredDocumentId(document.id)}
                                     onMouseLeave={() => setHoveredDocumentId(null)}
                                 >
-                                    <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0">
-                                                {getDocumentTypeIcon(document.type)}
-                                            </div>
-                                            <div className="min-w-0 flex-1 px-4">
-                                                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
-                                                {/* Display associated person(s) or "Family Document" */}
-                                                {document.persons && document.persons.length === 1 ? (
-                                                    <p
-                                                        className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent the link click from triggering the document item click
-                                                            if (document.persons && onViewPerson) {
-                                                                onViewPerson(document.persons[0].person_id);
-                                                            }
-                                                        }}
-                                                    >
-                                                        Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
-                                                    </p>
-                                                ) : (
-                                                    <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                        Family Document ({document.persons ? document.persons.length : 0} people)
-                                                    </p>
-                                                )}
-                                                <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                    <span className="truncate">Type: {formatDocumentType(document.type)}</span>
+                                    <div className={viewMode === 'grid' ? "flex flex-col items-center text-center" : "flex items-center justify-between px-4 py-4 sm:px-6"}>
+                                        <div className={viewMode === 'grid' ? "flex-shrink-0 mb-2" : "flex-shrink-0"}>
+                                            {getDocumentTypeIcon(document.type)}
+                                        </div>
+                                        <div className={viewMode === 'grid' ? "min-w-0 flex-1 mt-2" : "min-w-0 flex-1 px-4"}>
+                                            <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">{document.title}</p>
+                                            {/* Display associated person(s) or "Family Document" */}
+                                            {document.persons && document.persons.length === 1 ? (
+                                                <p
+                                                    className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevent the link click from triggering the document item click
+                                                        if (document.persons && onViewPerson) {
+                                                            onViewPerson(document.persons[0].person_id);
+                                                        }
+                                                    }}
+                                                >
+                                                    Associated with: {document.persons[0].first_name} {document.persons[0].last_name}
                                                 </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center">
-                                            {/* Action buttons - only visible on hover */}
-                                            {project.access_level === 'edit' && project.status !== 'completed' && (
-                                                <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredDocumentId === document.id ? 'opacity-100' : 'opacity-0'
-                                                    }`}>
-                                                    <button
-                                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent document view from opening
-                                                            handleEditDocument(document.id);
-                                                        }}
-                                                        title="Edit document"
-                                                    >
-                                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                        </svg>
-                                                    </button>
-                                                    <button
-                                                        className="text-red-500 hover:text-red-700"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent document view from opening
-                                                            handleDeleteDocument(document.id);
-                                                        }}
-                                                        title="Delete document"
-                                                    >
-                                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
+                                            ) : (
+                                                <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                    Family Document ({document.persons ? document.persons.length : 0} people)
+                                                </p>
                                             )}
-
-                                            {/* Date display */}
-                                            <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                <time dateTime={document.uploaded_at}>
-                                                    {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
-                                                </time>
-                                            </div>
+                                            <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                <span className="truncate">Type: {formatDocumentType(document.type)}</span>
+                                            </p>
                                         </div>
+
+                                        {viewMode === 'list' && (
+                                            <div className="flex items-center">
+                                                {/* Action buttons - only visible on hover */}
+                                                {project.access_level === 'edit' && project.status !== 'completed' && (
+                                                    <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredDocumentId === document.id ? 'opacity-100' : 'opacity-0'
+                                                        }`}>
+                                                        <button
+                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Prevent document view from opening
+                                                                handleEditDocument(document.id);
+                                                            }}
+                                                            title="Edit document"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            className="text-red-500 hover:text-red-700"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Prevent document view from opening
+                                                                handleDeleteDocument(document.id);
+                                                            }}
+                                                            title="Delete document"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {/* Date display */}
+                                                <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                    <time dateTime={document.uploaded_at}>
+                                                        {document.uploaded_at ? formatDate(document.uploaded_at) : 'No date'}
+                                                    </time>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
+                                {viewMode === 'grid' && project.access_level === 'edit' && project.status !== 'completed' && (
+                                    <div className="flex justify-center space-x-2 p-4 border-t border-gray-200 dark:border-gray-700">
+                                        <button
+                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditDocument(document.id);
+                                            }}
+                                            title="Edit document"
+                                        >
+                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            className="text-red-500 hover:text-red-700"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteDocument(document.id);
+                                            }}
+                                            title="Delete document"
+                                        >
+                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
                             </li>
                         ))}
                     </ul>

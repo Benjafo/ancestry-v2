@@ -6,6 +6,7 @@ import { formatDate } from '../utils/dateUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
 import { formatSnakeCase } from '../utils/formatUtils';
 import { getActivityIcon } from '../utils/iconUtils';
+import ViewToggle from '../components/common/ViewToggle';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState<UserEvent[]>([]);
@@ -15,6 +16,14 @@ const Notifications = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
     const [filterType, setFilterType] = useState<string>('all');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        return (localStorage.getItem('notificationsViewMode') as 'grid' | 'list') || 'list';
+    });
+
+    const handleToggleView = (newView: 'grid' | 'list') => {
+        setViewMode(newView);
+        localStorage.setItem('notificationsViewMode', newView);
+    };
 
     // Fetch notifications
     useEffect(() => {
@@ -90,7 +99,7 @@ const Notifications = () => {
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">Notifications</h1>
             </div>
 
-            {/* Search and filters */}
+            {/* Search, filters, and view toggle */}
             <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
                     <input
@@ -121,21 +130,25 @@ const Notifications = () => {
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
                     </select>
+                    <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
                 </div>
             </div>
 
             {/* Notifications list */}
             <div className="card bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
-                <div className="space-y-4">
+                <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-4"}>
                     {filteredNotifications.length === 0 ? (
-                        <div className="text-center py-8">
+                        <div className="text-center py-8 col-span-full">
                             <p className="text-gray-500 dark:text-gray-400">No notifications found.</p>
                         </div>
                     ) : (
                         filteredNotifications.map(notification => (
                             <div
                                 key={notification.id}
-                                className="flex items-start space-x-4 border-l-4 border-gray-300 dark:border-gray-600 pl-5 py-3"
+                                className={viewMode === 'grid'
+                                    ? "flex flex-col p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                    : "flex items-start space-x-4 border-l-4 border-gray-300 dark:border-gray-600 pl-5 py-3"
+                                }
                             >
                                 <div className="flex-shrink-0">
                                     {getActivityIcon(notification.event_type)}
