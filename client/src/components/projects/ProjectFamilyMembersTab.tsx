@@ -27,13 +27,6 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
         localStorage.setItem('projectFamilyMembersViewMode', newView);
     };
 
-    const gridClasses = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
-    const listClasses = "space-y-4";
-
-    const personItemClasses = viewMode === 'grid'
-        ? "border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
-        : "border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-between";
-
     return (
         <div>
             <div className="flex justify-end mb-4">
@@ -44,121 +37,137 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                     <p className="text-gray-500 dark:text-gray-400">No family members have been added to this project yet.</p>
                 </div>
             ) : (
-                <div className={viewMode === 'grid' ? gridClasses : listClasses}>
-                    {project.persons.map(person => (
-                        <div
-                            key={person.person_id}
-                            className={personItemClasses}
-                            onClick={() => onViewPerson(person.person_id)}
-                            onMouseEnter={() => setHoveredPersonId(person.person_id)}
-                            onMouseLeave={() => setHoveredPersonId(null)}
-                        >
-                            {viewMode === 'grid' ? (
-                                <>
-                                    <div className="flex justify-between">
-                                        <h3 className="font-medium text-gray-900 dark:text-white">
-                                            {person.first_name} {person.last_name}
-                                        </h3>
+                <div className={viewMode === 'grid' ? "" : "overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md"}>
+                    <ul className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "divide-y divide-gray-200 dark:divide-gray-700"}>
+                        {project.persons.map(person => (
+                            <li key={person.person_id} className={viewMode === 'grid' ? "border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative" : ""}>
+                                <div
+                                    className={viewMode === 'grid'
+                                        ? "cursor-pointer relative"
+                                        : "block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer relative"
+                                    }
+                                    onClick={() => onViewPerson(person.person_id)}
+                                    onMouseEnter={() => setHoveredPersonId(person.person_id)}
+                                    onMouseLeave={() => setHoveredPersonId(null)}
+                                >
+                                    {viewMode === 'grid' ? (
+                                        <>
+                                            <div className="flex justify-between">
+                                                <h3 className="font-medium text-gray-900 dark:text-white">
+                                                    {person.first_name} {person.last_name}
+                                                </h3>
 
-                                        {project.access_level === 'edit' && project.status !== 'completed' && (
-                                            <div
-                                                className={`flex space-x-2 transition-opacity duration-200 ${hoveredPersonId === person.person_id ? 'opacity-100' : 'opacity-0'
-                                                    }`}
-                                            >
-                                                <button
-                                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation(); // Stop event from bubbling up
-                                                        onEditPersonDetails(person);
-                                                    }}
-                                                    title="Edit person"
-                                                >
-                                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    className="text-red-500 hover:text-red-700"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation(); // Stop event from bubbling up
-                                                        onRemovePerson(person.person_id);
-                                                    }}
-                                                    title="Remove from project"
-                                                >
-                                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
+                                                {project.access_level === 'edit' && project.status !== 'completed' && (
+                                                    <div
+                                                        className={`flex space-x-2 transition-opacity duration-200 ${hoveredPersonId === person.person_id ? 'opacity-100' : 'opacity-0'
+                                                            }`}
+                                                    >
+                                                        <button
+                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Stop event from bubbling up
+                                                                onEditPersonDetails(person);
+                                                            }}
+                                                            title="Edit person"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            className="text-red-500 hover:text-red-700"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Stop event from bubbling up
+                                                                onRemovePerson(person.person_id);
+                                                            }}
+                                                            title="Remove from project"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                        {person.birth_date && (
-                                            <p>Born: {formatDate(person.birth_date)}</p>
-                                        )}
-                                        {person.death_date && (
-                                            <p>Died: {formatDate(person.death_date)}</p>
-                                        )}
-                                    </div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                                {person.birth_date && (
+                                                    <p>Born: {formatDate(person.birth_date)}</p>
+                                                )}
+                                                {person.death_date && (
+                                                    <p>Died: {formatDate(person.death_date)}</p>
+                                                )}
+                                            </div>
 
-                                    {person.project_persons?.notes && (
-                                        <div className="mt-2 text-sm">
-                                            <p className="font-medium">Notes:</p>
-                                            <p className="text-gray-600 dark:text-gray-300">{person.project_persons.notes}</p>
+                                            {person.project_persons?.notes && (
+                                                <div className="mt-2 text-sm">
+                                                    <p className="font-medium">Notes:</p>
+                                                    <p className="text-gray-600 dark:text-gray-300">{person.project_persons.notes}</p>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">
+                                                    {person.first_name} {person.last_name}
+                                                </h3>
+                                                <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                    {person.birth_date && (
+                                                        <span>Born: {formatDate(person.birth_date)}</span>
+                                                    )}
+                                                    {person.birth_date && person.death_date && (
+                                                        <span className="mx-2">•</span>
+                                                    )}
+                                                    {person.death_date && (
+                                                        <span>Died: {formatDate(person.death_date)}</span>
+                                                    )}
+                                                </div>
+                                                {person.project_persons?.notes && (
+                                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 truncate">
+                                                        <span className="truncate">Notes: {person.project_persons.notes}</span>
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                {/* Action buttons - only visible on hover */}
+                                                {project.access_level === 'edit' && project.status !== 'completed' && (
+                                                    <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredPersonId === person.person_id ? 'opacity-100' : 'opacity-0'
+                                                        }`}>
+                                                        <button
+                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Prevent person view from opening
+                                                                onEditPersonDetails(person);
+                                                            }}
+                                                            title="Edit person"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            className="text-red-500 hover:text-red-700"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Prevent person view from opening
+                                                                onRemovePerson(person.person_id);
+                                                            }}
+                                                            title="Remove from project"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
-                                </>
-                            ) : (
-                                <>
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900 dark:text-white">
-                                            {person.first_name} {person.last_name}
-                                        </h3>
-                                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            {person.birth_date && (
-                                                <span>Born: {formatDate(person.birth_date)}</span>
-                                            )}
-                                            {person.death_date && (
-                                                <span className="ml-2">Died: {formatDate(person.death_date)}</span>
-                                            )}
-                                        </div>
-                                        {person.project_persons?.notes && (
-                                            <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">Notes: {person.project_persons.notes}</p>
-                                        )}
-                                    </div>
-                                    {project.access_level === 'edit' && project.status !== 'completed' && (
-                                        <div className="flex space-x-2 flex-shrink-0 ml-4">
-                                            <button
-                                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onEditPersonDetails(person);
-                                                }}
-                                                title="Edit person"
-                                            >
-                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                className="text-red-500 hover:text-red-700"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onRemovePerson(person.person_id);
-                                                }}
-                                                title="Remove from project"
-                                            >
-                                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    ))}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
         </div>
