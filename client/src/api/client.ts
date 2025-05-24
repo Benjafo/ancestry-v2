@@ -306,6 +306,7 @@ export interface UserDetails extends User {
 export interface ManagerDashboardSummary {
     activeClients: number;
     totalClients: number;
+    unassignedClientsCount: number;
     activeProjects: number;
     totalProjects: number;
     recentActivity: {

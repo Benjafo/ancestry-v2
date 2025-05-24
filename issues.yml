@@ -93,8 +93,6 @@ other:
   active:
     Settings:
       - confirm reset password functionality
-    Manager dashboard:
-      - update stats at top to remove redundant active projects info
     Client assignment:
       - missing clients
     Login:
@@ -128,6 +126,7 @@ other:
       - new project button should open the create project modal, but not redirect to the project page
       - add a quick actions button to create a task
       - view all system events, e.g. user profile edited
+      - update stats at top to remove redundant active projects info
     User management -> create user:
       - role form does not match dark mode
       - should close modal after creating user

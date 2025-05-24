@@ -17,13 +17,13 @@ const ProjectEvent = require('./projectEvent');
 const ProjectUser = require('./projectUser');
 
 // Define User-Role associations
-User.belongsToMany(Role, { 
+User.belongsToMany(Role, {
     through: 'user_roles',
     foreignKey: 'user_id',
     otherKey: 'role_id'
 });
 
-Role.belongsToMany(User, { 
+Role.belongsToMany(User, {
     through: 'user_roles',
     foreignKey: 'role_id',
     otherKey: 'user_id'

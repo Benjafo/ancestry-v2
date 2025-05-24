@@ -1,4 +1,4 @@
-const { User, Role, Project, UserEvent } = require('../models');
+const { User, Role, Project, UserEvent, ProjectUser } = require('../models'); // Added ProjectUser
 const UserEventService = require('../services/userEventService');
 const { Op, Sequelize } = require('sequelize');
 
@@ -13,6 +13,36 @@ exports.getDashboardSummary = async (req, res) => {
             }],
             where: { is_active: true }
         });
+
+        // Fetch unassigned clients count using subquery approach
+        // First get all active client user IDs
+        const activeClientIds = await User.findAll({
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }],
+            where: { is_active: true },
+            attributes: ['user_id'],
+            raw: true
+        });
+
+        const clientUserIds = activeClientIds.map(client => client.user_id);
+
+        // Then count how many of those IDs don't have project associations
+        let unassignedClientsCount = 0;
+        if (clientUserIds.length > 0) {
+            const assignedClientIds = await ProjectUser.findAll({
+                where: {
+                    user_id: { [Op.in]: clientUserIds }
+                },
+                attributes: ['user_id'],
+                group: ['user_id'],
+                raw: true
+            });
+
+            const assignedUserIds = new Set(assignedClientIds.map(item => item.user_id));
+            unassignedClientsCount = clientUserIds.filter(id => !assignedUserIds.has(id)).length;
+        }
 
         // Fetch total clients count
         const totalClients = await User.count({
@@ -65,6 +95,7 @@ exports.getDashboardSummary = async (req, res) => {
         res.status(200).json({
             activeClients,
             totalClients,
+            unassignedClientsCount,
             activeProjects,
             totalProjects,
             recentActivity: formattedActivity,
