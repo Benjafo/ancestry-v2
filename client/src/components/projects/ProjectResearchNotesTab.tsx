@@ -5,7 +5,8 @@ import { formatDate } from '../../utils/dateUtils';
 import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-import ConfirmDeleteNoteModal from './ConfirmDeleteNoteModal';
+import ConfirmDeleteNoteModal from '../common/ConfirmDeleteNoteModal';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface ProjectResearchNotesTabProps {
     project: ProjectDetail;
@@ -41,9 +42,10 @@ const ProjectResearchNotesTab: React.FC<ProjectResearchNotesTabProps> = ({ proje
             });
             setResearchNotes(data.events);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching research notes:', err);
-            setError('Failed to load research notes');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching research notes:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
@@ -77,9 +79,10 @@ const ProjectResearchNotesTab: React.FC<ProjectResearchNotesTabProps> = ({ proje
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error adding research note:', err);
-            setError('Failed to add research note');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error adding research note:', errorMessage);
+            setError(errorMessage);
 
             // Clear error message after 3 seconds
             setTimeout(() => {
@@ -126,9 +129,10 @@ const ProjectResearchNotesTab: React.FC<ProjectResearchNotesTabProps> = ({ proje
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error updating research note:', err);
-            setError('Failed to update research note');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating research note:', errorMessage);
+            setError(errorMessage);
 
             // Clear error message after 3 seconds
             setTimeout(() => {
@@ -166,9 +170,10 @@ const ProjectResearchNotesTab: React.FC<ProjectResearchNotesTabProps> = ({ proje
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error deleting research note:', err);
-            setError('Failed to delete research note');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error deleting research note:', errorMessage);
+            setError(errorMessage);
 
             // Clear error message after 3 seconds
             setTimeout(() => {

@@ -8,6 +8,7 @@ import CreateProjectModal from '../components/projects/CreateProjectModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectList from '../components/projects/ProjectList';
 import { hasRole } from '../utils/auth';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const Projects = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -73,9 +74,10 @@ const Projects = () => {
             });
             setProjects(data.projects);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching projects:', err);
-            setError('Failed to load projects');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching projects:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
@@ -111,32 +113,6 @@ const Projects = () => {
         return true;
     });
 
-    // const getStatusBadgeClass = (status: Project['status']) => {
-    //     switch (status) {
-    //         case 'active':
-    //             return 'bg-green-100 text-green-800';
-    //         case 'completed':
-    //             return 'bg-blue-100 text-blue-800';
-    //         case 'on_hold':
-    //             return 'bg-yellow-100 text-yellow-800';
-    //         default:
-    //             return 'bg-gray-100 text-gray-800';
-    //     }
-    // };
-
-    // const getStatusText = (status: Project['status']) => {
-    //     switch (status) {
-    //         case 'active':
-    //             return 'Active';
-    //         case 'completed':
-    //             return 'Completed';
-    //         case 'on_hold':
-    //             return 'On Hold';
-    //         default:
-    //             return status;
-    //     }
-    // };
-
     if (isLoading) {
         return <LoadingSpinner containerClassName="h-64" size="lg" />;
     }
@@ -149,7 +125,9 @@ const Projects = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Research Projects</h1>
-                <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
+                {isManager && (
+                    <button className="btn-primary" onClick={handleOpenCreateModal}>New Project</button>
+                )}
             </div>
 
             {successMessage && <SuccessAlert message={successMessage} />}

@@ -7,6 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 // Assignment History Component
 const AssignmentHistory = ({ clientId }: { clientId: string }) => {
@@ -21,9 +22,10 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
                 const response = await managerApi.getAssignmentHistory(clientId);
                 setHistory(response.history);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching assignment history:', err);
-                setError('Failed to load assignment history');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching assignment history:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };
@@ -67,6 +69,7 @@ const AssignmentHistory = ({ clientId }: { clientId: string }) => {
   
 const ClientAssignment = () => {
     const [clients, setClients] = useState<UserDetails[]>([]);
+    const [filteredClients, setFilteredClients] = useState<UserDetails[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedClient, setSelectedClient] = useState<string | null>(null);
     const [clientAssignments, setClientAssignments] = useState<{
@@ -77,6 +80,7 @@ const ClientAssignment = () => {
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     
     // Pagination for client cards (3 rows x 3 columns = 9 clients per page)
     const [currentPage, setCurrentPage] = useState(1);
@@ -94,6 +98,24 @@ const ClientAssignment = () => {
         }
     }, [selectedClient]);
 
+    // Filter clients based on search term
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setFilteredClients(clients);
+        } else {
+            const term = searchTerm.toLowerCase();
+            const filtered = clients.filter(client => 
+                client.first_name.toLowerCase().includes(term) ||
+                client.last_name.toLowerCase().includes(term) ||
+                client.email.toLowerCase().includes(term) ||
+                `${client.first_name} ${client.last_name}`.toLowerCase().includes(term)
+            );
+            setFilteredClients(filtered);
+        }
+        // Reset to first page when search changes
+        setCurrentPage(1);
+    }, [clients, searchTerm]);
+
     const fetchInitialData = async () => {
         try {
             setIsLoading(true);
@@ -105,9 +127,10 @@ const ClientAssignment = () => {
             setClients(clientsResponse.users);
             setProjects(projectsResponse.projects);
             setIsLoading(false);
-        } catch (err) {
-            console.error('Error fetching data:', err);
-            setError('Failed to load data');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching data:', errorMessage);
+            setError(errorMessage);
             setIsLoading(false);
         }
     };
@@ -118,9 +141,10 @@ const ClientAssignment = () => {
             const response = await managerApi.getClientAssignments(clientId);
             setClientAssignments(response);
             setIsLoadingAssignments(false);
-        } catch (err) {
-            console.error('Error fetching client assignments:', err);
-            setError('Failed to load client assignments');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching client assignments:', errorMessage);
+            setError(errorMessage);
             setIsLoadingAssignments(false);
         }
     };
@@ -137,9 +161,10 @@ const ClientAssignment = () => {
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error assigning client to project:', err);
-            setError('Failed to assign client to project');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error assigning client to project:', errorMessage);
+            setError(errorMessage);
         }
     };
 
@@ -155,9 +180,10 @@ const ClientAssignment = () => {
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error removing client from project:', err);
-            setError('Failed to remove client from project');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error removing client from project:', errorMessage);
+            setError(errorMessage);
         }
     };
 
@@ -188,13 +214,49 @@ const ClientAssignment = () => {
             {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Select Client</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Select Client</h2>
+                    {searchTerm && (
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                            {filteredClients.length} of {clients.length} clients
+                        </span>
+                    )}
+                </div>
+                
+                {/* Search Bar */}
+                <div className="mb-6">
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search clients by name or email..."
+                            className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {clients.length === 0 ? (
-                        <EmptyState message="No clients found" />
+                    {filteredClients.length === 0 ? (
+                        <EmptyState message={searchTerm ? "No clients match your search" : "No clients found"} />
                     ) : (
                         // Display only clients for the current page
-                        clients
+                        filteredClients
                             .slice((currentPage - 1) * clientsPerPage, currentPage * clientsPerPage)
                             .map(client => (
                                 <div
@@ -224,7 +286,7 @@ const ClientAssignment = () => {
                 </div>
                 
                 {/* Pagination Controls */}
-                {clients.length > clientsPerPage && (
+                {filteredClients.length > clientsPerPage && (
                     <div className="mt-4 flex justify-center">
                         <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                             <button
@@ -243,7 +305,7 @@ const ClientAssignment = () => {
                             </button>
                             
                             {/* Page Numbers */}
-                            {Array.from({ length: Math.ceil(clients.length / clientsPerPage) }, (_, i) => (
+                            {Array.from({ length: Math.ceil(filteredClients.length / clientsPerPage) }, (_, i) => (
                                 <button
                                     key={i + 1}
                                     onClick={() => setCurrentPage(i + 1)}
@@ -258,10 +320,10 @@ const ClientAssignment = () => {
                             ))}
                             
                             <button
-                                onClick={() => setCurrentPage(Math.min(Math.ceil(clients.length / clientsPerPage), currentPage + 1))}
-                                disabled={currentPage === Math.ceil(clients.length / clientsPerPage)}
+                                onClick={() => setCurrentPage(Math.min(Math.ceil(filteredClients.length / clientsPerPage), currentPage + 1))}
+                                disabled={currentPage === Math.ceil(filteredClients.length / clientsPerPage)}
                                 className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${
-                                    currentPage === Math.ceil(clients.length / clientsPerPage)
+                                    currentPage === Math.ceil(filteredClients.length / clientsPerPage)
                                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                                         : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                 }`}

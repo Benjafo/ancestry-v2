@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { authApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import { login } from '../utils/auth';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -21,9 +22,10 @@ const Login = () => {
             const response = await authApi.login({ email, password });
             login(response.token, response.user, response.refreshToken);
             navigate({ to: '/dashboard' });
-        } catch (err) {
-            console.error('Login error:', err);
-            setError('Invalid email or password. Please try again.');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Login error:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

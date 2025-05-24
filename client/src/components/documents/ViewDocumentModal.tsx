@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
+import BaseModal from '../common/BaseModal'; // Import BaseModal
+import { formatDate } from '../../utils/dateUtils';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface ViewDocumentModalProps {
     isOpen: boolean;
@@ -40,9 +43,10 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
             setError(null);
             const doc = await documentsApi.getDocumentById(documentId);
             setDocument(doc);
-        } catch (err) {
-            console.error('Error fetching document:', err);
-            setError('Failed to load document details');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error fetching document:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -105,64 +109,50 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                {/* Modal header with close button */}
-                <div
-                    className="flex justify-between items-center mb-4"
-                    onMouseEnter={() => setIsHeaderHovered(true)}
-                    onMouseLeave={() => setIsHeaderHovered(false)}
-                >
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {isLoading ? 'Loading Document...' : document ? document.title : 'Document Viewer'}
-                    </h2>
-                    <div className="flex items-center space-x-2">
-                        {/* Show buttons only for managers on active projects when hovered */}
-                        {isManager && projectStatus !== 'completed' && document && (
-                            <div className={`flex space-x-2 transition-opacity duration-200 ${isHeaderHovered ? 'opacity-100' : 'opacity-0'
-                                }`}>
-                                {onEdit && (
-                                    <button
-                                        onClick={() => onEdit(documentId)}
-                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                        title="Edit Document"
-                                    >
-                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                )}
-                                {onDelete && (
-                                    <button
-                                        onClick={() => {
-                                            if (window.confirm('Are you sure you want to delete this document?')) {
-                                                onDelete(documentId);
-                                                onClose();
-                                            }
-                                        }}
-                                        className="text-red-500 hover:text-red-700"
-                                        title="Delete Document"
-                                    >
-                                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
+        <BaseModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={isLoading ? 'Loading Document...' : document ? document.title : 'Document Viewer'}
+            size="4xl" // Adjust size as needed
+        >
+            <div
+                onMouseEnter={() => setIsHeaderHovered(true)}
+                onMouseLeave={() => setIsHeaderHovered(false)}
+            >
+                {/* Show buttons only for managers on active projects when hovered */}
+                {isManager && projectStatus !== 'completed' && document && (
+                    <div className={`flex justify-end space-x-2 mb-4 transition-opacity duration-200 ${isHeaderHovered ? 'opacity-100' : 'opacity-0'
+                        }`}>
+                        {onEdit && (
+                            <button
+                                onClick={() => onEdit(documentId)}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                title="Edit Document"
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
                         )}
-                        <button
-                            onClick={onClose}
-                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                        >
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                        {onDelete && (
+                            <button
+                                onClick={() => {
+                                    if (window.confirm('Are you sure you want to delete this document?')) {
+                                        onDelete(documentId);
+                                        onClose();
+                                    }
+                                }}
+                                className="text-red-500 hover:text-red-700"
+                                title="Delete Document"
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        )}
                     </div>
-                </div>
+                )}
 
                 {/* Loading state */}
                 {isLoading && <LoadingSpinner />}
@@ -183,7 +173,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
                                 <div>
                                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Original Date</p>
                                     <p className="text-gray-900 dark:text-white">
-                                        {new Date(document.date_of_original).toLocaleDateString()}
+                                        {formatDate(document.date_of_original)}
                                     </p>
                                 </div>
                             )}
@@ -196,7 +186,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
                             <div>
                                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Uploaded</p>
                                 <p className="text-gray-900 dark:text-white">
-                                    {new Date(document.upload_date).toLocaleDateString()}
+                                    {formatDate(document.upload_date)}
                                 </p>
                             </div>
                         </div>
@@ -230,7 +220,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
                     </>
                 )}
             </div>
-        </div>
+        </BaseModal>
     );
 };
 

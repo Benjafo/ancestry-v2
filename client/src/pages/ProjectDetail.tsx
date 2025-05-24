@@ -4,7 +4,7 @@ import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
-import ConfirmDeleteModal from '../components/projects/ConfirmDeleteModal';
+import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
 import CreatePersonModal from '../components/projects/CreatePersonModal';
 import EditPersonModal from '../components/projects/EditPersonModal';
 import EditPersonNotesModal from '../components/projects/EditPersonNotesModal';
@@ -18,6 +18,8 @@ import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { User } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
+import { getStatusBadgeClass, getStatusText } from '../utils/statusUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });
@@ -96,9 +98,10 @@ const ProjectDetail = () => {
             setTimeout(() => {
                 setSuccessMessage(null);
             }, 3000);
-        } catch (err) {
-            console.error('Error removing person from project:', err);
-            setError('Failed to remove person from project');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error removing person from project:', errorMessage);
+            setError(errorMessage);
 
             // Clear error message after 3 seconds
             setTimeout(() => {
@@ -194,41 +197,16 @@ const ProjectDetail = () => {
                 });
                 setProject(projectData);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching project details:', err);
-                setError('Failed to load project details');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching project details:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };
 
         fetchProjectDetails();
     }, [projectId]);
-
-    const getStatusBadgeClass = (status: ProjectDetailType['status']) => {
-        switch (status) {
-            case 'active':
-                return 'bg-green-100 text-green-800';
-            case 'completed':
-                return 'bg-blue-100 text-blue-800';
-            case 'on_hold':
-                return 'bg-yellow-100 text-yellow-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const getStatusText = (status: ProjectDetailType['status']) => {
-        switch (status) {
-            case 'active':
-                return 'Active';
-            case 'completed':
-                return 'Completed';
-            case 'on_hold':
-                return 'On Hold';
-            default:
-                return status;
-        }
-    };
 
     if (isLoading) {
         return <LoadingSpinner containerClassName="h-64" size="lg" />;

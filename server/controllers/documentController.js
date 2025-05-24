@@ -73,7 +73,7 @@ exports.createDocument = async (req, res) => {
             await UserEventService.createEvent(
                 req.user.user_id,
                 req.user.user_id,
-                'document_uploaded',
+                'document_created',
                 `Uploaded document: ${document.title}`,
                 document.projectId,
                 'document'
@@ -83,7 +83,7 @@ exports.createDocument = async (req, res) => {
             await UserEventService.createEventForProjectUsers(
                 document.project_id,
                 req.user.user_id,
-                'document_added',
+                'document_created',
                 `A new document has been added to your project: ${document.title}`,
                 document.project_id,
                 'document'
@@ -389,7 +389,7 @@ exports.associateDocumentWithPerson = async (req, res) => {
             await UserEventService.createEvent(
                 req.user.user_id,
                 req.user.user_id,
-                'document_person_associated',
+                'document_associated',
                 `Associated document "${document.title}" with person: ${person.first_name} ${person.last_name}`,
                 documentId,
                 'document'
@@ -399,7 +399,7 @@ exports.associateDocumentWithPerson = async (req, res) => {
             await UserEventService.createEventForProjectUsers(
                 document.project_id,
                 req.user.user_id,
-                'document_person_associated',
+                'document_associated',
                 `Document "${document.title}" has been associated with ${person.first_name} ${person.last_name}`,
                 documentId,
                 'document'
@@ -457,29 +457,29 @@ exports.updateDocumentPersonAssociation = async (req, res) => {
         const { Person } = require('../models');
         const person = await Person.findByPk(personId);
 
-        if (document && person) {
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'document_person_association_updated',
-                `Updated association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
-                documentId,
-                'document'
-            );
+        // if (document && person) {
+        //     // Create event for the actor
+        //     await UserEventService.createEvent(
+        //         req.user.user_id,
+        //         req.user.user_id,
+        //         'document_person_association_updated',
+        //         `Updated association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
+        //         documentId,
+        //         'document'
+        //     );
 
-            // Create events for all project users if document is associated with a project
-            if (document.project_id) {
-                await UserEventService.createEventForProjectUsers(
-                    document.project_id,
-                    req.user.user_id,
-                    'document_person_association_updated',
-                    `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been updated`,
-                    documentId,
-                    'document'
-                );
-            }
-        }
+        //     // Create events for all project users if document is associated with a project
+        //     if (document.project_id) {
+        //         await UserEventService.createEventForProjectUsers(
+        //             document.project_id,
+        //             req.user.user_id,
+        //             'document_person_association_updated',
+        //             `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been updated`,
+        //             documentId,
+        //             'document'
+        //         );
+        //     }
+        // }
 
         res.json({
             message: 'Document-person association updated successfully',
@@ -534,7 +534,7 @@ exports.removeDocumentPersonAssociation = async (req, res) => {
             await UserEventService.createEvent(
                 req.user.user_id,
                 req.user.user_id,
-                'document_person_association_removed',
+                'document_removed',
                 `Removed association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
                 documentId,
                 'document'
@@ -544,7 +544,7 @@ exports.removeDocumentPersonAssociation = async (req, res) => {
             await UserEventService.createEventForProjectUsers(
                 projectId,
                 req.user.user_id,
-                'document_person_association_removed',
+                'document_removed',
                 `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been removed`,
                 projectId, // Change entityId to projectId
                 'document'

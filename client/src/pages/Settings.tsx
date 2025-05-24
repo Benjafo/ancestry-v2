@@ -3,18 +3,18 @@ import { ClientProfile, authApi, clientApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
 import { getUser } from '../utils/auth';
-import { STATES_BY_COUNTRY } from '../utils/locationData';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import {
-    validateAddress,
-    validateAddressGroup,
-    validateCity,
-    validateCountry,
-    validatePassword,
-    validatePasswordMatch,
+    validateLengthRange, // Add this import
+    validatePasswordStrength // Add this import
+    ,
     validatePhone,
-    validateState,
+    validateRequired,
     validateZipCode
-} from '../utils/validationUtils';
+} from '../utils/formValidation'; // Import new validation utilities
+import { STATES_BY_COUNTRY } from '../utils/locationData';
+// Remove the old validationUtils import if no longer needed
+// import { validateAddressGroup } from '../utils/validationUtils';
 
 interface ProfileFormData extends ClientProfile {
     first_name: string;
@@ -96,14 +96,8 @@ const Settings = () => {
                     state: profileState || data.profile.state
                 }));
             } catch (err: unknown) {
-                console.error('Error fetching profile data:', err);
-                // Try to extract error message from the API response if available
-                const errorMessage =
-                    typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                        ? String(err.response.message)
-                        : err instanceof Error
-                            ? err.message
-                            : 'Failed to load profile data';
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching profile data:', errorMessage);
                 setProfileError(errorMessage);
             }
         };
@@ -150,14 +144,8 @@ const Settings = () => {
             const response = await clientApi.updateProfile(emailPreferences);
             setPreferencesSuccess(response.message || 'Email preferences updated successfully');
         } catch (err: unknown) {
-            console.error('Error updating email preferences:', err);
-            // Try to extract error message from the API response if available
-            const errorMessage =
-                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                    ? String(err.response.message)
-                    : err instanceof Error
-                        ? err.message
-                        : 'Failed to update email preferences';
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating email preferences:', errorMessage);
             setPreferencesError(errorMessage);
         } finally {
             setIsUpdatingPreferences(false);
@@ -184,12 +172,11 @@ const Settings = () => {
 
         // Validate all fields before submission
         const newValidationErrors: Record<string, string> = {};
+        let error: string | undefined;
 
         // Validate phone
-        const phoneValidation = validatePhone(profileData.phone || '');
-        if (!phoneValidation.isValid && phoneValidation.message) {
-            newValidationErrors.phone = phoneValidation.message;
-        }
+        error = validatePhone(profileData.phone || '');
+        if (error) newValidationErrors.phone = error;
 
         // Check if any address field is filled
         const anyAddressFieldFilled = !!(
@@ -202,55 +189,32 @@ const Settings = () => {
 
         // Validate address fields as a group
         if (anyAddressFieldFilled) {
-            const groupValidation = validateAddressGroup(
-                profileData.address || '',
-                profileData.city || '',
-                profileData.state || '',
-                profileData.zip_code || '',
-                profileData.country || ''
-            );
+            error = validateRequired(profileData.address || '', 'Street Address');
+            if (error) newValidationErrors.address = error;
+            error = validateRequired(profileData.city || '', 'City');
+            if (error) newValidationErrors.city = error;
+            error = validateRequired(profileData.state || '', 'State/Province');
+            if (error) newValidationErrors.state = error;
+            error = validateRequired(profileData.zip_code || '', 'ZIP/Postal Code');
+            if (error) newValidationErrors.zip_code = error;
+            error = validateRequired(profileData.country || '', 'Country');
+            if (error) newValidationErrors.country = error;
 
-            if (!groupValidation.isValid && groupValidation.message && groupValidation.field) {
-                newValidationErrors[groupValidation.field] = groupValidation.message;
-            }
+            // Validate individual address field formats
+            error = validateLengthRange(profileData.address || '', 3, 255, 'Street Address');
+            if (error) newValidationErrors.address = error;
+            error = validateLengthRange(profileData.city || '', 2, 100, 'City');
+            if (error) newValidationErrors.city = error;
+            error = validateLengthRange(profileData.state || '', 2, 100, 'State/Province');
+            if (error) newValidationErrors.state = error;
+            error = validateZipCode(profileData.zip_code || '');
+            if (error) newValidationErrors.zip_code = error;
+            error = validateLengthRange(profileData.country || '', 2, 100, 'Country');
+            if (error) newValidationErrors.country = error;
         }
 
-        // If any address field is filled, also validate their format
-        if (anyAddressFieldFilled) {
-            // Validate address format
-            const addressValidation = validateAddress(profileData.address || '', true);
-            if (!addressValidation.isValid && addressValidation.message) {
-                newValidationErrors.address = addressValidation.message;
-            }
-
-            // Validate city format
-            const cityValidation = validateCity(profileData.city || '', true);
-            if (!cityValidation.isValid && cityValidation.message) {
-                newValidationErrors.city = cityValidation.message;
-            }
-
-            // Validate state format
-            const stateValidation = validateState(profileData.state || '', profileData.country || '', true);
-            if (!stateValidation.isValid && stateValidation.message) {
-                newValidationErrors.state = stateValidation.message;
-            }
-
-            // Validate zip code format
-            const zipValidation = validateZipCode(profileData.zip_code || '', profileData.country || '', true);
-            if (!zipValidation.isValid && zipValidation.message) {
-                newValidationErrors.zip_code = zipValidation.message;
-            }
-
-            // Validate country format
-            const countryValidation = validateCountry(profileData.country || '', true);
-            if (!countryValidation.isValid && countryValidation.message) {
-                newValidationErrors.country = countryValidation.message;
-            }
-        }
-
-        // If there are validation errors, update the state and return
+        setValidationErrors(newValidationErrors);
         if (Object.keys(newValidationErrors).length > 0) {
-            setValidationErrors(newValidationErrors);
             return;
         }
 
@@ -268,14 +232,8 @@ const Settings = () => {
             setProfileSuccess(response.message || 'Profile updated successfully');
             setIsUpdatingProfile(false);
         } catch (err: unknown) {
-            console.error('Error updating profile:', err);
-            // Try to extract error message from the API response if available
-            const errorMessage =
-                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                    ? String(err.response.message)
-                    : err instanceof Error
-                        ? err.message
-                        : 'Failed to update profile';
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error updating profile:', errorMessage);
             setProfileError(errorMessage);
             setIsUpdatingProfile(false);
         }
@@ -299,18 +257,14 @@ const Settings = () => {
         setPasswordSuccess(null);
 
         // Validate passwords
-        const passwordValidation = validatePassword(passwordData.newPassword);
-        if (!passwordValidation.isValid) {
-            setPasswordError(passwordValidation.message || 'Invalid password');
+        const error = validatePasswordStrength(passwordData.newPassword);
+        if (error) {
+            setPasswordError(error);
             return;
         }
 
-        const passwordMatchValidation = validatePasswordMatch(
-            passwordData.newPassword,
-            passwordData.confirmPassword
-        );
-        if (!passwordMatchValidation.isValid) {
-            setPasswordError(passwordMatchValidation.message || 'Passwords do not match');
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setPasswordError('Passwords do not match');
             return;
         }
 
@@ -330,14 +284,8 @@ const Settings = () => {
                 confirmPassword: ''
             });
         } catch (err: unknown) {
-            console.error('Error changing password:', err);
-            // Try to extract error message from the API response if available
-            const errorMessage =
-                typeof err === 'object' && err !== null && 'response' in err && typeof err.response === 'object' && err.response !== null && 'message' in err.response
-                    ? String(err.response.message)
-                    : err instanceof Error
-                        ? err.message
-                        : 'Failed to change password. Please try again.';
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Error changing password:', errorMessage);
             setPasswordError(errorMessage);
         } finally {
             setIsChangingPassword(false);

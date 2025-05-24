@@ -80,15 +80,15 @@ exports.getDashboardSummary = async (req, res) => {
 // Get all users with optional filtering, pagination, and sorting
 exports.getUsers = async (req, res) => {
     try {
-        const { 
-            filter = 'all', 
-            page = 1, 
+        const {
+            filter = 'all',
+            page = 1,
             limit = 10,
             sortField = 'created_at',
             sortDirection = 'desc',
             status
         } = req.query;
-        
+
         const offset = (parseInt(page) - 1) * parseInt(limit);
         const direction = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
@@ -123,14 +123,14 @@ exports.getUsers = async (req, res) => {
 
         // Define order based on sortField
         let order = [];
-        
+
         // Handle special case for name sorting (which combines first_name and last_name)
         if (sortField === 'name') {
             order = [
                 [Sequelize.fn('LOWER', Sequelize.col('first_name')), direction],
                 [Sequelize.fn('LOWER', Sequelize.col('last_name')), direction]
             ];
-        } 
+        }
         // Handle special case for role sorting (which is in a related model)
         else if (sortField === 'role') {
             order = [
@@ -151,9 +151,9 @@ exports.getUsers = async (req, res) => {
                 'email': 'email',
                 // Add other mappings as needed
             };
-            
+
             const dbField = fieldMap[sortField] || 'created_at';
-            
+
             // Use case-insensitive sorting for string fields
             if (['email'].includes(sortField)) {
                 order = [[Sequelize.fn('LOWER', Sequelize.col(dbField)), direction]];

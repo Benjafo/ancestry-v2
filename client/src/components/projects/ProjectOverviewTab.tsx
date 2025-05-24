@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ProjectDetail, UserEvent, projectsApi } from '../../api/client';
-import { getActivityIcon } from '../../utils/activityUtils';
 import { formatDate } from '../../utils/dateUtils';
+import { getActivityIcon } from '../../utils/iconUtils';
 import EmptyState from '../common/EmptyState';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ActivityModal from './ActivityModal';

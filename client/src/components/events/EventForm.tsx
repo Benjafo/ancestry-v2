@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import { Event, eventsApi } from '../../api/client';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-
-// Helper function to extract error message safely
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) return error.message;
-    return String(error) || 'An unknown error occurred';
-};
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface EventFormProps {
     personId?: string;
@@ -62,7 +57,8 @@ const EventForm = ({ personId, eventId, projectId, onSuccess, onCancel }: EventF
 
                     setFormData(formattedEvent);
                 } catch (err: unknown) {
-                    setError(getErrorMessage(err) || 'Failed to load event data');
+                    const errorMessage = await getApiErrorMessage(err);
+                    setError(errorMessage);
                     console.error(err);
                 } finally {
                     setIsLoading(false);
@@ -113,7 +109,8 @@ const EventForm = ({ personId, eventId, projectId, onSuccess, onCancel }: EventF
 
             onSuccess(result.event);
         } catch (err: unknown) {
-            setError(getErrorMessage(err) || 'An error occurred');
+            const errorMessage = await getApiErrorMessage(err);
+            setError(errorMessage);
             console.error(err);
         } finally {
             setIsLoading(false);

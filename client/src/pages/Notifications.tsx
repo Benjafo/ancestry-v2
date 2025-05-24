@@ -2,7 +2,10 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { UserEvent, dashboardApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
+import { formatDate } from '../utils/dateUtils';
+import { getApiErrorMessage } from '../utils/errorUtils';
 import { formatSnakeCase } from '../utils/formatUtils';
+import { getActivityIcon } from '../utils/iconUtils';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState<UserEvent[]>([]);
@@ -21,9 +24,10 @@ const Notifications = () => {
                 setNotifications(data.userEvents);
                 setFilteredNotifications(data.userEvents);
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching notifications:', err);
-                setError('Failed to load notifications');
+            } catch (err: unknown) {
+                const errorMessage = await getApiErrorMessage(err);
+                console.error('Error fetching notifications:', errorMessage);
+                setError(errorMessage);
                 setIsLoading(false);
             }
         };
@@ -131,22 +135,27 @@ const Notifications = () => {
                         filteredNotifications.map(notification => (
                             <div
                                 key={notification.id}
-                                className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 py-2"
+                                className="flex items-start space-x-4 border-l-4 border-gray-300 dark:border-gray-600 pl-5 py-3"
                             >
-                                <div className="flex justify-between">
-                                    <span className="font-medium dark:text-white">
-                                        {formatSnakeCase(notification.event_type)}
-                                    </span>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'No date'}
-                                    </span>
+                                <div className="flex-shrink-0">
+                                    {getActivityIcon(notification.event_type)}
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
-                                {notification.actor && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        By {notification.actor.first_name} {notification.actor.last_name}
-                                    </p>
-                                )}
+                                <div className="flex-1">
+                                    <div className="flex justify-between">
+                                        <span className="font-medium dark:text-white">
+                                            {formatSnakeCase(notification.event_type)}
+                                        </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            {formatDate(notification.createdAt, 'No date')}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
+                                    {notification.actor && (
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            By {notification.actor.first_name} {notification.actor.last_name}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         ))
                     )}

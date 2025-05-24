@@ -3,6 +3,13 @@ import { useState } from 'react';
 import { authApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import { login } from '../utils/auth';
+import { getApiErrorMessage } from '../utils/errorUtils';
+import {
+    validateRequired,
+    validateLengthRange,
+    validateEmail,
+    validatePasswordStrength
+} from '../utils/formValidation'; // Import validation utilities
 
 const Register = () => {
     const navigate = useNavigate();
@@ -30,15 +37,26 @@ const Register = () => {
         e.preventDefault();
         setError(null);
 
-        // Validate passwords match
+        let currentError: string | undefined;
+
+        currentError = validateRequired(formData.first_name, 'First name');
+        if (currentError) { setError(currentError); return; }
+        currentError = validateLengthRange(formData.first_name, 2, 50, 'First name');
+        if (currentError) { setError(currentError); return; }
+
+        currentError = validateRequired(formData.last_name, 'Last name');
+        if (currentError) { setError(currentError); return; }
+        currentError = validateLengthRange(formData.last_name, 2, 50, 'Last name');
+        if (currentError) { setError(currentError); return; }
+
+        currentError = validateEmail(formData.email);
+        if (currentError) { setError(currentError); return; }
+
+        currentError = validatePasswordStrength(formData.password);
+        if (currentError) { setError(currentError); return; }
+
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
-            return;
-        }
-
-        // Validate password strength
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters long');
             return;
         }
 
@@ -49,9 +67,10 @@ const Register = () => {
             const response = await authApi.register(registerData);
             login(response.token, response.user, response.refreshToken);
             navigate({ to: '/dashboard' });
-        } catch (err) {
-            console.error('Registration error:', err);
-            setError('Registration failed. Please try again.');
+        } catch (err: unknown) {
+            const errorMessage = await getApiErrorMessage(err);
+            console.error('Registration error:', errorMessage);
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

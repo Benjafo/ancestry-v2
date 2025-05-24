@@ -5,7 +5,7 @@ import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
 import AddRelationshipModal from './AddRelationshipModal';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import ConfirmDeleteModal from '../common/ConfirmDeleteModal';
 import EditRelationshipModal from './EditRelationshipModal';
 
 interface ProjectRelationshipsTabProps {

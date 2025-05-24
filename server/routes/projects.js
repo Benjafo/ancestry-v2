@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectController');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, hasRole } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const { 
     createProjectValidation,
@@ -32,9 +32,9 @@ router.get('/:id', validate(projectIdValidation), projectController.getProjectBy
 /**
  * @route   POST /api/projects
  * @desc    Create a new project
- * @access  Private
+ * @access  Private (Manager only)
  */
-router.post('/', validate(createProjectValidation), projectController.createProject);
+router.post('/', hasRole('manager'), validate(createProjectValidation), projectController.createProject);
 
 /**
  * @route   PUT /api/projects/:id

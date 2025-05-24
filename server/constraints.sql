@@ -76,14 +76,13 @@ ALTER TABLE user_events DROP CONSTRAINT IF EXISTS check_user_event_type;
 ALTER TABLE user_events
 ADD CONSTRAINT check_user_event_type
 CHECK (event_type IN (
-    'project_created', 'project_assigned', 'project_updated', 'project_removed',
-    'document_added', 'document_uploaded', 'document_updated', 'document_deleted', 'document_person_associated',
-    'person_created', 'person_discovered', 'person_updated', 'person_deleted', 'person_added_to_project',
+    'user_created', 'user_updated', 'user_deleted', 'user_deactivated', 'user_reactivated', 'roles', 'user_roles', 'password_reset',
+    'project_created', 'project_updated', 'person_added_to_project', 'person_removed_from_project', 'project_assigned', 'project_removed',
+    'person_created', 'person_updated', 'person_deleted',
     'event_created', 'event_updated', 'event_deleted',
-    'relationship_created', 'relationship_established', 'relationship_updated', 'relationship_deleted',
-    'research_milestone', 'project_update',
-    'user_created', 'user_deactivated', 'user_reactivated', 'password_reset',
-    'profile_updated'
+    'document_created', 'document_updated', 'document_deleted', 'document_associated', 'document_removed',
+    'relationship_created', 'relationship_updated', 'relationship_deleted',
+    'research_milestone'
 ));
 
 -- Add indexes for performance
@@ -130,10 +129,12 @@ $$ LANGUAGE plpgsql;
 -- Create triggers for tables with updated_at columns
 DO $$
 DECLARE
-    tables TEXT[] := ARRAY['users', 'roles', 'user_roles', 'projects', 'project_users', 
-                          'persons', 'events', 'documents', 'relationships',
-                          'person_events', 'project_events', 'document_persons', 'project_persons',
-                          'client_profiles', 'user_events', 'password_reset_tokens'];
+    tables TEXT[] := ARRAY[
+        'users', 'roles', 'user_roles', 'projects', 'project_users',
+        'persons', 'events', 'documents', 'relationships',
+        'person_events', 'project_events', 'document_persons', 'project_persons',
+        'client_profiles', 'user_events', 'password_reset_tokens'
+    ];
     t TEXT;
 BEGIN
     FOREACH t IN ARRAY tables

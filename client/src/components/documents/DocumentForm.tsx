@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-
-// Helper function to extract error message safely
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) return error.message;
-    return String(error) || 'An unknown error occurred';
-};
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface DocumentFormProps {
     documentId?: string;
@@ -63,7 +58,8 @@ const DocumentForm = ({ documentId, onSuccess, onCancel, initialData }: Document
 
                     setFormData(formattedDocument);
                 } catch (err: unknown) {
-                    setError(getErrorMessage(err) || 'Failed to load document data');
+                    const errorMessage = await getApiErrorMessage(err);
+                    setError(errorMessage);
                     console.error(err);
                 } finally {
                     setIsLoading(false);
@@ -149,7 +145,8 @@ const DocumentForm = ({ documentId, onSuccess, onCancel, initialData }: Document
                 onSuccess(result.document);
             }
         } catch (err: unknown) {
-            setError(getErrorMessage(err) || 'An error occurred');
+            const errorMessage = await getApiErrorMessage(err);
+            setError(errorMessage);
             console.error(err);
         } finally {
             setIsLoading(false);
