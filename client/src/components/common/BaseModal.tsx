@@ -15,8 +15,6 @@ const BaseModal: React.FC<BaseModalProps> = ({
     children,
     size = 'md'
 }) => {
-    if (!isOpen) return;
-
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -24,7 +22,9 @@ const BaseModal: React.FC<BaseModalProps> = ({
             }
         };
 
-        document.addEventListener('keydown', handleEscape);
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+        }
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
