@@ -400,8 +400,20 @@ export const projectsApi = {
     },
 
     // Project-Person Management
-    getProjectPersons: async (projectId: string): Promise<Person[]> => {
-        const response = await apiClient.get(`projects/${projectId}/persons`);
+    getProjectPersons: async (projectId: string, options?: {
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<Person[]> => {
+        const params = new URLSearchParams();
+        if (options?.sortBy) {
+            params.append('sortBy', options.sortBy);
+        }
+        if (options?.sortOrder) {
+            params.append('sortOrder', options.sortOrder);
+        }
+
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`projects/${projectId}/persons${queryString}`);
         return response.json();
     },
 
@@ -636,10 +648,20 @@ export const documentsApi = {
         return response.json();
     },
 
-    getDocumentsByProjectId: async (projectId: string, options?: { includePersons?: boolean }): Promise<Document[]> => {
+    getDocumentsByProjectId: async (projectId: string, options?: { 
+        includePersons?: boolean;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<Document[]> => {
         const params = new URLSearchParams();
         if (options?.includePersons) {
             params.append('includePersons', 'true');
+        }
+        if (options?.sortBy) {
+            params.append('sortBy', options.sortBy);
+        }
+        if (options?.sortOrder) {
+            params.append('sortOrder', options.sortOrder);
         }
 
         const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -798,8 +820,20 @@ export const relationshipsApi = {
         return response.json();
     },
 
-    getRelationshipsByProjectId: async (projectId: string): Promise<ApiRelationship[]> => {
-        const response = await apiClient.get(`projects/${projectId}/relationships`);
+    getRelationshipsByProjectId: async (projectId: string, options?: {
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<ApiRelationship[]> => {
+        const params = new URLSearchParams();
+        if (options?.sortBy) {
+            params.append('sortBy', options.sortBy);
+        }
+        if (options?.sortOrder) {
+            params.append('sortOrder', options.sortOrder);
+        }
+
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`projects/${projectId}/relationships${queryString}`);
         return response.json();
     }
 };

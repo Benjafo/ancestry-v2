@@ -72,10 +72,18 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         return (localStorage.getItem('projectDocumentsViewMode') as 'grid' | 'list') || 'list';
     });
+    const [sortBy, setSortBy] = useState<string>('upload_date'); // Default sort by upload date
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default sort order descending
 
     const handleToggleView = (newView: 'grid' | 'list') => {
         setViewMode(newView);
         localStorage.setItem('projectDocumentsViewMode', newView);
+    };
+
+    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const [newSortBy, newSortOrder] = e.target.value.split(':');
+        setSortBy(newSortBy);
+        setSortOrder(newSortOrder as 'asc' | 'desc');
     };
 
     // State for document viewing modal
@@ -150,7 +158,11 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
         const fetchProjectDocuments = async () => {
             try {
                 // Fetch documents directly associated with the project
-                const documents = await documentsApi.getDocumentsByProjectId(project.id, { includePersons: true });
+                const documents = await documentsApi.getDocumentsByProjectId(project.id, {
+                    includePersons: true,
+                    sortBy,
+                    sortOrder
+                });
 
                 // Transform documents to match the expected format
                 const formattedDocs = documents.map(doc => ({
@@ -158,7 +170,9 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                     title: doc.title,
                     type: doc.document_type,
                     uploaded_at: doc.upload_date,
-                    persons: doc.persons
+                    persons: doc.persons,
+                    updated_at: doc.updated_at, // Include updated_at for sorting
+                    date_of_original: doc.date_of_original // Include date_of_original for sorting
                 }));
 
                 console.log('Project Documents:', formattedDocs);
@@ -186,7 +200,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
         };
 
         fetchProjectDocuments();
-    }, [project.id]);
+    }, [project.id, sortBy, sortOrder]);
 
     // Filter documents based on search term
     useEffect(() => {
@@ -252,6 +266,22 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                         </div>
                     </div>
                     <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
+                    <select
+                        id="sort-documents"
+                        name="sort-documents"
+                        className="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={`${sortBy}:${sortOrder}`}
+                        onChange={handleSortChange}
+                    >
+                        <option value="upload_date:desc">Upload Date (Newest)</option>
+                        <option value="upload_date:asc">Upload Date (Oldest)</option>
+                        <option value="updated_at:desc">Last Updated (Newest)</option>
+                        <option value="updated_at:asc">Last Updated (Oldest)</option>
+                        <option value="date_of_original:desc">Original Document Date (Newest)</option>
+                        <option value="date_of_original:asc">Original Document Date (Oldest)</option>
+                        <option value="title:asc">Title (A-Z)</option>
+                        <option value="title:desc">Title (Z-A)</option>
+                    </select>
                 </div>
             </div>
             <div className={viewMode === 'grid' ? "" : "overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md"}>

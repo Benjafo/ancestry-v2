@@ -389,11 +389,12 @@ exports.updateProject = async (req, res) => {
 exports.getProjectPersons = async (req, res) => {
     try {
         const { id } = req.params;
+        const { sortBy, sortOrder } = req.query;
 
         // Check if user has access to this project
         await checkProjectAccess(req, id);
 
-        const persons = await projectService.getProjectPersons(id);
+        const persons = await projectService.getProjectPersons(id, { sortBy, sortOrder });
 
         res.json(persons);
     } catch (error) {
@@ -639,64 +640,14 @@ async function checkProjectAccess(req, projectId) {
 exports.getProjectRelationships = async (req, res) => {
     try {
         const { id } = req.params;
+        const { sortBy, sortOrder } = req.query;
 
         // Check if user has access to this project
         await checkProjectAccess(req, id);
 
-        // Import necessary models
-        const { Relationship, Person } = require('../models');
-        const { Op } = require('sequelize');
+        const relationships = await projectService.getProjectRelationships(id, { sortBy, sortOrder });
 
-        // Get all persons in the project
-        const persons = await projectService.getProjectPersons(id);
-
-        if (!persons || persons.length === 0) {
-            return res.json([]);
-        }
-
-        // Extract person IDs
-        const personIds = persons.map(person => person.person_id);
-
-        // Find all relationships where either person1 or person2 is in the project
-        const relationships = await Relationship.findAll({
-            where: {
-                [Op.or]: [
-                    { person1_id: { [Op.in]: personIds } },
-                    { person2_id: { [Op.in]: personIds } }
-                ]
-            },
-            include: [
-                {
-                    model: Person,
-                    as: 'person1',
-                    attributes: ['person_id', 'first_name', 'last_name']
-                },
-                {
-                    model: Person,
-                    as: 'person2',
-                    attributes: ['person_id', 'first_name', 'last_name']
-                }
-            ]
-        });
-
-        // Transform relationships to match frontend expectations
-        const formattedRelationships = relationships.map(rel => {
-            const relationship = rel.toJSON();
-            return {
-                id: relationship.relationship_id,
-                person1Id: relationship.person1_id,
-                person2Id: relationship.person2_id,
-                relationship_type: relationship.relationship_type,
-                relationship_qualifier: relationship.relationship_qualifier,
-                startDate: relationship.start_date,
-                endDate: relationship.end_date,
-                notes: relationship.notes,
-                person1: relationship.person1,
-                person2: relationship.person2
-            };
-        });
-
-        res.json(formattedRelationships);
+        res.json(relationships);
     } catch (error) {
         console.error('Get project relationships error:', error);
 

@@ -1,10 +1,10 @@
 import { Link, useParams } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Person, ProjectDetail as ProjectDetailType, projectsApi } from '../api/client';
+import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
-import ConfirmDeleteModal from '../components/common/ConfirmDeleteModal';
 import CreatePersonModal from '../components/projects/CreatePersonModal';
 import EditPersonModal from '../components/projects/EditPersonModal';
 import EditPersonNotesModal from '../components/projects/EditPersonNotesModal';
@@ -18,8 +18,8 @@ import ProjectTimelineTab from '../components/projects/ProjectTimelineTab';
 import ViewPersonModal from '../components/projects/ViewPersonModal';
 import { User } from '../utils/auth';
 import { formatDate } from '../utils/dateUtils';
-import { getStatusBadgeClass, getStatusText } from '../utils/statusUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { getStatusBadgeClass, getStatusText } from '../utils/statusUtils';
 
 const ProjectDetail = () => {
     const { projectId } = useParams({ from: '/auth/projects/$projectId' });

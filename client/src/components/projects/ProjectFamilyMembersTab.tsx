@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Person, ProjectDetail } from '../../api/client';
+import React, { useEffect, useState } from 'react';
+import { Person, ProjectDetail, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import ViewToggle from '../common/ViewToggle';
 
@@ -21,25 +21,79 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         return (localStorage.getItem('projectFamilyMembersViewMode') as 'grid' | 'list') || 'list';
     });
+    const [sortBy, setSortBy] = useState<string>('created_at'); // Default sort by created date
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default sort order descending
+    const [persons, setPersons] = useState<Person[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleToggleView = (newView: 'grid' | 'list') => {
         setViewMode(newView);
         localStorage.setItem('projectFamilyMembersViewMode', newView);
     };
 
+    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const [newSortBy, newSortOrder] = e.target.value.split(':');
+        setSortBy(newSortBy);
+        setSortOrder(newSortOrder as 'asc' | 'desc');
+    };
+
+    // Fetch sorted persons data
+    useEffect(() => {
+        const fetchProjectPersons = async () => {
+            try {
+                setIsLoading(true);
+                const sortedPersons = await projectsApi.getProjectPersons(project.id, {
+                    sortBy,
+                    sortOrder
+                });
+                setPersons(sortedPersons);
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Error fetching project persons:', error);
+                // Fallback to project.persons if API call fails
+                setPersons(project.persons || []);
+                setIsLoading(false);
+            }
+        };
+
+        fetchProjectPersons();
+    }, [project.id, sortBy, sortOrder, project.persons]);
+
     return (
         <div>
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4 space-x-4">
                 <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
+                <select
+                    id="sort-family-members"
+                    name="sort-family-members"
+                    className="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    value={`${sortBy}:${sortOrder}`}
+                    onChange={handleSortChange}
+                >
+                    <option value="created_at:desc">Created Date (Newest)</option>
+                    <option value="created_at:asc">Created Date (Oldest)</option>
+                    <option value="updated_at:desc">Last Updated (Newest)</option>
+                    <option value="updated_at:asc">Last Updated (Oldest)</option>
+                    <option value="birth_date:desc">Birth Date (Newest)</option>
+                    <option value="birth_date:asc">Birth Date (Oldest)</option>
+                    <option value="first_name:asc">First Name (A-Z)</option>
+                    <option value="first_name:desc">First Name (Z-A)</option>
+                    <option value="last_name:asc">Last Name (A-Z)</option>
+                    <option value="last_name:desc">Last Name (Z-A)</option>
+                </select>
             </div>
-            {!project.persons || project.persons.length === 0 ? (
+            {isLoading ? (
+                <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                </div>
+            ) : persons.length === 0 ? (
                 <div className="text-center py-8">
                     <p className="text-gray-500 dark:text-gray-400">No family members have been added to this project yet.</p>
                 </div>
             ) : (
                 <div className={viewMode === 'grid' ? "" : "overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md"}>
                     <ul className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "divide-y divide-gray-200 dark:divide-gray-700"}>
-                        {project.persons.map(person => (
+                        {persons.map(person => (
                             <li key={person.person_id} className={viewMode === 'grid' ? "border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative" : ""}>
                                 <div
                                     className={viewMode === 'grid'

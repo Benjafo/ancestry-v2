@@ -1,39 +1,37 @@
 project:
   active:
-    Project:
-      - tree view
-    Project -> overview -> notifications:
-      - no notifications displayed
-    Project -> overview:
+    Overview:
       - person and event and document events are not displayed in recent activity, only relationship events
-    Project -> documents:
+    Overview -> notifications:
+      - no notifications displayed
+    Documents:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
       - add filter
       - add missing icons for census, military, etc
-    Project -> document list:
+    Document list:
       - search returns all documents
       - remove association notes
-    Project -> relationships:
+    Relationships:
       - add link to view person modal from list
       - update relationship validation error
       - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
-    Project -> view person modal -> events:
+    View person modal -> events:
       - events should be in order of occurrence
       - display server validation error instead of 400 status error
-    Project -> edit person modal -> relationships:
+    Edit person modal -> relationships:
       - should display a message telling the user to edit relationships in the relationships tab
   finished:
-    Project:
+    General:
       - move create document button to the documents tab
       - implement research notes tab
       - relationships
       - all events should trigger user events that appear in the activity feeds
-    Project -> overview:
+    Overview:
       - recent activity should be accurate
       - recent activity should show create, edit, and delete events for documents, events, persons, and relationships
       - duplicate notifications
-    Project -> documents:
+    Documents:
       - no date on documents
       - type is blank
       - duplicate documents are shown
@@ -44,10 +42,10 @@ project:
       - edit documents from documents tab view
       - implement add document button for family documents
       - created or associated document does not appear in edit person modal until whole modal is saved
-    Project -> timeline:
+    Timeline:
       - fix capitalization of event type
       - related person should appear before event in timeline view
-    Project -> family members:
+    Family members:
       - person cards should all be the same height
       - after canceling delete, view person modal appear
       - duplicate header with heading and "add person" button should be removed
@@ -60,22 +58,23 @@ project:
       - (fixed but very buggy) should be able to add existing documents to family member
       - adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa
         - in the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
-    Project -> relationships:
+    Relationships:
       - rework how relationships are created and stored
       - add links to view person modal
-    Project -> new project:
+    New project:
       - the description field does not implement dark mode
-    Project -> edit project:
+    Edit project:
       - the status dropdown has not implemented dark mode
   discarded:
-    Project -> timeline:
+    Timeline:
       - duplicate events in timeline
 
 general:
   active:
+    - tree view
     - recreate seed data
-    - implement the task feature
-    - update order of returned records in projects, persons, etc
+    - add sorting for all relevant pages/components
+    - handle file storage
   finished:
     - move reused code into utility functions
     - success and error messages are not displayed properly
@@ -87,11 +86,11 @@ general:
     - implement base modal for all modals
     - add user events for removing person to project, updating user
     - add toggles between list and grid view user management and client assignment
+  discarded:
+    - implement the task feature
 
 other:
   active:
-    Manager dashboard:
-      - replace recent activity section
     User management:
       - sorting should not make api requests
     Client assignment:
@@ -145,6 +144,9 @@ other:
       - add pagination and limit to three rows of users in the select client card
       - assignment history should be accurate
       - add search bar
+  discarded:
+    Manager dashboard:
+      - replace recent activity section
 
 future_functionality:
   Api Client:

@@ -21,10 +21,18 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         return (localStorage.getItem('projectRelationshipsViewMode') as 'grid' | 'list') || 'list';
     });
+    const [sortBy, setSortBy] = useState<string>('created_at'); // Default sort by created date
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default sort order descending
 
     const handleToggleView = (newView: 'grid' | 'list') => {
         setViewMode(newView);
         localStorage.setItem('projectRelationshipsViewMode', newView);
+    };
+
+    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const [newSortBy, newSortOrder] = e.target.value.split(':');
+        setSortBy(newSortBy);
+        setSortOrder(newSortOrder as 'asc' | 'desc');
     };
 
     // State for modal visibility
@@ -40,8 +48,11 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         const fetchRelationships = async () => {
             try {
                 setIsLoading(true);
-                // Fetch the full ApiRelationship data
-                const data: ApiRelationship[] = await relationshipsApi.getRelationshipsByProjectId(project.id);
+                // Fetch the full ApiRelationship data with sorting
+                const data: ApiRelationship[] = await relationshipsApi.getRelationshipsByProjectId(project.id, {
+                    sortBy,
+                    sortOrder
+                });
                 console.log('Fetched relationships:', data);
                 setRelationships(data);
                 setIsLoading(false);
@@ -53,7 +64,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         };
 
         fetchRelationships();
-    }, [project.id]);
+    }, [project.id, sortBy, sortOrder]);
 
     // Handler for opening the add relationship modal
     const handleAddRelationship = () => {
@@ -92,6 +103,24 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                         </button>
                     )}
                     <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
+                    <select
+                        id="sort-relationships"
+                        name="sort-relationships"
+                        className="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={`${sortBy}:${sortOrder}`}
+                        onChange={handleSortChange}
+                    >
+                        <option value="created_at:desc">Created Date (Newest)</option>
+                        <option value="created_at:asc">Created Date (Oldest)</option>
+                        <option value="updated_at:desc">Last Updated (Newest)</option>
+                        <option value="updated_at:asc">Last Updated (Oldest)</option>
+                        <option value="relationship_type:asc">Relationship Type (A-Z)</option>
+                        <option value="relationship_type:desc">Relationship Type (Z-A)</option>
+                        <option value="start_date:desc">Start Date (Newest)</option>
+                        <option value="start_date:asc">Start Date (Oldest)</option>
+                        <option value="end_date:desc">End Date (Newest)</option>
+                        <option value="end_date:asc">End Date (Oldest)</option>
+                    </select>
                 </div>
             </div>
 

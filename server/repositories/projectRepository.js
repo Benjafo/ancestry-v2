@@ -1,6 +1,7 @@
 const BaseRepository = require('./baseRepository');
 const { Project, Person, ProjectPerson, Event, Document } = require('../models');
 const { Op } = require('sequelize');
+const QueryBuilder = require('../utils/queryBuilder');
 
 /**
  * Project Repository
@@ -32,21 +33,21 @@ class ProjectRepository extends BaseRepository {
         const offset = (page - 1) * pageSize;
         const sortBy = params.sortBy || 'created_at';
         const sortOrder = params.sortOrder || 'desc';
-        
+
         // Build where clause
         const where = {};
-        
+
         if (params.search) {
             where[Op.or] = [
                 { title: { [Op.iLike]: `%${params.search}%` } },
                 { description: { [Op.iLike]: `%${params.search}%` } }
             ];
         }
-        
+
         if (params.status) {
             where.status = params.status;
         }
-        
+
         // Execute query
         const result = await this.findAndCountAll({
             where,
@@ -62,10 +63,10 @@ class ProjectRepository extends BaseRepository {
                 }
             ]
         });
-        
+
         // Calculate pagination metadata
         const totalPages = Math.ceil(result.count / pageSize);
-        
+
         return {
             projects: result.rows,
             metadata: {
@@ -120,7 +121,7 @@ class ProjectRepository extends BaseRepository {
 
             // Add person-related documents if requested
             if (options.includeDocuments) {
-                 personInclude.include.push({
+                personInclude.include.push({
                     model: Document,
                     as: 'documents', // Use the alias defined in models/index.js
                     through: { attributes: [] }, // Exclude join table attributes
@@ -128,26 +129,26 @@ class ProjectRepository extends BaseRepository {
                 });
             }
 
-             if (options.includeRelationships) {
-                 personInclude.include.push({
+            if (options.includeRelationships) {
+                personInclude.include.push({
                     model: Relationship,
                     as: 'relationshipsAsSubject', // Use the alias defined in models/index.js
                     required: false,
-                     include: [{
-                         model: Person,
-                         as: 'person2',
-                         attributes: ['person_id', 'first_name', 'last_name', 'middle_name', 'gender', 'birth_date', 'death_date']
-                     }]
+                    include: [{
+                        model: Person,
+                        as: 'person2',
+                        attributes: ['person_id', 'first_name', 'last_name', 'middle_name', 'gender', 'birth_date', 'death_date']
+                    }]
                 });
-                 personInclude.include.push({
+                personInclude.include.push({
                     model: Relationship,
                     as: 'relationshipsAsObject', // Use the alias defined in models/index.js
                     required: false,
-                     include: [{
-                         model: Person,
-                         as: 'person1',
-                         attributes: ['person_id', 'first_name', 'last_name', 'middle_name', 'gender', 'birth_date', 'death_date']
-                     }]
+                    include: [{
+                        model: Person,
+                        as: 'person1',
+                        attributes: ['person_id', 'first_name', 'last_name', 'middle_name', 'gender', 'birth_date', 'death_date']
+                    }]
                 });
             }
 
@@ -172,17 +173,35 @@ class ProjectRepository extends BaseRepository {
     /**
      * Get all persons associated with a project
      * @param {String} projectId - Project ID
+     * @param {Object} options - Query options including sortBy and sortOrder
      * @returns {Promise<Array>} Array of persons
      */
-    async getProjectPersons(projectId) {
+    async getProjectPersons(projectId, options = {}) {
+        const allowedSortFields = [
+            'created_at', 'updated_at', 'first_name', 'last_name', 'birth_date'
+        ];
+
+        const queryOptions = QueryBuilder.buildQueryOptions(
+            {
+                sortBy: options.sortBy,
+                sortOrder: options.sortOrder
+            },
+            {
+                allowedSortFields,
+                defaultSortField: 'created_at',
+                defaultSortOrder: 'desc'
+            }
+        );
+
         const project = await this.findById(projectId, {
             include: [{
                 model: Person,
                 as: 'persons',
-                through: { attributes: ['notes'] } // Include notes from junction table
+                through: { attributes: ['notes'] }, // Include notes from junction table
+                ...queryOptions // Apply sorting to the included persons
             }]
         });
-        
+
         return project ? project.persons : [];
     }
 
@@ -213,13 +232,13 @@ class ProjectRepository extends BaseRepository {
     async updateProjectPerson(projectId, personId, data, options = {}) {
         const [rowsUpdated, [updated]] = await ProjectPerson.update(
             { notes: data.notes },
-            { 
+            {
                 where: { project_id: projectId, person_id: personId },
                 returning: true,
                 ...options
             }
         );
-        
+
         return updated;
     }
 
@@ -235,7 +254,7 @@ class ProjectRepository extends BaseRepository {
             where: { project_id: projectId, person_id: personId },
             ...options
         });
-        
+
         return deleted > 0;
     }
 
@@ -249,7 +268,7 @@ class ProjectRepository extends BaseRepository {
         const count = await ProjectPerson.count({
             where: { project_id: projectId, person_id: personId }
         });
-        
+
         return count > 0;
     }
 
@@ -264,7 +283,7 @@ class ProjectRepository extends BaseRepository {
             where: { id: projectId },
             ...options
         });
-        
+
         return count > 0;
     }
 }
