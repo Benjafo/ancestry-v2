@@ -193,13 +193,19 @@ class ProjectRepository extends BaseRepository {
             }
         );
 
+        // Extract the order from queryOptions to apply it at the main query level
+        const sortField = queryOptions.order ? queryOptions.order[0][0] : 'created_at';
+        const sortDirection = queryOptions.order ? queryOptions.order[0][1] : 'DESC';
+
         const project = await this.findById(projectId, {
             include: [{
                 model: Person,
                 as: 'persons',
-                through: { attributes: ['notes'] }, // Include notes from junction table
-                ...queryOptions // Apply sorting to the included persons
-            }]
+                through: { attributes: ['notes'] } // Include notes from junction table
+            }],
+            order: [
+                [{ model: Person, as: 'persons' }, sortField, sortDirection]
+            ]
         });
 
         return project ? project.persons : [];

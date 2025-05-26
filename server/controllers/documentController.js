@@ -329,7 +329,7 @@ exports.getDocumentsByDateRange = async (req, res) => {
  */
 exports.getProjectDocuments = async (req, res) => {
     try {
-        const { projectId } = req.params;
+        const { id } = req.params;
         const { sortBy, sortOrder, includePersons } = req.query;
 
         const options = {
@@ -338,7 +338,7 @@ exports.getProjectDocuments = async (req, res) => {
             sortOrder
         };
 
-        const documents = await documentService.getDocumentsByProjectId(projectId, options);
+        const documents = await documentService.getDocumentsByProjectId(id, options);
 
         res.json(documents);
     } catch (error) {

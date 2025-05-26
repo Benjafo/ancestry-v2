@@ -157,6 +157,7 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
     useEffect(() => {
         const fetchProjectDocuments = async () => {
             try {
+                console.log('Fetching documents with sort:', { sortBy, sortOrder });
                 // Fetch documents directly associated with the project
                 const documents = await documentsApi.getDocumentsByProjectId(project.id, {
                     includePersons: true,
@@ -175,7 +176,9 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
                     date_of_original: doc.date_of_original // Include date_of_original for sorting
                 }));
 
-                console.log('Project Documents:', formattedDocs);
+                console.log('Project Documents (sorted):', formattedDocs);
+                console.log('First document upload date:', formattedDocs[0]?.uploaded_at);
+                console.log('Last document upload date:', formattedDocs[formattedDocs.length - 1]?.uploaded_at);
                 setUniqueDocuments(formattedDocs);
                 setFilteredDocuments(formattedDocs);
             } catch (error) {

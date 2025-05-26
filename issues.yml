@@ -74,7 +74,6 @@ general:
     - tree view
     - recreate seed data
     - add sorting for all relevant pages/components
-    - handle file storage
   finished:
     - move reused code into utility functions
     - success and error messages are not displayed properly
@@ -154,10 +153,11 @@ future_functionality:
   Project -> documents:
     - preview and download document modal functionality, allow uploading larger files
   General:
+    - links
+    - tablet/mobile views
     - clean up code
+    - handle file storage
     - mass document upload page
     - import GEDCOM file page
-    - links
     - payment processing
     - service purchasing
-    - tablet/mobile views
