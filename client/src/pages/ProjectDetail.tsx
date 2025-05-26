@@ -364,7 +364,10 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'relationships' && (
-                        <ProjectRelationshipsTab project={project} />
+                        <ProjectRelationshipsTab 
+                            project={project} 
+                            onViewPerson={handleViewPerson}
+                        />
                     )}
 
                     {activeTab === 'research_notes' && (

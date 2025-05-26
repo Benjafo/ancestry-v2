@@ -7,7 +7,6 @@ project:
     Documents:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
-      - add missing icons for census, military, etc
     Relationships:
       - add link to view person modal from list
       - update relationship validation error
@@ -37,6 +36,7 @@ project:
       - implement add document button for family documents
       - created or associated document does not appear in edit person modal until whole modal is saved
       - add filter
+      - add missing icons for census, military, etc
     Timeline:
       - fix capitalization of event type
       - related person should appear before event in timeline view

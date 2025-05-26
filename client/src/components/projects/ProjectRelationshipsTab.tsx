@@ -11,9 +11,10 @@ import EditRelationshipModal from './EditRelationshipModal';
 
 interface ProjectRelationshipsTabProps {
     project: ProjectDetail;
+    onViewPerson: (personId: string) => void;
 }
 
-const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ project }) => {
+const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ project, onViewPerson }) => {
     // State for relationships data
     const [relationships, setRelationships] = useState<ApiRelationship[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -186,14 +187,35 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
 
                                         <div className="flex flex-col items-center text-center">
                                             <span className="font-medium text-gray-900 dark:text-white">
-                                                {relationship.person1?.first_name} {relationship.person1?.last_name} <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is</span>
+                                                <button
+                                                    className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer font-medium"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (relationship.person1?.person_id) {
+                                                            onViewPerson(relationship.person1.person_id);
+                                                        }
+                                                    }}
+                                                >
+                                                    {relationship.person1?.first_name} {relationship.person1?.last_name}
+                                                </button> <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is</span>
                                             </span>
                                             <span className="font-medium text-primary-600 dark:text-primary-400 text-lg">
                                                 {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
                                                 {relationship.relationship_type}
                                             </span>
                                             <span className="font-medium text-gray-900 dark:text-white">
-                                                <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">of </span>{relationship.person2?.first_name} {relationship.person2?.last_name}
+                                                <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">of </span>
+                                                <button
+                                                    className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer font-medium"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (relationship.person2?.person_id) {
+                                                            onViewPerson(relationship.person2.person_id);
+                                                        }
+                                                    }}
+                                                >
+                                                    {relationship.person2?.first_name} {relationship.person2?.last_name}
+                                                </button>
                                             </span>
                                         </div>
 
@@ -228,14 +250,35 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                             <div className="flex flex-col">
                                                 <div className="flex items-center flex-wrap">
                                                     <span className="font-medium text-gray-900 dark:text-white">
-                                                        {relationship.person1?.first_name} {relationship.person1?.last_name} <span className="text-gray-500 dark:text-gray-400 font-normal">is</span>
+                                                        <button
+                                                            className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer font-medium"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (relationship.person1?.person_id) {
+                                                                    onViewPerson(relationship.person1.person_id);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {relationship.person1?.first_name} {relationship.person1?.last_name}
+                                                        </button> <span className="text-gray-500 dark:text-gray-400 font-normal">is</span>
                                                     </span>
                                                     <span className="mx-2 font-medium text-primary-600 dark:text-primary-400">
                                                         {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
                                                         {relationship.relationship_type}
                                                     </span>
                                                     <span className="font-medium text-gray-900 dark:text-white">
-                                                        <span className="text-gray-500 dark:text-gray-400 font-normal">of </span>{relationship.person2?.first_name} {relationship.person2?.last_name}
+                                                        <span className="text-gray-500 dark:text-gray-400 font-normal">of </span>
+                                                        <button
+                                                            className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer font-medium"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (relationship.person2?.person_id) {
+                                                                    onViewPerson(relationship.person2.person_id);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {relationship.person2?.first_name} {relationship.person2?.last_name}
+                                                        </button>
                                                     </span>
                                                 </div>
 

@@ -389,7 +389,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                     }
                                                                 }}
                                                             >
-                                                                <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
+                                                                <p className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer">{spouse.first_name} {spouse.last_name}</p>
                                                                 {spouse.start_date && (
                                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                         Married: {formatDate(spouse.start_date)}
@@ -418,7 +418,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                     }
                                                                 }}
                                                             >
-                                                                <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
+                                                                <p className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer">{parent.first_name} {parent.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
                                                                 </p>
@@ -444,7 +444,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                     }
                                                                 }}
                                                             >
-                                                                <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
+                                                                <p className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer">{child.first_name} {child.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {child.relationship_qualifier && `${child.relationship_qualifier} child`}
                                                                 </p>
