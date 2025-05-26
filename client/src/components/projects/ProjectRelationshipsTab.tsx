@@ -89,38 +89,47 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         : "";
 
     return (
-        <div className="space-y-6">
-            {/* Header with Add button and View Toggle */}
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Relationships</h3>
-                <div className="flex space-x-2">
-                    {project.access_level === 'edit' && project.status !== 'completed' && (
-                        <button
-                            className="btn-primary"
-                            onClick={handleAddRelationship}
+        <div>
+            {/* Enhanced header with better spacing and visual hierarchy */}
+            <div className="mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    {/* Left side: Title and action buttons */}
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Family Relationships</h3>
+                    </div>
+
+                    {/* Right side: Controls */}
+                    <div className="flex items-center gap-3">
+                        <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
+
+                        <select
+                            id="sort-relationships"
+                            name="sort-relationships"
+                            className="form-select pl-3 pr-8 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-w-48"
+                            value={`${sortBy}:${sortOrder}`}
+                            onChange={handleSortChange}
                         >
-                            Add Relationship
-                        </button>
-                    )}
-                    <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
-                    <select
-                        id="sort-relationships"
-                        name="sort-relationships"
-                        className="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        value={`${sortBy}:${sortOrder}`}
-                        onChange={handleSortChange}
-                    >
-                        <option value="created_at:desc">Created Date (Newest)</option>
-                        <option value="created_at:asc">Created Date (Oldest)</option>
-                        <option value="updated_at:desc">Last Updated (Newest)</option>
-                        <option value="updated_at:asc">Last Updated (Oldest)</option>
-                        <option value="relationship_type:asc">Relationship Type (A-Z)</option>
-                        <option value="relationship_type:desc">Relationship Type (Z-A)</option>
-                        <option value="start_date:desc">Start Date (Newest)</option>
-                        <option value="start_date:asc">Start Date (Oldest)</option>
-                        <option value="end_date:desc">End Date (Newest)</option>
-                        <option value="end_date:asc">End Date (Oldest)</option>
-                    </select>
+                            <option value="created_at:desc">Created Date (Newest)</option>
+                            <option value="created_at:asc">Created Date (Oldest)</option>
+                            <option value="updated_at:desc">Last Updated (Newest)</option>
+                            <option value="updated_at:asc">Last Updated (Oldest)</option>
+                            <option value="relationship_type:asc">Relationship Type (A-Z)</option>
+                            <option value="relationship_type:desc">Relationship Type (Z-A)</option>
+                            <option value="start_date:desc">Start Date (Newest)</option>
+                            <option value="start_date:asc">Start Date (Oldest)</option>
+                            <option value="end_date:desc">End Date (Newest)</option>
+                            <option value="end_date:asc">End Date (Oldest)</option>
+                        </select>
+
+                        {project.access_level === 'edit' && project.status !== 'completed' && (
+                            <button
+                                className="btn-primary"
+                                onClick={handleAddRelationship}
+                            >
+                                Add Relationship
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -210,7 +219,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                         )}
                                     </div>
                                 ) : (
-                                    <div 
+                                    <div
                                         className="block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer relative"
                                         onMouseEnter={() => setHoveredRelationshipId(relationship.id)}
                                         onMouseLeave={() => setHoveredRelationshipId(null)}

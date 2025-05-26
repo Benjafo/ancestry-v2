@@ -354,38 +354,12 @@ const ProjectDetail = () => {
                     )}
 
                     {activeTab === 'family_members' && (
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Family Members</h3>
-                            {project.access_level === 'edit' && project.status !== 'completed' && (
-                                <div className="flex space-x-2">
-                                    { /* <button
-                                        className="btn-secondary"
-                                        onClick={handleAddPerson}
-                                    >
-                                        Add Existing Person
-                                    </button> */ }
-                                    <button
-                                        className="btn-primary"
-                                        onClick={handleCreatePerson}
-                                    >
-                                        Create New Person
-                                    </button>
-                                </div>
-                            )}
-                            {project.status === 'completed' && (
-                                <div className="text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded">
-                                    This project is completed and cannot be modified
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'family_members' && (
                         <ProjectFamilyMembersTab
                             project={project}
                             onEditPersonDetails={handleEditPersonDetails}
                             onViewPerson={handleViewPerson}
                             onRemovePerson={handleRemovePerson}
+                            onCreatePerson={handleCreatePerson}
                         />
                     )}
 

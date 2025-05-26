@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Document, ProjectDetail, documentsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import { getDocumentTypeIcon } from '../../utils/iconUtils';
+import ViewToggle from '../common/ViewToggle';
 import DocumentForm from '../documents/DocumentForm';
 import ViewDocumentModal from '../documents/ViewDocumentModal';
-import ViewToggle from '../common/ViewToggle';
 
 interface ProjectDocumentsTabProps {
     project: ProjectDetail;
@@ -242,37 +242,50 @@ const ProjectDocumentsTab: React.FC<ProjectDocumentsTabProps> = ({ project, onDo
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documents</h3>
-                <div className="flex space-x-4">
-                    {project.access_level === 'edit' && project.status !== 'completed' && (
-                        <button
-                            className="btn-primary"
-                            onClick={handleAddDocument}
-                            title="Add a new document to this project"
-                        >
-                            Add Document
-                        </button>
-                    )}
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Search documents..."
-                            className="form-input py-2 pl-10 pr-4 rounded-md"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                        />
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+            {/* Enhanced header with better spacing and visual hierarchy */}
+            <div className="mb-6">
+                {/* Top row: Title, Search, and Add button */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    {/* Left side: Title */}
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Documents</h3>
+                    
+                    {/* Right side: Search and Add button */}
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search documents..."
+                                className="form-input py-2 pl-10 pr-4 w-64 rounded-md text-sm"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
                         </div>
+                        
+                        {project.access_level === 'edit' && project.status !== 'completed' && (
+                            <button
+                                className="btn-primary"
+                                onClick={handleAddDocument}
+                                title="Add a new document to this project"
+                            >
+                                Add Document
+                            </button>
+                        )}
                     </div>
+                </div>
+                
+                {/* Second row: View toggle and Sort dropdown */}
+                <div className="flex items-center justify-end gap-3">
                     <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
+                    
                     <select
                         id="sort-documents"
                         name="sort-documents"
-                        className="form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="form-select pl-3 pr-8 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white min-w-48"
                         value={`${sortBy}:${sortOrder}`}
                         onChange={handleSortChange}
                     >

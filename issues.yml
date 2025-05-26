@@ -9,9 +9,6 @@ project:
       - delete document does not work
       - add filter
       - add missing icons for census, military, etc
-    Document list:
-      - search returns all documents
-      - remove association notes
     Relationships:
       - add link to view person modal from list
       - update relationship validation error
@@ -19,6 +16,9 @@ project:
     View person modal -> events:
       - events should be in order of occurrence
       - display server validation error instead of 400 status error
+    Edit person modal -> documents:
+      - search returns all documents
+      - remove association notes
     Edit person modal -> relationships:
       - should display a message telling the user to edit relationships in the relationships tab
   finished:
@@ -73,7 +73,6 @@ general:
   active:
     - tree view
     - recreate seed data
-    - add sorting for all relevant pages/components
   finished:
     - move reused code into utility functions
     - success and error messages are not displayed properly
@@ -85,17 +84,17 @@ general:
     - implement base modal for all modals
     - add user events for removing person to project, updating user
     - add toggles between list and grid view user management and client assignment
+    - add sorting for all relevant pages/components
   discarded:
     - implement the task feature
 
 other:
   active:
-    User management:
-      - sorting should not make api requests
     Client assignment:
       - missing clients
     Login:
       - do not refresh page on invalid login, display error message
+      - fix dark mode
   finished:
     Dashboard:
       - research summary
@@ -146,6 +145,8 @@ other:
   discarded:
     Manager dashboard:
       - replace recent activity section
+    User management:
+      - sorting should not make api requests
 
 future_functionality:
   Api Client:
