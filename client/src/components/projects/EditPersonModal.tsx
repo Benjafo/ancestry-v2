@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ApiError, Document, Event, Person, documentsApi, projectsApi } from '../../api/client';
+import BaseModal from '../common/BaseModal'; // Import BaseModal
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-import BaseModal from '../common/BaseModal'; // Import BaseModal
 import DocumentForm from '../documents/DocumentForm';
 import DocumentList from '../documents/DocumentList';
 import EventForm from '../events/EventForm';
@@ -324,7 +324,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                     >
                         Documents
                     </button>
-                    <button
+                    {/* <button
                         className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
                             ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
@@ -332,7 +332,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                         onClick={() => setActiveTab('relationships')}
                     >
                         Relationships
-                    </button>
+                    </button> */}
                 </nav>
             </div>
 
@@ -575,6 +575,7 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                                         personId={person.person_id}
                                         onEditDocument={handleEditDocument}
                                         onDeleteDocument={handleDeleteDocument}
+                                        viewMode='list'
                                     />
                                 </div>
                             )}
@@ -582,18 +583,18 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({
                     )}
 
                     {/* Relationships Tab (Read-only) */}
-                    {activeTab === 'relationships' && (
+                    {/* {activeTab === 'relationships' && (
                         <div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationships</h3>
 
                             <div className="text-center py-8">
-                                <p className="text-gray-500 dark:text-gray-400">No relationships found for this person.</p>
+                                <p className="text-gray-500 dark:text-gray-400">Relationships are not editable in this modal.</p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                    You can add parent and spouse relationships from the person's detail view.
+                                    You can edit relationships in the relationships tab of this project.
                                 </p>
                             </div>
                         </div>
-                    )}
+                    )} */}
                 </div>
             )}
 

@@ -7,7 +7,6 @@ project:
     Documents:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
-      - add filter
       - add missing icons for census, military, etc
     Relationships:
       - add link to view person modal from list
@@ -16,8 +15,6 @@ project:
     Edit person modal -> documents:
       - search returns all documents
       - remove association notes
-    Edit person modal -> relationships:
-      - should display a message telling the user to edit relationships in the relationships tab
   finished:
     General:
       - move create document button to the documents tab
@@ -39,6 +36,7 @@ project:
       - edit documents from documents tab view
       - implement add document button for family documents
       - created or associated document does not appear in edit person modal until whole modal is saved
+      - add filter
     Timeline:
       - fix capitalization of event type
       - related person should appear before event in timeline view
@@ -62,6 +60,8 @@ project:
       - the description field does not implement dark mode
     Edit project:
       - the status dropdown has not implemented dark mode
+    Edit person modal -> relationships:
+      - should display a message telling the user to edit relationships in the relationships tab
   discarded:
     Timeline:
       - duplicate events in timeline
