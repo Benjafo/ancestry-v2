@@ -317,19 +317,19 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                         </svg>
                                                                     </span>
                                                                 </div>
-                                                            </div>
-                                                            <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                                <div>
-                                                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
-                                                                    {event.description && (
-                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
-                                                                    )}
-                                                                    {event.event_location && (
-                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{event.event_location}</p>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                                    <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
+                                                                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
+                                                                        {event.description && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.description}</p>
+                                                                        )}
+                                                                        {event.event_location && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.event_location}</p>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                                        <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -356,6 +356,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             isLoading={false}
                                             error={null}
                                             readOnly={true}
+                                            viewMode="list"
                                         />
                                     ) : (
                                         <div className="text-center py-8">

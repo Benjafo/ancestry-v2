@@ -13,9 +13,6 @@ project:
       - add link to view person modal from list
       - update relationship validation error
       - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
-    View person modal -> events:
-      - events should be in order of occurrence
-      - display server validation error instead of 400 status error
     Edit person modal -> documents:
       - search returns all documents
       - remove association notes
@@ -68,6 +65,9 @@ project:
   discarded:
     Timeline:
       - duplicate events in timeline
+    View person modal -> events:
+      - (?) events should be in order of occurrence
+      - (?) display server validation error instead of 400 status error
 
 general:
   active:
