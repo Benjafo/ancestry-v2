@@ -157,14 +157,7 @@ const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
                         >
                             <option value="">Select Relationship Type</option>
                             <option value="parent">Parent</option>
-                            <option value="child">Child</option>
                             <option value="spouse">Spouse</option>
-                            <option value="sibling">Sibling</option>
-                            <option value="grandparent">Grandparent</option>
-                            <option value="grandchild">Grandchild</option>
-                            <option value="aunt/uncle">Aunt/Uncle</option>
-                            <option value="niece/nephew">Niece/Nephew</option>
-                            <option value="cousin">Cousin</option>
                         </select>
                     </div>
 

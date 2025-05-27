@@ -7,7 +7,7 @@ project:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
     Relationships:
-      - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
+      - updating qualifier does not update qualifier for spouse
   finished:
     General:
       - move create document button to the documents tab
@@ -68,6 +68,8 @@ project:
     View person modal -> events:
       - (?) events should be in order of occurrence
       - (?) display server validation error instead of 400 status error
+    Relationships:
+      - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
 
 general:
   active:

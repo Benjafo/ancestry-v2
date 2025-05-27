@@ -315,7 +315,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
 
                                                 <div className="flex items-center">
                                                     {/* Edit/Delete buttons - only visible on hover */}
-                                                    {project.access_level === 'edit' && project.status !== 'completed' && (
+                                                    {project.access_level === 'edit' && project.status !== 'completed' && relationship.relationship_type !== 'child' && (
                                                         <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredRelationshipId === relationship.relationship_id ? 'opacity-100' : 'opacity-0'}`}>
                                                             <button
                                                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
