@@ -9,9 +9,6 @@ project:
     Relationships:
       - update relationship validation error
       - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
-    Edit person modal -> documents:
-      - search returns all documents
-      - remove association notes
   finished:
     General:
       - move create document button to the documents tab
@@ -62,6 +59,9 @@ project:
       - the status dropdown has not implemented dark mode
     Edit person modal -> relationships:
       - should display a message telling the user to edit relationships in the relationships tab
+    Edit person modal -> documents:
+      - remove association notes
+      - search returns all documents
   discarded:
     Timeline:
       - duplicate events in timeline

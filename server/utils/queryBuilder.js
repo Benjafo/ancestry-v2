@@ -17,7 +17,7 @@ class QueryBuilder {
      */
     static buildPaginationOptions(params = {}) {
         const options = {};
-        
+
         // If limit is provided, use it directly
         if (params.limit !== undefined && params.limit !== null) {
             options.limit = parseInt(params.limit, 10);
@@ -26,7 +26,7 @@ class QueryBuilder {
         else if (params.pageSize !== undefined && params.pageSize !== null) {
             options.limit = parseInt(params.pageSize, 10);
         }
-        
+
         // If offset is provided, use it directly
         if (params.offset !== undefined && params.offset !== null) {
             options.offset = parseInt(params.offset, 10);
@@ -37,7 +37,7 @@ class QueryBuilder {
             const pageSize = options.limit || 10; // Default to 10 if limit is not set
             options.offset = (page - 1) * pageSize;
         }
-        
+
         return options;
     }
 
@@ -55,17 +55,17 @@ class QueryBuilder {
     static buildSortingOptions(params = {}, allowedFields = [], defaultSortBy = 'createdAt', defaultSortOrder = 'desc') {
         let sortBy = params.sortBy || defaultSortBy;
         let sortOrder = params.sortOrder || defaultSortOrder;
-        
+
         // Validate sort field if allowedFields is provided
         if (allowedFields.length > 0 && !allowedFields.includes(sortBy)) {
             sortBy = defaultSortBy;
         }
-        
+
         // Validate sort order
         if (!['asc', 'desc'].includes(sortOrder.toLowerCase())) {
             sortOrder = defaultSortOrder;
         }
-        
+
         return [[sortBy, sortOrder.toUpperCase()]];
     }
 
@@ -78,20 +78,20 @@ class QueryBuilder {
      */
     static buildFilterOptions(filters = {}, fieldMappings = {}) {
         const where = {};
-        
+
         Object.entries(filters).forEach(([key, value]) => {
             // Skip empty values
             if (value === undefined || value === null || value === '') {
                 return;
             }
-            
+
             // Get the database field name from mappings or use the key directly
             const fieldName = fieldMappings[key] || key;
-            
+
             // Handle special operators
             if (typeof value === 'object' && !Array.isArray(value)) {
                 const conditions = {};
-                
+
                 Object.entries(value).forEach(([op, val]) => {
                     switch (op) {
                         case 'eq':
@@ -136,7 +136,7 @@ class QueryBuilder {
                             break;
                     }
                 });
-                
+
                 where[fieldName] = conditions;
             }
             // Handle array values (treat as IN operator)
@@ -153,7 +153,7 @@ class QueryBuilder {
                 where[fieldName] = value;
             }
         });
-        
+
         return where;
     }
 
@@ -168,11 +168,11 @@ class QueryBuilder {
         if (!searchTerm || !searchFields.length) {
             return {};
         }
-        
+
         const searchConditions = searchFields.map(field => ({
             [field]: { [Op.iLike]: `%${searchTerm}%` }
         }));
-        
+
         return { [Op.or]: searchConditions };
     }
 
@@ -186,15 +186,15 @@ class QueryBuilder {
      */
     static buildDateRangeFilter(startDate, endDate, dateField = 'createdAt') {
         const dateFilter = {};
-        
+
         if (startDate) {
             dateFilter[Op.gte] = new Date(startDate);
         }
-        
+
         if (endDate) {
             dateFilter[Op.lte] = new Date(endDate);
         }
-        
+
         return Object.keys(dateFilter).length ? { [dateField]: dateFilter } : {};
     }
 
@@ -213,19 +213,19 @@ class QueryBuilder {
      */
     static buildQueryOptions(params = {}, options = {}) {
         const queryOptions = {};
-        
+
         // Extract parameters
-        const { 
+        const {
             page, pageSize, limit, offset,
             sortBy, sortOrder,
             search,
             startDate, endDate,
             ...filters
         } = params;
-        
+
         // Add pagination
         Object.assign(queryOptions, this.buildPaginationOptions({ page, pageSize, limit, offset }));
-        
+
         // Add sorting
         queryOptions.order = this.buildSortingOptions(
             { sortBy, sortOrder },
@@ -233,14 +233,14 @@ class QueryBuilder {
             options.defaultSortField || 'createdAt',
             options.defaultSortOrder || 'desc'
         );
-        
+
         // Initialize where clause
         queryOptions.where = {};
-        
+
         // Add filters
         const filterWhere = this.buildFilterOptions(filters, options.fieldMappings || {});
         Object.assign(queryOptions.where, filterWhere);
-        
+
         // Add search
         if (search && options.searchFields && options.searchFields.length) {
             const searchWhere = this.buildSearchOptions(search, options.searchFields);
@@ -249,7 +249,7 @@ class QueryBuilder {
                 ...searchWhere
             };
         }
-        
+
         // Add date range
         if ((startDate || endDate) && options.dateField) {
             const dateWhere = this.buildDateRangeFilter(startDate, endDate, options.dateField);
@@ -258,12 +258,15 @@ class QueryBuilder {
                 ...dateWhere
             };
         }
-        
-        // If where clause is empty, remove it
-        if (Object.keys(queryOptions.where).length === 0) {
+
+        // If where clause is effectively empty (no string-keyed properties from filters AND no symbol-keyed properties like Op.or from search)
+        const hasStringKeys = Object.keys(queryOptions.where).length > 0;
+        const hasSymbolKeys = Object.getOwnPropertySymbols(queryOptions.where).length > 0;
+
+        if (!hasStringKeys && !hasSymbolKeys) {
             delete queryOptions.where;
         }
-        
+
         return queryOptions;
     }
 }

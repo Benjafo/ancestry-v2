@@ -51,6 +51,7 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
 
             try {
                 const response = await documentsApi.getDocuments({ search: searchTerm });
+                console.log('Search results:', response.documents);
                 setSearchResults(response.documents || []);
             } catch (err: unknown) {
                 const errorMessage = await getApiErrorMessage(err);
