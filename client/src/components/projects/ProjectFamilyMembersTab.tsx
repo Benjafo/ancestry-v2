@@ -117,7 +117,7 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                 className="btn-primary"
                                 onClick={onCreatePerson}
                             >
-                                Create New Person
+                                Add Person
                             </button>
                         )}
                     </div>
