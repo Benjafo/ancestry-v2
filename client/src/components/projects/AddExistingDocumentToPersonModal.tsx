@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Document, documentsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 import { getDocumentTypeIcon } from '../../utils/iconUtils';
+import BaseModal from '../common/BaseModal'; // Import BaseModal
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-import BaseModal from '../common/BaseModal'; // Import BaseModal
-import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface AddExistingDocumentToPersonModalProps {
     isOpen: boolean;
@@ -195,8 +195,8 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
                                 <li
                                     key={document.document_id}
                                     className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${selectedDocument?.document_id === document.document_id
-                                            ? 'bg-primary-50 dark:bg-primary-900'
-                                            : ''
+                                        ? 'bg-primary-50 dark:bg-primary-900'
+                                        : ''
                                         }`}
                                     onClick={() => handleSelectDocument(document)}
                                 >
@@ -226,26 +226,6 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
                     </div>
                 )}
             </div>
-
-            {/* Association notes */}
-            {selectedDocument && (
-                <div className="mb-6">
-                    <h3 className="text-md font-medium text-gray-900 dark:text-white mb-2">
-                        Association Notes
-                    </h3>
-                    <div className="mt-1">
-                        <textarea
-                            id="association-notes"
-                            name="notes"
-                            rows={3}
-                            className="shadow-sm focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
-                            placeholder="Add notes about this document's relevance to the person (optional)"
-                            value={associationNotes}
-                            onChange={handleNotesChange}
-                        />
-                    </div>
-                </div>
-            )}
 
             {/* Action buttons */}
             <div className="flex justify-end space-x-3">

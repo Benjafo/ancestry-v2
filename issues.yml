@@ -2,8 +2,7 @@ project:
   active:
     Overview:
       - person and event and document events are not displayed in recent activity, only relationship events
-    Overview -> notifications:
-      - no notifications displayed
+      - duplicate notifications
     Documents:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
@@ -22,7 +21,8 @@ project:
     Overview:
       - recent activity should be accurate
       - recent activity should show create, edit, and delete events for documents, events, persons, and relationships
-      - duplicate notifications
+    Overview -> notifications:
+      - no notifications displayed
     Documents:
       - no date on documents
       - type is blank
@@ -91,11 +91,11 @@ general:
 other:
   active:
     Login:
-      - do not refresh page on invalid login, display error message
       - forgot password
   finished:
     Login:
       - fix dark mode
+      - do not refresh page on invalid login, display error message
     Dashboard:
       - research summary
       - recent activity (NOTE Consolidated with notifications)
