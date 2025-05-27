@@ -59,9 +59,15 @@ export const apiClient = ky.create({
                         }
                     }
 
-                    // If refresh failed or no refresh token, clear tokens and redirect to login
                     clearTokens();
-                    window.location.href = '/login';
+
+                    // If refresh failed or no refresh token
+                    // Check if the original request was NOT the login request before redirecting
+                    if (!request.url.endsWith('auth/login')) {
+                        window.location.href = '/login';
+                    }
+                    // If it was the login request, we don't redirect,
+                    // allowing the Login.tsx component to handle the error display.
                 }
 
                 return response;

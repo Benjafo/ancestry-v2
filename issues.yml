@@ -90,12 +90,12 @@ general:
 
 other:
   active:
-    Client assignment:
-      - missing clients
     Login:
       - do not refresh page on invalid login, display error message
-      - fix dark mode
+      - forgot password
   finished:
+    Login:
+      - fix dark mode
     Dashboard:
       - research summary
       - recent activity (NOTE Consolidated with notifications)
@@ -142,6 +142,7 @@ other:
       - add pagination and limit to three rows of users in the select client card
       - assignment history should be accurate
       - add search bar
+      - missing clients
   discarded:
     Manager dashboard:
       - replace recent activity section
