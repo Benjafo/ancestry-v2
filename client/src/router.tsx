@@ -17,6 +17,8 @@ import Notifications from './pages/Notifications';
 import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
+import RequestPasswordReset from './pages/RequestPasswordReset'; // Import new page
+import ResetPassword from './pages/ResetPassword'; // Import new page
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
 
@@ -81,6 +83,27 @@ const registerRoute = new Route({
             });
         }
     },
+});
+
+const requestPasswordResetRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/request-password-reset',
+    component: RequestPasswordReset,
+    beforeLoad: async () => {
+        if (isAuthenticated()) {
+            throw redirect({
+                to: '/dashboard',
+            });
+        }
+    },
+});
+
+const resetPasswordRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/reset-password',
+    component: ResetPassword,
+    // This route will receive the token as a query parameter, e.g., /reset-password?token=abc
+    // No authentication check here as it's for unauthenticated users
 });
 
 // Auth layout route
@@ -183,6 +206,8 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     loginRoute,
     registerRoute,
+    requestPasswordResetRoute, // Add new route
+    resetPasswordRoute, // Add new route
     authLayoutRoute.addChildren([
         dashboardRoute,
         settingsRoute,
