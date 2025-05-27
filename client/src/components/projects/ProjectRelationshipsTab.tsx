@@ -148,18 +148,22 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                         <ul className={viewMode === 'grid' ? gridClasses : listClasses}>
                             {relationships.map((relationship: ApiRelationship) => (
                                 <li
-                                    key={relationship.id}
+                                    key={relationship.relationship_id}
                                     className={relationshipItemClasses}
                                 >
                                     {viewMode === 'grid' ? (
                                         <div
                                             className="cursor-pointer relative"
-                                            onMouseEnter={() => setHoveredRelationshipId(relationship.id)}
-                                            onMouseLeave={() => setHoveredRelationshipId(null)}
+                                            onMouseEnter={() => {
+                                                setHoveredRelationshipId(relationship.relationship_id);
+                                            }}
+                                            onMouseLeave={() => {
+                                                setHoveredRelationshipId(null);
+                                            }}
                                         >
                                             {/* Grid view hover buttons */}
                                             {project.access_level === 'edit' && project.status !== 'completed' && (
-                                                <div className={`absolute top-2 right-2 flex space-x-2 transition-opacity duration-200 ${hoveredRelationshipId === relationship.id ? 'opacity-100' : 'opacity-0'}`}>
+                                                <div className={`absolute top-2 right-2 flex space-x-2 transition-opacity duration-200 ${hoveredRelationshipId === relationship.relationship_id ? 'opacity-100' : 'opacity-0'}`}>
                                                     <button
                                                         className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                                                         onClick={(e) => {
@@ -176,7 +180,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                         className="text-red-500 hover:text-red-700"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleDeleteRelationship(relationship.id);
+                                                            handleDeleteRelationship(relationship.relationship_id);
                                                         }}
                                                         title="Delete relationship"
                                                     >
@@ -201,7 +205,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                         {relationship.person1?.first_name} {relationship.person1?.last_name}
                                                     </button> <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is</span>
                                                 </span>
-                                                <span className="font-medium text-primary-600 dark:text-primary-400 text-lg">
+                                                <span className="font-medium text-gray-900 dark:text-white text-md">
                                                     {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
                                                     {relationship.relationship_type}
                                                 </span>
@@ -245,8 +249,12 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                     ) : (
                                         <div
                                             className="block hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer relative"
-                                            onMouseEnter={() => setHoveredRelationshipId(relationship.id)}
-                                            onMouseLeave={() => setHoveredRelationshipId(null)}
+                                            onMouseEnter={() => {
+                                                setHoveredRelationshipId(relationship.relationship_id);
+                                            }}
+                                            onMouseLeave={() => {
+                                                setHoveredRelationshipId(null);
+                                            }}
                                         >
                                             <div className="flex items-center justify-between px-4 py-4 sm:px-6">
                                                 <div className="flex flex-col">
@@ -264,7 +272,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                                 {relationship.person1?.first_name} {relationship.person1?.last_name}
                                                             </button> <span className="text-gray-500 dark:text-gray-400 font-normal">is</span>
                                                         </span>
-                                                        <span className="mx-2 font-medium text-primary-600 dark:text-primary-400">
+                                                        <span className="mx-2 font-medium text-gray-900 dark:text-white text-md">
                                                             {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
                                                             {relationship.relationship_type}
                                                         </span>
@@ -308,7 +316,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                 <div className="flex items-center">
                                                     {/* Edit/Delete buttons - only visible on hover */}
                                                     {project.access_level === 'edit' && project.status !== 'completed' && (
-                                                        <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredRelationshipId === relationship.id ? 'opacity-100' : 'opacity-0'}`}>
+                                                        <div className={`flex space-x-2 mr-4 transition-opacity duration-200 ${hoveredRelationshipId === relationship.relationship_id ? 'opacity-100' : 'opacity-0'}`}>
                                                             <button
                                                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                                                                 onClick={(e) => {
@@ -325,7 +333,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                                 className="text-red-500 hover:text-red-700"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    handleDeleteRelationship(relationship.id);
+                                                                    handleDeleteRelationship(relationship.relationship_id);
                                                                 }}
                                                                 title="Delete relationship"
                                                             >
@@ -392,12 +400,11 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                 } catch (err) {
                                     console.error('Error fetching relationships:', err);
                                     setError('Failed to load relationships');
-                                    setIsLoading(false);
                                 }
                             };
                             fetchRelationships();
                         }}
-                        relationshipId={editingRelationship.id}
+                        relationshipId={editingRelationship.relationship_id}
                         relationship={editingRelationship}
                     />
                 )
@@ -414,7 +421,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                 await relationshipsApi.deleteRelationship(deletingRelationshipId);
 
                                 // Remove the relationship from the state
-                                setRelationships(relationships.filter(r => r.id !== deletingRelationshipId));
+                                setRelationships(relationships.filter(r => r.relationship_id !== deletingRelationshipId));
 
                                 // Close the modal
                                 setDeletingRelationshipId(null);

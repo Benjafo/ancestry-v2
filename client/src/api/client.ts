@@ -739,23 +739,7 @@ export const documentsApi = {
 
 // Interface for relationship objects returned by the API
 export interface ApiRelationship {
-    id: string;
-    person1_id: string;
-    person2_id: string;
-    relationship_type: string;
-    relationship_qualifier?: string;
-    start_date?: string;
-    end_date?: string;
-    notes?: string;
-    created_at: string;
-    updated_at: string;
-    person1?: Person; // Nested Person object
-    person2?: Person; // Nested Person object
-}
-
-// Interface for relationship objects returned by the API
-export interface ApiRelationship {
-    id: string;
+    relationship_id: string; // Corrected: Use relationship_id as per backend model
     person1_id: string;
     person2_id: string;
     relationship_type: string;

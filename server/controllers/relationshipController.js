@@ -128,20 +128,19 @@ exports.createRelationship = async (req, res) => {
     } catch (error) {
         console.error('Create relationship error:', error);
 
-        // Handle validation errors
-        if (error.message.includes('validation failed') ||
-            error.message.includes('not found') ||
+        // Handle specific custom errors thrown by the service
+        if (error.message.includes('not found') ||
             error.message.includes('already exists') ||
-            error.message.includes('Circular relationship')) {
+            error.message.includes('Circular relationship') ||
+            error.message.includes('Only \'parent\' and \'spouse\' relationships can be created directly') ||
+            error.message.includes('is not a valid qualifier for')) {
             return res.status(400).json({
                 message: error.message
             });
         }
 
-        res.status(500).json({
-            message: 'Server error creating relationship',
-            error: error.message
-        });
+        // For all other errors, including Sequelize Validation Errors, let the global error handler process them
+        throw error;
     }
 };
 
@@ -235,17 +234,17 @@ exports.updateRelationship = async (req, res) => {
             });
         }
 
-        // Handle validation errors
-        if (error.message.includes('validation failed')) {
+        // Handle specific custom errors thrown by the service
+        if (error.message.includes('Only \'parent\' and \'spouse\' relationships can be updated directly') ||
+            error.message.includes('Invalid relationship type') ||
+            error.message.includes('is not a valid qualifier for')) {
             return res.status(400).json({
                 message: error.message
             });
         }
 
-        res.status(500).json({
-            message: 'Server error updating relationship',
-            error: error.message
-        });
+        // For all other errors, including Sequelize Validation Errors, let the global error handler process them
+        throw error;
     }
 };
 
