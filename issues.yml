@@ -91,14 +91,13 @@ general:
 
 other:
   active:
-    Login:
-      - forgot password
     Client assignment:
       - add sorting based on columns and remove selected column
   finished:
     Login:
       - fix dark mode
       - do not refresh page on invalid login, display error message
+      - forgot password
     Dashboard:
       - research summary
       - recent activity (NOTE Consolidated with notifications)

@@ -85,10 +85,21 @@ const ClientAssignment = () => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         return (localStorage.getItem('clientAssignmentViewMode') as 'grid' | 'list') || 'grid';
     });
+    const [sortBy, setSortBy] = useState<string>('first_name'); // Default sort by first name
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Default sort order ascending
 
     // Pagination for client cards (3 rows x 3 columns = 9 clients per page for grid, 5 for list)
     const [currentPage, setCurrentPage] = useState(1);
     const clientsPerPage = viewMode === 'grid' ? 9 : 5;
+
+    const handleSortChange = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
 
     const handleToggleView = (newView: 'grid' | 'list') => {
         setViewMode(newView);
@@ -109,23 +120,48 @@ const ClientAssignment = () => {
         }
     }, [selectedClient]);
 
-    // Filter clients based on search term
+    // Filter and sort clients
     useEffect(() => {
-        if (!searchTerm.trim()) {
-            setFilteredClients(clients);
-        } else {
+        let currentClients = clients;
+
+        // Apply search filtering first
+        if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase();
-            const filtered = clients.filter(client =>
+            currentClients = clients.filter(client =>
                 client.first_name.toLowerCase().includes(term) ||
                 client.last_name.toLowerCase().includes(term) ||
                 client.email.toLowerCase().includes(term) ||
                 `${client.first_name} ${client.last_name}`.toLowerCase().includes(term)
             );
-            setFilteredClients(filtered);
         }
-        // Reset to first page when search changes
-        setCurrentPage(1);
-    }, [clients, searchTerm]);
+
+        // Apply client-side sorting
+        const sortedClients = [...currentClients].sort((a, b) => {
+            let aValue: string | undefined;
+            let bValue: string | undefined;
+
+            if (sortBy === 'first_name') {
+                aValue = `${a.first_name} ${a.last_name}`; // Sort by first name then last name
+                bValue = `${b.first_name} ${b.last_name}`;
+            } else if (sortBy === 'email') {
+                aValue = a.email;
+                bValue = b.email;
+            } else {
+                return 0; // No specific sort field, maintain original order
+            }
+
+            if (aValue === undefined || bValue === undefined) return 0; // Handle undefined values
+
+            if (sortOrder === 'asc') {
+                return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+            } else {
+                return bValue.toLowerCase().localeCompare(aValue.toLowerCase());
+            }
+        });
+
+        setFilteredClients(sortedClients);
+        setCurrentPage(1); // Reset to first page after sort/filter
+    }, [clients, searchTerm, sortBy, sortOrder]); // Add sortBy and sortOrder to dependencies
 
     const fetchInitialData = async () => {
         try {
@@ -300,11 +336,43 @@ const ClientAssignment = () => {
                         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Client
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                                        onClick={() => handleSortChange('first_name')}
+                                    >
+                                        <div className="flex items-center">
+                                            Name
+                                            {sortBy === 'first_name' && (
+                                                <svg
+                                                    className={`ml-2 h-4 w-4 ${sortOrder === 'desc' ? 'transform rotate-180' : ''}`}
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            )}
+                                        </div>
                                     </th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Email
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+                                        onClick={() => handleSortChange('email')}
+                                    >
+                                        <div className="flex items-center">
+                                            Email
+                                            {sortBy === 'email' && (
+                                                <svg
+                                                    className={`ml-2 h-4 w-4 ${sortOrder === 'desc' ? 'transform rotate-180' : ''}`}
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            )}
+                                        </div>
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Status
@@ -374,8 +442,8 @@ const ClientAssignment = () => {
                                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                 disabled={currentPage === 1}
                                 className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === 1
-                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
-                                        : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                    : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 <span className="sr-only">Previous</span>
@@ -390,8 +458,8 @@ const ClientAssignment = () => {
                                     key={i + 1}
                                     onClick={() => setCurrentPage(i + 1)}
                                     className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === i + 1
-                                            ? 'z-10 bg-primary-50 dark:bg-primary-900 border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-200'
-                                            : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                        ? 'z-10 bg-primary-50 dark:bg-primary-900 border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-200'
+                                        : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     {i + 1}
@@ -402,8 +470,8 @@ const ClientAssignment = () => {
                                 onClick={() => setCurrentPage(Math.min(Math.ceil(filteredClients.length / clientsPerPage), currentPage + 1))}
                                 disabled={currentPage === Math.ceil(filteredClients.length / clientsPerPage)}
                                 className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium ${currentPage === Math.ceil(filteredClients.length / clientsPerPage)
-                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
-                                        : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                                    : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 <span className="sr-only">Next</span>
