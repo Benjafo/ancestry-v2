@@ -1,8 +1,10 @@
 project:
   active:
     Overview:
-      - person and event and document events are not displayed in recent activity, only relationship events
+      - person and event events are not displayed in recent activity, only document and relationship events
       - duplicate notifications
+    Documents:
+      - delete document does not work
   finished:
     General:
       - move create document button to the documents tab
@@ -61,7 +63,6 @@ project:
   discarded:
     Documents:
       - family documents with 0 people attached disappear after creation and reload (it doesn't, duh)
-      - delete document does not work (this also works, wtf was I doing)
     Timeline:
       - duplicate events in timeline
     View person modal -> events:
@@ -74,6 +75,7 @@ general:
   active:
     - tree view
     - recreate seed data
+    - make cards the same size
   finished:
     - move reused code into utility functions
     - success and error messages are not displayed properly
@@ -91,8 +93,6 @@ general:
 
 other:
   active:
-    Client assignment:
-      - add sorting based on columns and remove selected column
   finished:
     Login:
       - fix dark mode
@@ -145,6 +145,7 @@ other:
       - assignment history should be accurate
       - add search bar
       - missing clients
+      - add sorting based on columns and remove selected column
   discarded:
     Manager dashboard:
       - replace recent activity section
