@@ -6,8 +6,6 @@ project:
     Documents:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
-    Relationships:
-      - updating qualifier does not update qualifier for spouse
   finished:
     General:
       - move create document button to the documents tab
@@ -53,6 +51,7 @@ project:
       - add links to view person modal
       - add link to view person modal from list
       - update relationship validation error
+      - updating qualifier does not update qualifier for spouse
     New project:
       - the description field does not implement dark mode
     Edit project:
