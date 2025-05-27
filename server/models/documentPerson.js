@@ -38,9 +38,6 @@ const DocumentPerson = sequelize.define('DocumentPerson', {
                 msg: 'Relevance must be one of: primary, secondary, mentioned'
             }
         }
-    },
-    notes: {
-        type: DataTypes.TEXT
     }
 }, {
     timestamps: true,

@@ -24,7 +24,6 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<Document[]>([]);
     const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-    const [associationNotes, setAssociationNotes] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isAssociating, setIsAssociating] = useState(false);
@@ -78,7 +77,6 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
             setSearchTerm('');
             setSearchResults([]);
             setSelectedDocument(null);
-            setAssociationNotes('');
             setError(null);
         }
     }, [isOpen]);
@@ -86,11 +84,6 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
     // Handle document selection
     const handleSelectDocument = (document: Document) => {
         setSelectedDocument(document);
-    };
-
-    // Handle association notes change
-    const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setAssociationNotes(e.target.value);
     };
 
     // Handle associate document button click
@@ -103,8 +96,7 @@ const AddExistingDocumentToPersonModal: React.FC<AddExistingDocumentToPersonModa
         try {
             await documentsApi.associateDocumentWithPerson(
                 selectedDocument.document_id,
-                personId,
-                { notes: associationNotes }
+                personId
             );
 
             // Call the callback to refresh data

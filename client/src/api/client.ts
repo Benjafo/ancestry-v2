@@ -548,7 +548,6 @@ export interface DocumentPersonAssociation {
     document_id: string;
     person_id: string;
     relevance?: string;
-    notes?: string;
 }
 
 export interface ProjectPersonAssociation {
@@ -709,7 +708,7 @@ export const documentsApi = {
         return response.json();
     },
 
-    associateDocumentWithPerson: async (documentId: string, personId: string, data?: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
+    associateDocumentWithPerson: async (documentId: string, personId: string, data?: { relevance?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
         const response = await apiClient.post('documents/associate', {
             json: {
                 documentId,
@@ -720,7 +719,7 @@ export const documentsApi = {
         return response.json();
     },
 
-    updateDocumentPersonAssociation: async (documentId: string, personId: string, data: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
+    updateDocumentPersonAssociation: async (documentId: string, personId: string, data: { relevance?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
         const response = await apiClient.put(`documents/association/${documentId}/${personId}`, {
             json: data
         });
