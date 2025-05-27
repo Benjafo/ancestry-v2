@@ -66,15 +66,20 @@ class UserEventService {
         });
 
         // Create events for all project users
-        const userIds = projectUsers.map(pu => pu.user_id);
+        let userIds = projectUsers.map(pu => pu.user_id);
+
+        // Filter out the actorId to prevent duplicate notification to the actor
+        if (actorId) {
+            userIds = userIds.filter(uid => uid !== actorId);
+        }
         
-        // If there are no users, return empty array
+        // If there are no other users to notify, return empty array
         if (userIds.length === 0) {
             return [];
         }
         
         return await this.createEventForMultipleUsers(
-            userIds,
+            userIds, // Use the filtered list
             actorId,
             eventType,
             message,

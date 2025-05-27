@@ -45,7 +45,7 @@ const ActivityModal: React.FC<ActivityModalProps> = ({ isOpen, onClose, projectI
                     limit: 5,
                     sortBy,
                     sortOrder,
-                    eventType: filterType !== 'all' ? filterType : undefined
+                    // eventType: filterType !== 'all' ? filterType : undefined
                 });
 
                 console.log('Modal API response:', data);

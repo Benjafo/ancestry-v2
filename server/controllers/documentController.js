@@ -70,23 +70,25 @@ exports.createDocument = async (req, res) => {
         // Create user events for all users associated with the project
         if (document.project_id) {
             // Create event for the actor (the user who created the document)
+            // Event for the actor about the document they uploaded
             await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'document_created',
+                req.user.user_id,           // Recipient: actor
+                req.user.user_id,           // Actor
+                'document_created',         // EventType
                 `Uploaded document: ${document.title}`,
-                document.projectId,
-                'document'
+                document.document_id,       // Corrected: entity_id is the document's ID
+                'document'                  // Corrected: entityType is 'document'
             );
 
-            // Create events for all project users
+            // Event for OTHER project users about an update to their project
+            // UserEventService.createEventForProjectUsers now excludes the actor
             await UserEventService.createEventForProjectUsers(
-                document.project_id,
-                req.user.user_id,
-                'document_created',
-                `A new document has been added to your project: ${document.title}`,
-                document.project_id,
-                'document'
+                document.project_id,        // projectId (to find users)
+                req.user.user_id,           // actorId (who performed the action)
+                'document_created',         // EventType (kept same for now, could be more specific e.g., 'project_document_added')
+                `A new document has been added to the project.`,
+                document.project_id,        // entity_id is the project
+                'project'                   // Corrected: entityType is 'project'
             );
         }
 
