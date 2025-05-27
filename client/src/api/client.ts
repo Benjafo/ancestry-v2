@@ -648,7 +648,7 @@ export const documentsApi = {
         return response.json();
     },
 
-    getDocumentsByProjectId: async (projectId: string, options?: { 
+    getDocumentsByProjectId: async (projectId: string, options?: {
         includePersons?: boolean;
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';

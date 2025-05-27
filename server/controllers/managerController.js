@@ -120,7 +120,15 @@ exports.getUsers = async (req, res) => {
             status
         } = req.query;
 
-        const offset = (parseInt(page) - 1) * parseInt(limit);
+        let effectiveLimit = parseInt(limit);
+        let effectiveOffset = (parseInt(page) - 1) * effectiveLimit;
+
+        // If limit is 0, fetch all records for the given filter
+        if (effectiveLimit === 0) {
+            effectiveLimit = null; // Sequelize interprets null as no limit
+            effectiveOffset = 0;
+        }
+
         const direction = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
         let whereCondition = {};
@@ -198,8 +206,8 @@ exports.getUsers = async (req, res) => {
             where: whereCondition,
             include: includeCondition,
             attributes: { exclude: ['password'] },
-            limit: parseInt(limit),
-            offset: offset,
+            limit: effectiveLimit,
+            offset: effectiveOffset,
             order: order
         });
 
@@ -216,9 +224,9 @@ exports.getUsers = async (req, res) => {
             users: formattedUsers,
             metadata: {
                 total: count,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                totalPages: Math.ceil(count / parseInt(limit))
+                page: effectiveLimit === null ? 1 : parseInt(page), // If all are fetched, it's effectively page 1
+                limit: effectiveLimit === null ? count : effectiveLimit, // If all, limit is total count
+                totalPages: effectiveLimit === null ? 1 : Math.ceil(count / effectiveLimit)
             }
         });
     } catch (error) {

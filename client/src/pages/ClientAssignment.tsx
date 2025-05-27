@@ -131,7 +131,7 @@ const ClientAssignment = () => {
         try {
             setIsLoading(true);
             const [clientsResponse, projectsResponse] = await Promise.all([
-                managerApi.getUsers('clients'),
+                managerApi.getUsers('clients', 1, 0), // Fetch all clients
                 projectsApi.getProjects()
             ]);
 

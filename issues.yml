@@ -8,7 +8,6 @@ project:
       - family documents with 0 people attached disappear after creation and reload
       - delete document does not work
     Relationships:
-      - add link to view person modal from list
       - update relationship validation error
       - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
     Edit person modal -> documents:
@@ -56,6 +55,7 @@ project:
     Relationships:
       - rework how relationships are created and stored
       - add links to view person modal
+      - add link to view person modal from list
     New project:
       - the description field does not implement dark mode
     Edit project:
