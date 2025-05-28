@@ -229,13 +229,27 @@ class DocumentRepository extends BaseRepository {
      * @returns {Promise<Array>} Array of documents
      */
     async findDocumentsByProjectId(projectId, options = {}) {
-        const queryOptions = {
-            where: {
-                project_id: projectId
+        const allowedSortFields = [
+            'upload_date', 'updated_at', 'date_of_original', 'title', 'document_type'
+        ];
+
+        const queryOptions = QueryBuilder.buildQueryOptions(
+            {
+                sortBy: options.sortBy,
+                sortOrder: options.sortOrder
             },
-            ...options
+            {
+                allowedSortFields,
+                defaultSortField: 'upload_date',
+                defaultSortOrder: 'desc'
+            }
+        );
+
+        queryOptions.where = {
+            ...queryOptions.where,
+            project_id: projectId
         };
-        
+
         // Include persons if requested
         if (options.includePersons) {
             queryOptions.include = [
@@ -247,7 +261,7 @@ class DocumentRepository extends BaseRepository {
                 }
             ];
         }
-        
+
         return await this.findAll(queryOptions);
     }
 

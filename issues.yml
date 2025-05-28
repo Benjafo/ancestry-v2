@@ -1,117 +1,173 @@
 project:
   active:
-    Project: tree view
-    Project -> overview -> notifications: no notifications displayed
-    Project -> overview: person and event and document events are not displayed in recent activity, only relationship events
-    Project -> documents: family documents with 0 people attached disappear after creation and reload
-    Project -> documents: delete document does not work
-    Project -> documents: add missing icons for census, military, etc
-    Project -> document list: search returns all documents
-    Project -> document list: remove association notes
-    Project -> relationships: add link to view person modal from list
-    Project -> relationships: update relationship validation error
-    Project -> relationships: delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
-    Project -> view person modal -> events: events should be in order of occurrence
-    Project -> view person modal -> events: display server validation error instead of 400 status error
-    Project -> edit person modal -> relationships: should display a message telling the user to edit relationships in the relationships tab
+    Overview:
+      - person and event events are not displayed in recent activity, only document and relationship events
+      - duplicate notifications
   finished:
-    Project: move create document button to the documents tab
-    Project: implement research notes tab
-    Project: relationships
-    Project: all events should trigger user events that appear in the activity feeds
-    Project -> overview: recent activity should be accurate
-    Project -> overview: recent activity should show create, edit, and delete events for documents, events, persons, and relationships
-    Project -> overview: duplicate notifications
-    Project -> documents: no date on documents
-    Project -> documents: type is blank
-    Project -> documents: duplicate documents are shown
-    Project -> documents: edit modal should populate with existing data
-    Project -> documents: send optional fields as null rather than empty string for backend validation
-    Project -> documents: the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
-    Project -> documents: documents should list associated family members with links to their profiles
-    Project -> documents: edit documents from documents tab view
-    Project -> documents: implement add document button for family documents
-    Project -> documents: created or associated document does not appear in edit person modal until whole modal is saved
-    Project -> timeline: fix capitalization of event type
-    Project -> timeline: related person should appear before event in timeline view
-    Project -> family members: person cards should all be the same height
-    Project -> family members: after canceling delete, view person modal appear
-    Project -> family members: duplicate header with heading and "add person" button should be removed
-    Project -> family members: edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
-    Project -> family members: edit button is obstructed by link to view person modal
-    Project -> family members: clients should not be able to edit family members in the view person modal
-    Project -> family members: validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
-    Project -> family members: addding events does not save
-    Project -> family members: add document modal does not keep documents
-    Project -> family members: (fixed but very buggy) should be able to add existing documents to family memberProject -> family members: adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa. In the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
-    Project -> relationships: rework how relationships are created and stored
-    Project -> relationships: add links to view person modal
-    Project -> new project: the description field does not implement dark mode
-    Project -> edit project: the status dropdown has not implemented dark mode
+    General:
+      - move create document button to the documents tab
+      - implement research notes tab
+      - relationships
+      - all events should trigger user events that appear in the activity feeds
+    Overview:
+      - recent activity should be accurate
+      - recent activity should show create, edit, and delete events for documents, events, persons, and relationships
+    Overview -> notifications:
+      - no notifications displayed
+    Documents:
+      - no date on documents
+      - type is blank
+      - duplicate documents are shown
+      - edit modal should populate with existing data
+      - send optional fields as null rather than empty string for backend validation
+      - the tab heading lists a count of documents including duplicates, it should list a count of the unique documents
+      - documents should list associated family members with links to their profiles
+      - edit documents from documents tab view
+      - implement add document button for family documents
+      - created or associated document does not appear in edit person modal until whole modal is saved
+      - add filter
+      - add missing icons for census, military, etc
+      - family documents with 0 people attached do not count towards tab heading count
+    Timeline:
+      - fix capitalization of event type
+      - related person should appear before event in timeline view
+    Family members:
+      - person cards should all be the same height
+      - after canceling delete, view person modal appear
+      - duplicate header with heading and "add person" button should be removed
+      - edit person modal should allow for editing of the same data as the view person modal - events, documents, relationships
+      - edit button is obstructed by link to view person modal
+      - clients should not be able to edit family members in the view person modal
+      - validation fails for birth and death date when omitted even though they are optional fields. Birth date should be required and death date optional
+      - addding events does not save
+      - add document modal does not keep documents
+      - (fixed but very buggy) should be able to add existing documents to family member
+      - adding birth date and death date in the biographical info should create birth and death events automatically, and vice versa
+        - in the same form submission, the biographical info and events can both be set for birth and death, but the info must not conflict
+    Relationships:
+      - rework how relationships are created and stored
+      - add links to view person modal
+      - add link to view person modal from list
+      - update relationship validation error
+      - updating qualifier does not update qualifier for spouse
+    New project:
+      - the description field does not implement dark mode
+    Edit project:
+      - the status dropdown has not implemented dark mode
+    Edit person modal -> relationships:
+      - should display a message telling the user to edit relationships in the relationships tab
+    Edit person modal -> documents:
+      - remove association notes
+      - search returns all documents
   discarded:
-    Project -> timeline: duplicate events in timeline
+    Documents:
+      - family documents with 0 people attached disappear after creation and reload (it doesn't, duh)
+      - delete document does not work (it does)
+    Timeline:
+      - duplicate events in timeline
+    View person modal -> events:
+      - (?) events should be in order of occurrence
+      - (?) display server validation error instead of 400 status error
+    Relationships:
+      - delete relationship should be bidirectional, e.g. delete both parent-child and child-parent relationship at once
+
+general:
+  active:
+    - tree view
+    - recreate seed data
+    - make cards the same size
+    - deactivated users should not be able to log in
+  finished:
+    - move reused code into utility functions
+    - success and error messages are not displayed properly
+    - the default / route should redirect to the dashboard
+    - user events need to be logged in the backend
+    - once a project is "completed", it should not be editable
+    - refactor and reduce reused code
+    - add base modal class and close modal with escape key
+    - implement base modal for all modals
+    - add user events for removing person to project, updating user
+    - add toggles between list and grid view user management and client assignment
+    - add sorting for all relevant pages/components
+  discarded:
+    - implement the task feature
+
 other:
   active:
-    Settings: confirm reset password functionality
-    Manager dashboard: update stats at top to remove redundant active projects info
-    Client assignment: missing clients
-    Login: do not refresh page on invalid login, display error message
-    General: clean up code
-    General: recreate seed data
-    General: implement the task feature
-    General: add toggles between list and grid view for all list pages
-    General: add user events for removing person to project, updating user
-    General: update order of returned records in projects, persons, etc
+    Client assignment:
+      - inactive users should not be displayed on the client assignment page
   finished:
-    Dashboard: research summary
-    Dashboard: recent activity (NOTE Consolidated with notifications)
-    Dashboard: notifications
-    Dashboard: your projects section should be limited to three and include a link to view all projects
-    Dashboard: clients should not be able to create a project and managers should have a button to create a project
-    Dashboard: add icons to notifications
-    Profile: form submission (NOTE Consolidated with settings page)
-    Settings: delete account form submission (NOTE Commented out section)
-    Settings: validation for fields
-    Settings: change password form submission
-    Settings: add dropdown for state/province based on country
-    Settings: email preferences form submission
-    Projects: view project button is not aligned to bottom of card
-    Projects: projects should be sorted by last updated date, and there should be a search and sort by date created feature
-    Projects List: the date and status should be aligned to the bottom of the card
-    Projects List: the height of each card should be the same
-    Notifications: add icons to notifications
-    Manager dashboard: recent activity should be accurate
-    Manager dashboard: new project button should open the create project modal, but not redirect to the project page
-    Manager dashboard: add a quick actions button to create a task
-    Manager dashboard: view all system events, e.g. user profile edited
-    User management -> create user: role form does not match dark mode
-    User management -> create user: should close modal after creating user
-    User management -> create user: validation for fields
-    User management: bundle reset password and delete into the edit modal
-    User management: dark mode issue for inactive users
-    User management: Add filtering for status and sorting by name, email, and last login
-    User management: sorting only works for the current page in pagination
-    User management: sorting should not consider case
-    Client assignment: assignment history
-    Client assignment: replace back to dashboard with add user button
-    Client assignment: add pagination and limit to three rows of users in the select client card
-    Client assignment: assignment history should be accurate
-    Client assignment: add search bar
-    General: move reused code into utility functions
-    General: success and error messages are not displayed properly
-    General: the default / route should redirect to the dashboard
-    General: user events need to be logged in the backend
-    General: once a project is "completed", it should not be editable
-    General: refactor and reduce reused code
-    General: add base modal class and close modal with escape key
-    General: implement base modal for all modals
+    Login:
+      - fix dark mode
+      - do not refresh page on invalid login, display error message
+      - forgot password
+    Dashboard:
+      - research summary
+      - recent activity (NOTE Consolidated with notifications)
+      - notifications
+      - your projects section should be limited to three and include a link to view all projects
+      - clients should not be able to create a project and managers should have a button to create a project
+      - add icons to notifications
+    Profile:
+      - form submission (NOTE Consolidated with settings page)
+    Settings:
+      - delete account form submission (NOTE Commented out section)
+      - validation for fields
+      - change password form submission
+      - add dropdown for state/province based on country
+      - email preferences form submission
+      - confirm reset password functionality
+    Projects:
+      - view project button is not aligned to bottom of card
+      - projects should be sorted by last updated date, and there should be a search and sort by date created feature
+    Projects List:
+      - the date and status should be aligned to the bottom of the card
+      - the height of each card should be the same
+    Notifications:
+      - add icons to notifications
+    Manager dashboard:
+      - recent activity should be accurate
+      - new project button should open the create project modal, but not redirect to the project page
+      - add a quick actions button to create a task
+      - view all system events, e.g. user profile edited
+      - update stats at top to remove redundant active projects info
+    User management -> create user:
+      - role form does not match dark mode
+      - should close modal after creating user
+      - validation for fields
+    User management:
+      - bundle reset password and delete into the edit modal
+      - dark mode issue for inactive users
+      - Add filtering for status and sorting by name, email, and last login
+      - sorting only works for the current page in pagination
+      - sorting should not consider case
+    Client assignment:
+      - assignment history
+      - replace back to dashboard with add user button
+      - add pagination and limit to three rows of users in the select client card
+      - assignment history should be accurate
+      - add search bar
+      - missing clients
+      - add sorting based on columns and remove selected column
+  discarded:
+    Manager dashboard:
+      - replace recent activity section
+    User management:
+      - sorting should not make api requests
+
 future_functionality:
-  active:
-    Api Client: rename Relationship and ApiRelationship
-    General: mass document upload page
-    General: import GEDCOM file page
-    General: links
-    General: payment processing
-    General: service purchasing
-    General: tablet/mobile views
-    Project -> documents: preview and download document modal functionality, allow uploading larger files
+  Api Client:
+    - rename Relationship and ApiRelationship
+  Project -> documents:
+    - preview and download document modal functionality
+    - allow uploading larger files
+    - handle file storage
+  General:
+    - superuser functionality to delete users and projects as well as edit manager name and email
+    - links
+    - tablet/mobile views
+    - clean up code
+    - mass document upload page
+    - import GEDCOM file page
+    - payment processing
+    - service purchasing

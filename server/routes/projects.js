@@ -3,7 +3,7 @@ const router = express.Router();
 const projectController = require('../controllers/projectController');
 const { verifyToken, hasRole } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
-const { 
+const {
     createProjectValidation,
     updateProjectValidation,
     projectIdValidation,
@@ -90,6 +90,6 @@ router.get('/:id/relationships', validate(projectIdValidation), projectControlle
  * @desc    Get documents for a specific project
  * @access  Private
  */
-router.get('/:projectId/documents', validate(projectIdValidation), require('../controllers/documentController').getProjectDocuments);
+router.get('/:id/documents', validate(projectIdValidation), require('../controllers/documentController').getProjectDocuments);
 
 module.exports = router;

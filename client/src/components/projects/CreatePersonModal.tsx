@@ -6,9 +6,8 @@ import {
     validateLengthRange,
     validatePersonDates,
     validateRequired
-} from '../../utils/formValidation'; // Import validation utilities
-import BaseModal from '../common/BaseModal'; // Import BaseModal
-import ErrorAlert from '../common/ErrorAlert';
+} from '../../utils/formValidation';
+import BaseModal from '../common/BaseModal';
 
 interface CreatePersonModalProps {
     projectId?: string; // Optional: if provided, will add the person to this project
@@ -42,34 +41,52 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
 
     // UI state
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear error for the field being changed
+        setFormErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[name];
+            return newErrors;
+        });
     };
 
     const validateForm = () => {
-        let currentError: string | undefined;
+        const errors: Record<string, string> = {};
 
-        currentError = validateRequired(formData.first_name, 'First name');
-        if (currentError) { setError(currentError); return false; }
-        currentError = validateLengthRange(formData.first_name, 1, 100, 'First name');
-        if (currentError) { setError(currentError); return false; }
+        let error = validateRequired(formData.first_name, 'First name');
+        if (error) errors.first_name = error;
+        error = validateLengthRange(formData.first_name, 1, 100, 'First name');
+        if (error && !errors.first_name) errors.first_name = error; // Only set if not already set by required
 
-        currentError = validateRequired(formData.last_name, 'Last name');
-        if (currentError) { setError(currentError); return false; }
-        currentError = validateLengthRange(formData.last_name, 1, 100, 'Last name');
-        if (currentError) { setError(currentError); return false; }
+        error = validateRequired(formData.last_name, 'Last name');
+        if (error) errors.last_name = error;
+        error = validateLengthRange(formData.last_name, 1, 100, 'Last name');
+        if (error && !errors.last_name) errors.last_name = error; // Only set if not already set by required
 
-        currentError = validateGender(formData.gender);
-        if (currentError) { setError(currentError); return false; }
+        error = validateGender(formData.gender);
+        if (error) errors.gender = error;
 
-        currentError = validatePersonDates(formData.birth_date, formData.death_date);
-        if (currentError) { setError(currentError); return false; }
+        // Birth date is required, death date is optional
+        if (!formData.birth_date) {
+            errors.birth_date = 'Birth date is required';
+        } else {
+            error = validatePersonDates(formData.birth_date, formData.death_date);
+            if (error) {
+                // This validation returns a single error for both dates.
+                // We need to parse it or decide how to display it.
+                // For now, we'll put it under a generic 'dates' key or the first relevant field.
+                if (error.includes('Birth date')) errors.birth_date = error;
+                else if (error.includes('Death date')) errors.death_date = error;
+                else errors.birth_date = error; // Fallback
+            }
+        }
 
-        setError(null); // Clear any previous errors if all validations pass
-        return true;
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -80,7 +97,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
         }
 
         setLoading(true);
-        setError(null);
+        setFormErrors({}); // Clear all errors on successful validation attempt
 
         try {
             // Prepare form data - only include fields with values to avoid validation errors
@@ -114,7 +131,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
         } catch (err: unknown) {
             const errorMessage = await getApiErrorMessage(err);
             console.error('Error creating person:', errorMessage);
-            setError(errorMessage);
+            setFormErrors({ submit: errorMessage }); // Set a general submit error
         } finally {
             setLoading(false);
         }
@@ -123,9 +140,6 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
 
     return (
         <BaseModal isOpen={isOpen} onClose={onClose} title="Create New Person" size="4xl">
-            {/* Error state */}
-            {error && <ErrorAlert message={error} />}
-
             {/* Biographical Information Form */}
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -136,11 +150,14 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="text"
                             name="first_name"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.first_name ? 'border-red-300' : ''}`}
                             value={formData.first_name}
                             onChange={handleChange}
                             required
                         />
+                        {formErrors.first_name && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.first_name}</p>
+                        )}
                     </div>
 
                     <div>
@@ -150,10 +167,13 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="text"
                             name="middle_name"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.middle_name ? 'border-red-300' : ''}`}
                             value={formData.middle_name}
                             onChange={handleChange}
                         />
+                        {formErrors.middle_name && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.middle_name}</p>
+                        )}
                     </div>
 
                     <div>
@@ -163,11 +183,14 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="text"
                             name="last_name"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.last_name ? 'border-red-300' : ''}`}
                             value={formData.last_name}
                             onChange={handleChange}
                             required
                         />
+                        {formErrors.last_name && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.last_name}</p>
+                        )}
                     </div>
 
                     <div>
@@ -177,10 +200,13 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="text"
                             name="maiden_name"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.maiden_name ? 'border-red-300' : ''}`}
                             value={formData.maiden_name}
                             onChange={handleChange}
                         />
+                        {formErrors.maiden_name && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.maiden_name}</p>
+                        )}
                     </div>
 
                     <div>
@@ -189,7 +215,7 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         </label>
                         <select
                             name="gender"
-                            className="form-select w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-select w-full dark:bg-gray-700 dark:text-white ${formErrors.gender ? 'border-red-300' : ''}`}
                             value={formData.gender}
                             onChange={handleChange}
                             required
@@ -200,6 +226,9 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                             <option value="other">Other</option>
                             <option value="unknown">Unknown</option>
                         </select>
+                        {formErrors.gender && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.gender}</p>
+                        )}
                     </div>
 
                     <div>
@@ -209,11 +238,14 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="date"
                             name="birth_date"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.birth_date ? 'border-red-300' : ''}`}
                             value={formData.birth_date}
                             onChange={handleChange}
                             required
                         />
+                        {formErrors.birth_date && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.birth_date}</p>
+                        )}
                     </div>
 
                     <div>
@@ -223,10 +255,13 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="text"
                             name="birth_location"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.birth_location ? 'border-red-300' : ''}`}
                             value={formData.birth_location}
                             onChange={handleChange}
                         />
+                        {formErrors.birth_location && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.birth_location}</p>
+                        )}
                     </div>
 
                     <div>
@@ -236,10 +271,13 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="date"
                             name="death_date"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.death_date ? 'border-red-300' : ''}`}
                             value={formData.death_date}
                             onChange={handleChange}
                         />
+                        {formErrors.death_date && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.death_date}</p>
+                        )}
                     </div>
 
                     <div>
@@ -249,10 +287,13 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                         <input
                             type="text"
                             name="death_location"
-                            className="form-input w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-input w-full dark:bg-gray-700 dark:text-white ${formErrors.death_location ? 'border-red-300' : ''}`}
                             value={formData.death_location}
                             onChange={handleChange}
                         />
+                        {formErrors.death_location && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.death_location}</p>
+                        )}
                     </div>
                 </div>
 
@@ -262,12 +303,15 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                     </label>
                     <textarea
                         name="notes"
-                        className="form-textarea w-full dark:bg-gray-700 dark:text-white"
+                        className={`form-textarea w-full dark:bg-gray-700 dark:text-white ${formErrors.notes ? 'border-red-300' : ''}`}
                         rows={4}
                         value={formData.notes}
                         onChange={handleChange}
                         placeholder="Add any additional notes about this person..."
                     />
+                    {formErrors.notes && (
+                        <p className="mt-1 text-sm text-red-600">{formErrors.notes}</p>
+                    )}
                 </div>
 
                 {projectId && (
@@ -276,13 +320,20 @@ const CreatePersonModal: React.FC<CreatePersonModalProps> = ({
                             Project-Specific Notes
                         </label>
                         <textarea
-                            className="form-textarea w-full dark:bg-gray-700 dark:text-white"
+                            className={`form-textarea w-full dark:bg-gray-700 dark:text-white ${formErrors.projectNotes ? 'border-red-300' : ''}`}
                             rows={3}
                             value={projectNotes}
                             onChange={(e) => setProjectNotes(e.target.value)}
                             placeholder="Add notes about this person's role in the project..."
                         />
+                        {formErrors.projectNotes && (
+                            <p className="mt-1 text-sm text-red-600">{formErrors.projectNotes}</p>
+                        )}
                     </div>
+                )}
+
+                {formErrors.submit && (
+                    <p className="text-sm text-red-600">{formErrors.submit}</p>
                 )}
             </form>
 

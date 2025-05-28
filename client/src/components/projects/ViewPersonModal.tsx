@@ -150,30 +150,6 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
         >
             {/* All content here must be wrapped in a single parent element */}
             <div> {/* This div will be the single child of BaseModal */}
-                {/* Modal header content (excluding title and close button, which BaseModal handles) */}
-                <div className="flex justify-end items-center mb-4">
-                    <div className="flex items-center space-x-2">
-                        {!loading && person && onEdit && projectStatus !== 'completed' && isManager && (
-                            <button
-                                onClick={() => {
-                                    onEdit(person);
-                                    onClose(); // Close the view modal when edit is clicked
-                                }}
-                                className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                                title="Edit Person"
-                            >
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                        )}
-                        {!loading && person && projectStatus === 'completed' && (
-                            <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
-                                Read-only
-                            </span>
-                        )}
-                    </div>
-                </div>
 
                 {/* Loading state */}
                 {loading && <LoadingSpinner containerClassName="h-64" size="lg" />}
@@ -186,43 +162,68 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                     <>
                         {/* Tabs */}
                         <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-                            <nav className="flex -mb-px">
-                                <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
-                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                        }`}
-                                    onClick={() => setActiveTab('info')}
-                                >
-                                    Biographical Info
-                                </button>
-                                <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
-                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                        }`}
-                                    onClick={() => setActiveTab('events')}
-                                >
-                                    Events
-                                </button>
-                                <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
-                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                        }`}
-                                    onClick={() => setActiveTab('documents')}
-                                >
-                                    Documents
-                                </button>
-                                <button
-                                    className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
-                                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
-                                        }`}
-                                    onClick={() => setActiveTab('relationships')}
-                                >
-                                    Relationships
-                                </button>
+                            <nav className="flex justify-between items-center -mb-px group">
+                                <div className="flex -mb-px">
+                                    <button
+                                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'info'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                            }`}
+                                        onClick={() => setActiveTab('info')}
+                                    >
+                                        Biographical Info
+                                    </button>
+                                    <button
+                                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'events'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                            }`}
+                                        onClick={() => setActiveTab('events')}
+                                    >
+                                        Events
+                                    </button>
+                                    <button
+                                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'documents'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                            }`}
+                                        onClick={() => setActiveTab('documents')}
+                                    >
+                                        Documents
+                                    </button>
+                                    <button
+                                        className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'relationships'
+                                            ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                                            }`}
+                                        onClick={() => setActiveTab('relationships')}
+                                    >
+                                        Relationships
+                                    </button>
+                                </div>
+
+                                {/* Edit button and status indicator */}
+                                <div className="flex items-center space-x-2 py-4 px-2">
+                                    {onEdit && projectStatus !== 'completed' && isManager && (
+                                        <button
+                                            onClick={() => {
+                                                onEdit(person);
+                                                onClose(); // Close the view modal when edit is clicked
+                                            }}
+                                            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center space-x-1 text-sm font-medium transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+                                            title="Edit Person"
+                                        >
+                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                    {projectStatus === 'completed' && (
+                                        <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
+                                            Read-only
+                                        </span>
+                                    )}
+                                </div>
                             </nav>
                         </div>
 
@@ -317,19 +318,19 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                         </svg>
                                                                     </span>
                                                                 </div>
-                                                            </div>
-                                                            <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                                <div>
-                                                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
-                                                                    {event.description && (
-                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{event.description}</p>
-                                                                    )}
-                                                                    {event.event_location && (
-                                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{event.event_location}</p>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                                                    <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
+                                                                <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{formatEventType(event.event_type)}</p>
+                                                                        {event.description && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.description}</p>
+                                                                        )}
+                                                                        {event.event_location && (
+                                                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.event_location}</p>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                                                        <time dateTime={event.event_date}>{formatDate(event.event_date)}</time>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -356,6 +357,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                             isLoading={false}
                                             error={null}
                                             readOnly={true}
+                                            viewMode="list"
                                         />
                                     ) : (
                                         <div className="text-center py-8">
@@ -380,7 +382,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.spouses.map(spouse => (
                                                             <div
                                                                 key={spouse.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -388,7 +390,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                     }
                                                                 }}
                                                             >
-                                                                <p className="font-medium text-gray-900 dark:text-white">{spouse.first_name} {spouse.last_name}</p>
+                                                                <p className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer">{spouse.first_name} {spouse.last_name}</p>
                                                                 {spouse.start_date && (
                                                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                         Married: {formatDate(spouse.start_date)}
@@ -409,7 +411,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.parents.map(parent => (
                                                             <div
                                                                 key={parent.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -417,7 +419,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                     }
                                                                 }}
                                                             >
-                                                                <p className="font-medium text-gray-900 dark:text-white">{parent.first_name} {parent.last_name}</p>
+                                                                <p className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer">{parent.first_name} {parent.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {parent.relationship_qualifier && `${parent.relationship_qualifier} parent`}
                                                                 </p>
@@ -435,7 +437,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.children.map(child => (
                                                             <div
                                                                 key={child.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -443,7 +445,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                                     }
                                                                 }}
                                                             >
-                                                                <p className="font-medium text-gray-900 dark:text-white">{child.first_name} {child.last_name}</p>
+                                                                <p className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 hover:underline cursor-pointer">{child.first_name} {child.last_name}</p>
                                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                                     {child.relationship_qualifier && `${child.relationship_qualifier} child`}
                                                                 </p>
@@ -461,7 +463,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.siblings.map(sibling => (
                                                             <div
                                                                 key={sibling.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -487,7 +489,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).grandparents.map((grandparent) => (
                                                             <div
                                                                 key={grandparent.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -510,7 +512,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).grandchildren.map((grandchild) => (
                                                             <div
                                                                 key={grandchild.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -533,7 +535,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).auntsUncles.map((auntUncle) => (
                                                             <div
                                                                 key={auntUncle.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -556,7 +558,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).niecesNephews.map((nieceNephew) => (
                                                             <div
                                                                 key={nieceNephew.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -579,7 +581,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).cousins.map((cousin) => (
                                                             <div
                                                                 key={cousin.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {

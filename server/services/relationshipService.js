@@ -42,40 +42,40 @@ class RelationshipService {
             if (!['parent', 'spouse'].includes(relationshipData.relationship_type)) {
                 throw new Error(`Only 'parent' and 'spouse' relationships can be created directly. Other relationship types are derived automatically.`);
             }
-            
+
             // Get both persons' data
             const [person1, person2] = await Promise.all([
                 personRepository.findById(relationshipData.person1_id, { transaction }),
                 personRepository.findById(relationshipData.person2_id, { transaction })
             ]);
-            
+
             if (!person1) {
                 throw new Error(`Person with id ${relationshipData.person1_id} not found`);
             }
-            
+
             if (!person2) {
                 throw new Error(`Person with id ${relationshipData.person2_id} not found`);
             }
-            
+
             // Check for existing relationships between these two people
             const existingRelationships = await relationshipRepository.findBetweenPersons(
-                relationshipData.person1_id, 
+                relationshipData.person1_id,
                 relationshipData.person2_id,
                 { transaction }
             );
-            
+
             // If there's an existing relationship of the same type, prevent duplication
-            const duplicateRelationship = existingRelationships.find(rel => 
+            const duplicateRelationship = existingRelationships.find(rel =>
                 (rel.relationship_type === relationshipData.relationship_type) ||
                 // Also check for inverse relationships (parent-child)
-                (rel.relationship_type === 'parent' && relationshipData.relationship_type === 'parent' && 
-                 rel.person1_id === relationshipData.person2_id && rel.person2_id === relationshipData.person1_id)
+                (rel.relationship_type === 'parent' && relationshipData.relationship_type === 'parent' &&
+                    rel.person1_id === relationshipData.person2_id && rel.person2_id === relationshipData.person1_id)
             );
-            
+
             if (duplicateRelationship) {
                 throw new Error(`A relationship of type '${relationshipData.relationship_type}' already exists between these people`);
             }
-            
+
             // Validate relationship based on type
             if (relationshipData.relationship_type === 'spouse') {
                 const marriageValidation = validateMarriage(person1, person2, relationshipData);
@@ -88,7 +88,7 @@ class RelationshipService {
                     throw new Error(`Relationship validation failed: ${relationshipValidation.errors.join(', ')}`);
                 }
             }
-            
+
             // Check for circular relationships if this is a parent-child relationship
             if (relationshipData.relationship_type === 'parent') {
                 // Get all existing relationships
@@ -97,7 +97,7 @@ class RelationshipService {
                         relationship_type: ['parent', 'child']
                     }
                 });
-                
+
                 // Add the new relationship to the list
                 const relationshipsWithNew = [
                     ...allRelationships,
@@ -107,17 +107,17 @@ class RelationshipService {
                         relationship_type: 'parent'
                     }
                 ];
-                
+
                 // Check for circular relationships
                 const circularCheck = detectCircularRelationships(relationshipsWithNew);
                 if (!circularCheck.isValid) {
                     throw new Error(`Circular relationship detected: ${circularCheck.errors.join(', ')}`);
                 }
             }
-            
+
             // Create the relationship
             const relationship = await relationshipRepository.create(relationshipData, { transaction });
-            
+
             // If this is a parent-child relationship, create the inverse relationship
             if (relationshipData.relationship_type === 'parent') {
                 await relationshipRepository.create({
@@ -125,6 +125,18 @@ class RelationshipService {
                     person2_id: relationshipData.person1_id,
                     relationship_type: 'child',
                     relationship_qualifier: relationshipData.relationship_qualifier,
+                    notes: relationshipData.notes
+                }, { transaction });
+            }
+            // If this is a spouse relationship, create the inverse relationship
+            else if (relationshipData.relationship_type === 'spouse') {
+                await relationshipRepository.create({
+                    person1_id: relationshipData.person2_id, // Swapped person IDs
+                    person2_id: relationshipData.person1_id, // Swapped person IDs
+                    relationship_type: 'spouse', // Inverse is also 'spouse'
+                    relationship_qualifier: relationshipData.relationship_qualifier,
+                    start_date: relationshipData.start_date,
+                    end_date: relationshipData.end_date,
                     notes: relationshipData.notes
                 }, { transaction });
             }
@@ -147,30 +159,30 @@ class RelationshipService {
             if (!currentRelationship) {
                 throw new Error(`Relationship with id ${id} not found`);
             }
-            
+
             // Enforce that only 'parent' and 'spouse' relationships can be updated
-            if (relationshipData.relationship_type && 
+            if (relationshipData.relationship_type &&
                 !['parent', 'spouse'].includes(relationshipData.relationship_type)) {
                 throw new Error(`Only 'parent' and 'spouse' relationships can be updated directly. Other relationship types are derived automatically.`);
             }
-            
+
             // Get both persons' data
             const [person1, person2] = await Promise.all([
                 personRepository.findById(currentRelationship.person1_id, { transaction }),
                 personRepository.findById(currentRelationship.person2_id, { transaction })
             ]);
-            
+
             // Merge current data with updates
             const updatedData = {
                 ...currentRelationship.toJSON(),
                 ...relationshipData
             };
-            
+
             // Ensure the relationship type is still valid
             if (!['parent', 'spouse', 'child'].includes(updatedData.relationship_type)) {
                 throw new Error(`Invalid relationship type. Only 'parent', 'child', and 'spouse' relationships are allowed.`);
             }
-            
+
             // Validate relationship based on type
             if (updatedData.relationship_type === 'spouse') {
                 const marriageValidation = validateMarriage(person1, person2, updatedData);
@@ -183,10 +195,10 @@ class RelationshipService {
                     throw new Error(`Relationship validation failed: ${relationshipValidation.errors.join(', ')}`);
                 }
             }
-            
+
             // Update the relationship
             const relationship = await relationshipRepository.update(id, relationshipData, { transaction });
-            
+
             // If this is a parent-child relationship and the qualifier changed, update the inverse relationship
             if (currentRelationship.relationship_type === 'parent' && relationshipData.relationship_qualifier) {
                 // Find the inverse relationship
@@ -197,14 +209,42 @@ class RelationshipService {
                         relationship_type: 'child'
                     }
                 }, { transaction });
-                
+
                 if (inverseRelationship) {
                     await relationshipRepository.update(inverseRelationship.relationship_id, {
                         relationship_qualifier: relationshipData.relationship_qualifier
                     }, { transaction });
                 }
             }
-            
+
+            // If this is a spouse relationship and the qualifier changed, update the inverse relationship
+            if (currentRelationship.relationship_type === 'spouse' && relationshipData.relationship_qualifier !== undefined) { // Check for undefined to ensure it's explicitly provided
+                console.log(`[RelationshipService] Updating spouse qualifier for ${currentRelationship.relationship_id}`);
+                console.log(`[RelationshipService] Current qualifier: ${currentRelationship.relationship_qualifier}, New qualifier: ${relationshipData.relationship_qualifier}`);
+
+                // Find the inverse relationship (also type 'spouse')
+                const inverseWhereClause = {
+                    person1_id: currentRelationship.person2_id, // Swapped person IDs
+                    person2_id: currentRelationship.person1_id, // Swapped person IDs
+                    relationship_type: 'spouse'
+                };
+                console.log('[RelationshipService] Searching for inverse spouse with where:', JSON.stringify(inverseWhereClause, null, 2));
+
+                const inverseRelationship = await relationshipRepository.findOne({
+                    where: inverseWhereClause
+                }, { transaction });
+
+                if (inverseRelationship) {
+                    console.log(`[RelationshipService] Inverse spouse found: ${inverseRelationship.relationship_id}. Updating qualifier.`);
+                    await relationshipRepository.update(inverseRelationship.relationship_id, {
+                        relationship_qualifier: relationshipData.relationship_qualifier
+                    }, { transaction });
+                    console.log(`[RelationshipService] Inverse spouse ${inverseRelationship.relationship_id} qualifier updated.`);
+                } else {
+                    console.log('[RelationshipService] Inverse spouse NOT found for:', currentRelationship.relationship_id);
+                }
+            }
+
             return relationship;
         });
     }
@@ -222,7 +262,7 @@ class RelationshipService {
             if (!relationship) {
                 throw new Error(`Relationship with id ${id} not found`);
             }
-            
+
             // If this is a parent-child relationship, delete the inverse relationship
             if (relationship.relationship_type === 'parent') {
                 // Find the inverse relationship
@@ -233,7 +273,7 @@ class RelationshipService {
                         relationship_type: 'child'
                     }
                 }, { transaction });
-                
+
                 if (inverseRelationship) {
                     await relationshipRepository.delete(inverseRelationship.relationship_id, { transaction });
                 }
@@ -246,12 +286,12 @@ class RelationshipService {
                         relationship_type: 'parent'
                     }
                 }, { transaction });
-                
+
                 if (inverseRelationship) {
                     await relationshipRepository.delete(inverseRelationship.relationship_id, { transaction });
                 }
             }
-            
+
             // Delete the relationship
             return await relationshipRepository.delete(id, { transaction });
         });
@@ -270,7 +310,7 @@ class RelationshipService {
         if (!person) {
             throw new Error(`Person with id ${personId} not found`);
         }
-        
+
         return await relationshipRepository.findByPersonId(personId, options);
     }
 
@@ -309,15 +349,15 @@ class RelationshipService {
             personRepository.findById(person1Id),
             personRepository.findById(person2Id)
         ]);
-        
+
         if (!person1) {
             throw new Error(`Person with id ${person1Id} not found`);
         }
-        
+
         if (!person2) {
             throw new Error(`Person with id ${person2Id} not found`);
         }
-        
+
         return await relationshipRepository.findBetweenPersons(person1Id, person2Id);
     }
 
@@ -388,15 +428,15 @@ class RelationshipService {
             personRepository.findById(person1Id),
             personRepository.findById(person2Id)
         ]);
-        
+
         if (!person1) {
             throw new Error(`Person with id ${person1Id} not found`);
         }
-        
+
         if (!person2) {
             throw new Error(`Person with id ${person2Id} not found`);
         }
-        
+
         // Get all relationships
         const allRelationships = await relationshipRepository.findAll({
             include: [
@@ -412,60 +452,60 @@ class RelationshipService {
                 }
             ]
         });
-        
+
         // Build a graph of relationships
         const graph = {};
-        
+
         allRelationships.forEach(rel => {
             // Add edge from person1 to person2
             if (!graph[rel.person1_id]) {
                 graph[rel.person1_id] = [];
             }
-            
+
             graph[rel.person1_id].push({
                 personId: rel.person2_id,
                 relationship: rel
             });
-            
+
             // Add edge from person2 to person1
             if (!graph[rel.person2_id]) {
                 graph[rel.person2_id] = [];
             }
-            
+
             graph[rel.person2_id].push({
                 personId: rel.person1_id,
                 relationship: rel
             });
         });
-        
+
         // Perform BFS to find the shortest path
         const queue = [{
             personId: person1Id,
             path: [],
             visited: new Set([person1Id])
         }];
-        
+
         while (queue.length > 0) {
             const { personId, path, visited } = queue.shift();
-            
+
             // If we've reached the target person, return the path
             if (personId === person2Id) {
                 return path;
             }
-            
+
             // If we've reached the maximum depth, skip this path
             if (path.length >= maxDepth) {
                 continue;
             }
-            
+
             // Explore neighbors
             const neighbors = graph[personId] || [];
-            
+
             for (const neighbor of neighbors) {
                 if (!visited.has(neighbor.personId)) {
                     const newVisited = new Set(visited);
                     newVisited.add(neighbor.personId);
-                    
+
                     queue.push({
                         personId: neighbor.personId,
                         path: [...path, neighbor.relationship],
@@ -474,7 +514,7 @@ class RelationshipService {
                 }
             }
         }
-        
+
         // If no path is found, return an empty array
         return [];
     }

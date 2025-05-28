@@ -1,5 +1,6 @@
 const projectRepository = require('../repositories/projectRepository');
 const personRepository = require('../repositories/personRepository');
+const relationshipRepository = require('../repositories/relationshipRepository');
 const TransactionManager = require('../utils/transactionManager');
 
 /**
@@ -55,7 +56,7 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${id} not found`);
             }
-            
+
             // Update the project
             const project = await projectRepository.update(id, projectData, { transaction });
             return project;
@@ -75,7 +76,7 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${id} not found`);
             }
-            
+
             // Delete the project
             return await projectRepository.delete(id, { transaction });
         });
@@ -84,16 +85,17 @@ class ProjectService {
     /**
      * Get all persons in a project
      * @param {String} projectId - Project ID
+     * @param {Object} options - Query options including sortBy and sortOrder
      * @returns {Promise<Array>} Array of persons
      */
-    async getProjectPersons(projectId) {
+    async getProjectPersons(projectId, options = {}) {
         // Check if project exists
         const projectExists = await projectRepository.exists(projectId);
         if (!projectExists) {
             throw new Error(`Project with id ${projectId} not found`);
         }
-        
-        return await projectRepository.getProjectPersons(projectId);
+
+        return await projectRepository.getProjectPersons(projectId, options);
     }
 
     /**
@@ -110,19 +112,19 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${projectId} not found`);
             }
-            
+
             // Check if person exists
             const person = await personRepository.findById(personId, { transaction });
             if (!person) {
                 throw new Error(`Person with id ${personId} not found`);
             }
-            
+
             // Check if person is already in project
             const isInProject = await projectRepository.isPersonInProject(projectId, personId);
             if (isInProject) {
                 throw new Error(`Person with id ${personId} is already in project ${projectId}`);
             }
-            
+
             // Add person to project
             return await projectRepository.addPersonToProject(projectId, personId, data, { transaction });
         });
@@ -142,19 +144,19 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${projectId} not found`);
             }
-            
+
             // Check if person exists
             const person = await personRepository.findById(personId, { transaction });
             if (!person) {
                 throw new Error(`Person with id ${personId} not found`);
             }
-            
+
             // Check if person is in project
             const isInProject = await projectRepository.isPersonInProject(projectId, personId);
             if (!isInProject) {
                 throw new Error(`Person with id ${personId} is not in project ${projectId}`);
             }
-            
+
             // Update association
             return await projectRepository.updateProjectPerson(projectId, personId, data, { transaction });
         });
@@ -173,16 +175,45 @@ class ProjectService {
             if (!projectExists) {
                 throw new Error(`Project with id ${projectId} not found`);
             }
-            
+
             // Check if person is in project
             const isInProject = await projectRepository.isPersonInProject(projectId, personId);
             if (!isInProject) {
                 throw new Error(`Person with id ${personId} is not in project ${projectId}`);
             }
-            
+
             // Remove person from project
             return await projectRepository.removePersonFromProject(projectId, personId, { transaction });
         });
+    }
+    /**
+     * Get relationships for a specific project
+     * 
+     * @param {String} projectId - Project ID
+     * @param {Object} options - Query options including sortBy and sortOrder
+     * @returns {Promise<Array>} Array of relationships
+     */
+    async getProjectRelationships(projectId, options = {}) {
+        // Check if project exists
+        const projectExists = await projectRepository.exists(projectId);
+        if (!projectExists) {
+            throw new Error(`Project with id ${projectId} not found`);
+        }
+
+        // Get all persons in the project
+        const persons = await projectRepository.getProjectPersons(projectId);
+
+        if (!persons || persons.length === 0) {
+            return [];
+        }
+
+        // Extract person IDs
+        const personIds = persons.map(person => person.person_id);
+
+        // Find all relationships where either person1 or person2 is in the project
+        const relationships = await relationshipRepository.findRelationshipsInvolvingPersons(personIds, options);
+
+        return relationships;
     }
 }
 

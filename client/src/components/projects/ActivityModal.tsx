@@ -3,10 +3,10 @@ import { ApiMetadata, projectsApi, UserEvent } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import { formatSnakeCase } from '../../utils/formatUtils';
 import { getActivityIcon } from '../../utils/iconUtils';
+import BaseModal from '../common/BaseModal'; // Import BaseModal
 import EmptyState from '../common/EmptyState';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
-import BaseModal from '../common/BaseModal'; // Import BaseModal
 
 interface ActivityModalProps {
     isOpen: boolean;
@@ -45,7 +45,7 @@ const ActivityModal: React.FC<ActivityModalProps> = ({ isOpen, onClose, projectI
                     limit: 5,
                     sortBy,
                     sortOrder,
-                    eventType: filterType !== 'all' ? filterType : undefined
+                    // eventType: filterType !== 'all' ? filterType : undefined
                 });
 
                 console.log('Modal API response:', data);

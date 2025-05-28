@@ -1,4 +1,4 @@
-const { User, Role, Project, UserEvent } = require('../models');
+const { User, Role, Project, UserEvent, ProjectUser } = require('../models'); // Added ProjectUser
 const UserEventService = require('../services/userEventService');
 const { Op, Sequelize } = require('sequelize');
 
@@ -13,6 +13,36 @@ exports.getDashboardSummary = async (req, res) => {
             }],
             where: { is_active: true }
         });
+
+        // Fetch unassigned clients count using subquery approach
+        // First get all active client user IDs
+        const activeClientIds = await User.findAll({
+            include: [{
+                model: Role,
+                where: { name: 'client' }
+            }],
+            where: { is_active: true },
+            attributes: ['user_id'],
+            raw: true
+        });
+
+        const clientUserIds = activeClientIds.map(client => client.user_id);
+
+        // Then count how many of those IDs don't have project associations
+        let unassignedClientsCount = 0;
+        if (clientUserIds.length > 0) {
+            const assignedClientIds = await ProjectUser.findAll({
+                where: {
+                    user_id: { [Op.in]: clientUserIds }
+                },
+                attributes: ['user_id'],
+                group: ['user_id'],
+                raw: true
+            });
+
+            const assignedUserIds = new Set(assignedClientIds.map(item => item.user_id));
+            unassignedClientsCount = clientUserIds.filter(id => !assignedUserIds.has(id)).length;
+        }
 
         // Fetch total clients count
         const totalClients = await User.count({
@@ -65,6 +95,7 @@ exports.getDashboardSummary = async (req, res) => {
         res.status(200).json({
             activeClients,
             totalClients,
+            unassignedClientsCount,
             activeProjects,
             totalProjects,
             recentActivity: formattedActivity,
@@ -89,7 +120,15 @@ exports.getUsers = async (req, res) => {
             status
         } = req.query;
 
-        const offset = (parseInt(page) - 1) * parseInt(limit);
+        let effectiveLimit = parseInt(limit);
+        let effectiveOffset = (parseInt(page) - 1) * effectiveLimit;
+
+        // If limit is 0, fetch all records for the given filter
+        if (effectiveLimit === 0) {
+            effectiveLimit = null; // Sequelize interprets null as no limit
+            effectiveOffset = 0;
+        }
+
         const direction = sortDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
         let whereCondition = {};
@@ -167,8 +206,8 @@ exports.getUsers = async (req, res) => {
             where: whereCondition,
             include: includeCondition,
             attributes: { exclude: ['password'] },
-            limit: parseInt(limit),
-            offset: offset,
+            limit: effectiveLimit,
+            offset: effectiveOffset,
             order: order
         });
 
@@ -185,9 +224,9 @@ exports.getUsers = async (req, res) => {
             users: formattedUsers,
             metadata: {
                 total: count,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                totalPages: Math.ceil(count / parseInt(limit))
+                page: effectiveLimit === null ? 1 : parseInt(page), // If all are fetched, it's effectively page 1
+                limit: effectiveLimit === null ? count : effectiveLimit, // If all, limit is total count
+                totalPages: effectiveLimit === null ? 1 : Math.ceil(count / effectiveLimit)
             }
         });
     } catch (error) {
@@ -325,6 +364,29 @@ exports.updateUser = async (req, res) => {
             include: [{ model: Role }],
             attributes: { exclude: ['password'] }
         });
+
+        // Create user event for the updated user
+        const manager = req.user; // The manager performing the update
+        const message = `Your profile was updated`;
+        await UserEventService.createEvent(
+            updatedUser.user_id, // User receiving the event (the updated user)
+            manager.user_id, // Actor (the manager)
+            'user_updated',
+            message,
+            updatedUser.user_id,
+            'user'
+        );
+
+        // Create user event for the manager (actor)
+        const managerMessage = `Updated user: ${updatedUser.first_name} ${updatedUser.last_name}.`;
+        await UserEventService.createEvent(
+            manager.user_id, // User receiving the event (the manager)
+            manager.user_id, // Actor (the manager)
+            'user_updated',
+            managerMessage,
+            updatedUser.user_id,
+            'user'
+        );
 
         // Format user to include roles
         const userData = updatedUser.toJSON();

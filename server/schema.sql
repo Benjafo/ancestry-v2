@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Users table
 CREATE TABLE
     users (
-        user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         first_name VARCHAR(100) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE
 -- Roles table
 CREATE TABLE
     roles (
-        role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
         name VARCHAR(50) UNIQUE NOT NULL,
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -28,8 +28,8 @@ CREATE TABLE
 -- User-Role junction table
 CREATE TABLE
     user_roles (
-        user_id UUID REFERENCES users(user_id),
-        role_id UUID REFERENCES roles(role_id),
+        user_id UUID REFERENCES users (user_id),
+        role_id UUID REFERENCES roles (role_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, role_id)
@@ -38,11 +38,11 @@ CREATE TABLE
 -- Projects table
 CREATE TABLE
     projects (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
         title VARCHAR(255) NOT NULL,
         description TEXT,
         status VARCHAR(50) DEFAULT 'active',
-        researcher_id UUID REFERENCES users(user_id),
+        researcher_id UUID REFERENCES users (user_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -90,7 +90,7 @@ CREATE TABLE
         description TEXT,
         source VARCHAR(255),
         date_of_original DATE,
-        project_id UUID REFERENCES projects(id), -- Direct association with a project
+        project_id UUID REFERENCES projects (id), -- Direct association with a project
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -113,8 +113,8 @@ CREATE TABLE
 -- Person-Event junction table
 CREATE TABLE
     person_events (
-        person_id UUID REFERENCES persons(person_id),
-        event_id UUID REFERENCES events(event_id),
+        person_id UUID REFERENCES persons (person_id),
+        event_id UUID REFERENCES events (event_id),
         role VARCHAR(50), -- 'primary', 'witness', 'mentioned', etc.
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -125,8 +125,8 @@ CREATE TABLE
 -- Project-Event junction table
 CREATE TABLE
     project_events (
-        project_id UUID REFERENCES projects(id),
-        event_id UUID REFERENCES events(event_id),
+        project_id UUID REFERENCES projects (id),
+        event_id UUID REFERENCES events (event_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (project_id, event_id)
@@ -138,7 +138,6 @@ CREATE TABLE
         document_id UUID REFERENCES documents (document_id),
         person_id UUID REFERENCES persons (person_id),
         relevance VARCHAR(50),
-        notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (document_id, person_id)
@@ -147,8 +146,8 @@ CREATE TABLE
 -- Project-User junction table
 CREATE TABLE
     project_users (
-        project_id UUID REFERENCES projects(id),
-        user_id UUID REFERENCES users(user_id),
+        project_id UUID REFERENCES projects (id),
+        user_id UUID REFERENCES users (user_id),
         access_level VARCHAR(50) DEFAULT 'view', -- 'view', 'edit', etc.
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -158,8 +157,8 @@ CREATE TABLE
 -- Project-Person junction table
 CREATE TABLE
     project_persons (
-        project_id UUID REFERENCES projects(id),
-        person_id UUID REFERENCES persons(person_id),
+        project_id UUID REFERENCES projects (id),
+        person_id UUID REFERENCES persons (person_id),
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -169,7 +168,7 @@ CREATE TABLE
 -- Client Profiles table
 CREATE TABLE
     client_profiles (
-        user_id UUID PRIMARY KEY REFERENCES users(user_id),
+        user_id UUID PRIMARY KEY REFERENCES users (user_id),
         phone VARCHAR(50),
         address VARCHAR(255),
         city VARCHAR(100),
@@ -185,9 +184,9 @@ CREATE TABLE
 -- User Events table (replacing notifications and activities)
 CREATE TABLE
     user_events (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id UUID REFERENCES users(user_id),
-        actor_id UUID REFERENCES users(user_id),
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+        user_id UUID REFERENCES users (user_id),
+        actor_id UUID REFERENCES users (user_id),
         event_type VARCHAR(100) NOT NULL,
         message TEXT NOT NULL,
         entity_id UUID,
@@ -200,7 +199,7 @@ CREATE TABLE
 CREATE TABLE
     password_reset_tokens (
         token VARCHAR(255) PRIMARY KEY,
-        user_id UUID REFERENCES users(user_id),
+        user_id UUID REFERENCES users (user_id),
         expires_at TIMESTAMP NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

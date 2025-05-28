@@ -4,6 +4,7 @@ import EmptyState from '../components/common/EmptyState';
 import ErrorAlert from '../components/common/ErrorAlert';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
+import ViewToggle from '../components/common/ViewToggle'; // Import ViewToggle
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import EditProjectModal from '../components/projects/EditProjectModal';
 import ProjectList from '../components/projects/ProjectList';
@@ -24,8 +25,16 @@ const Projects = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'updated_at' | 'created_at'>('updated_at');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        return (localStorage.getItem('projectsViewMode') as 'grid' | 'list') || 'list';
+    });
 
     const isManager = hasRole('manager');
+
+    const handleToggleView = (newView: 'grid' | 'list') => {
+        setViewMode(newView);
+        localStorage.setItem('projectsViewMode', newView);
+    };
 
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
@@ -132,7 +141,7 @@ const Projects = () => {
 
             {successMessage && <SuccessAlert message={successMessage} />}
 
-            {/* Search and Sort Controls */}
+            {/* Search, Sort, and View Controls */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm mb-4">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     {/* Search Input */}
@@ -169,6 +178,9 @@ const Projects = () => {
                             <option value="created_at-asc">Date Created (Oldest)</option>
                         </select>
                     </div>
+
+                    {/* View Toggle */}
+                    <ViewToggle currentView={viewMode} onToggle={handleToggleView} />
                 </div>
             </div>
 
@@ -212,6 +224,7 @@ const Projects = () => {
                     error={error}
                     isManager={isManager}
                     onEditProject={handleEditProject}
+                    viewMode={viewMode}
                 />
             )}
 

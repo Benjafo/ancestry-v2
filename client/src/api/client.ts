@@ -59,9 +59,15 @@ export const apiClient = ky.create({
                         }
                     }
 
-                    // If refresh failed or no refresh token, clear tokens and redirect to login
                     clearTokens();
-                    window.location.href = '/login';
+
+                    // If refresh failed or no refresh token
+                    // Check if the original request was NOT the login request before redirecting
+                    if (!request.url.endsWith('auth/login')) {
+                        window.location.href = '/login';
+                    }
+                    // If it was the login request, we don't redirect,
+                    // allowing the Login.tsx component to handle the error display.
                 }
 
                 return response;
@@ -306,6 +312,7 @@ export interface UserDetails extends User {
 export interface ManagerDashboardSummary {
     activeClients: number;
     totalClients: number;
+    unassignedClientsCount: number;
     activeProjects: number;
     totalProjects: number;
     recentActivity: {
@@ -399,8 +406,20 @@ export const projectsApi = {
     },
 
     // Project-Person Management
-    getProjectPersons: async (projectId: string): Promise<Person[]> => {
-        const response = await apiClient.get(`projects/${projectId}/persons`);
+    getProjectPersons: async (projectId: string, options?: {
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<Person[]> => {
+        const params = new URLSearchParams();
+        if (options?.sortBy) {
+            params.append('sortBy', options.sortBy);
+        }
+        if (options?.sortOrder) {
+            params.append('sortOrder', options.sortOrder);
+        }
+
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`projects/${projectId}/persons${queryString}`);
         return response.json();
     },
 
@@ -529,7 +548,6 @@ export interface DocumentPersonAssociation {
     document_id: string;
     person_id: string;
     relevance?: string;
-    notes?: string;
 }
 
 export interface ProjectPersonAssociation {
@@ -635,10 +653,20 @@ export const documentsApi = {
         return response.json();
     },
 
-    getDocumentsByProjectId: async (projectId: string, options?: { includePersons?: boolean }): Promise<Document[]> => {
+    getDocumentsByProjectId: async (projectId: string, options?: {
+        includePersons?: boolean;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<Document[]> => {
         const params = new URLSearchParams();
         if (options?.includePersons) {
             params.append('includePersons', 'true');
+        }
+        if (options?.sortBy) {
+            params.append('sortBy', options.sortBy);
+        }
+        if (options?.sortOrder) {
+            params.append('sortOrder', options.sortOrder);
         }
 
         const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -680,7 +708,7 @@ export const documentsApi = {
         return response.json();
     },
 
-    associateDocumentWithPerson: async (documentId: string, personId: string, data?: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
+    associateDocumentWithPerson: async (documentId: string, personId: string, data?: { relevance?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
         const response = await apiClient.post('documents/associate', {
             json: {
                 documentId,
@@ -691,7 +719,7 @@ export const documentsApi = {
         return response.json();
     },
 
-    updateDocumentPersonAssociation: async (documentId: string, personId: string, data: { relevance?: string; notes?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
+    updateDocumentPersonAssociation: async (documentId: string, personId: string, data: { relevance?: string }): Promise<{ message: string; association: DocumentPersonAssociation }> => {
         const response = await apiClient.put(`documents/association/${documentId}/${personId}`, {
             json: data
         });
@@ -711,23 +739,7 @@ export const documentsApi = {
 
 // Interface for relationship objects returned by the API
 export interface ApiRelationship {
-    id: string;
-    person1_id: string;
-    person2_id: string;
-    relationship_type: string;
-    relationship_qualifier?: string;
-    start_date?: string;
-    end_date?: string;
-    notes?: string;
-    created_at: string;
-    updated_at: string;
-    person1?: Person; // Nested Person object
-    person2?: Person; // Nested Person object
-}
-
-// Interface for relationship objects returned by the API
-export interface ApiRelationship {
-    id: string;
+    relationship_id: string; // Corrected: Use relationship_id as per backend model
     person1_id: string;
     person2_id: string;
     relationship_type: string;
@@ -797,8 +809,20 @@ export const relationshipsApi = {
         return response.json();
     },
 
-    getRelationshipsByProjectId: async (projectId: string): Promise<ApiRelationship[]> => {
-        const response = await apiClient.get(`projects/${projectId}/relationships`);
+    getRelationshipsByProjectId: async (projectId: string, options?: {
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<ApiRelationship[]> => {
+        const params = new URLSearchParams();
+        if (options?.sortBy) {
+            params.append('sortBy', options.sortBy);
+        }
+        if (options?.sortOrder) {
+            params.append('sortOrder', options.sortOrder);
+        }
+
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`projects/${projectId}/relationships${queryString}`);
         return response.json();
     }
 };

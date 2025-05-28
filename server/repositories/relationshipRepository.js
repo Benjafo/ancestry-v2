@@ -41,39 +41,39 @@ class RelationshipRepository extends BaseRepository {
             endDateStart: 'end_date',
             endDateEnd: 'end_date'
         };
-        
+
         // Define allowed sort fields
         const allowedSortFields = [
             'relationship_type', 'relationship_qualifier', 'start_date', 'end_date', 'created_at', 'updated_at'
         ];
-        
+
         // Build date range filters
         const dateFilters = {};
-        
+
         if (params.startDateStart || params.startDateEnd) {
             dateFilters.start_date = {};
-            
+
             if (params.startDateStart) {
                 dateFilters.start_date[Op.gte] = new Date(params.startDateStart);
             }
-            
+
             if (params.startDateEnd) {
                 dateFilters.start_date[Op.lte] = new Date(params.startDateEnd);
             }
         }
-        
+
         if (params.endDateStart || params.endDateEnd) {
             dateFilters.end_date = {};
-            
+
             if (params.endDateStart) {
                 dateFilters.end_date[Op.gte] = new Date(params.endDateStart);
             }
-            
+
             if (params.endDateEnd) {
                 dateFilters.end_date[Op.lte] = new Date(params.endDateEnd);
             }
         }
-        
+
         // Build query options
         const queryOptions = QueryBuilder.buildQueryOptions(
             {
@@ -91,7 +91,7 @@ class RelationshipRepository extends BaseRepository {
                 fieldMappings
             }
         );
-        
+
         // Add date filters
         if (Object.keys(dateFilters).length > 0) {
             queryOptions.where = {
@@ -99,7 +99,7 @@ class RelationshipRepository extends BaseRepository {
                 ...dateFilters
             };
         }
-        
+
         // Add include for person data
         queryOptions.include = [
             {
@@ -113,15 +113,15 @@ class RelationshipRepository extends BaseRepository {
                 attributes: ['person_id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'death_date']
             }
         ];
-        
+
         // Execute query
         const result = await this.findAndCountAll(queryOptions);
-        
+
         // Calculate pagination metadata
         const page = parseInt(params.page, 10) || 1;
         const pageSize = parseInt(params.pageSize, 10) || 10;
         const totalPages = Math.ceil(result.count / pageSize);
-        
+
         return {
             relationships: result.rows,
             metadata: {
@@ -185,7 +185,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -215,7 +215,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -245,7 +245,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -310,7 +310,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -339,7 +339,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -373,7 +373,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -405,7 +405,7 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
         return await this.findAll(queryOptions);
     }
 
@@ -437,7 +437,54 @@ class RelationshipRepository extends BaseRepository {
             ],
             ...options
         };
-        
+
+        return await this.findAll(queryOptions);
+    }
+
+    /**
+     * Find relationships involving a list of persons
+     * 
+     * @param {Array<String>} personIds - Array of person IDs
+     * @param {Object} options - Query options including sortBy and sortOrder
+     * @returns {Promise<Array>} Array of relationships
+     */
+    async findRelationshipsInvolvingPersons(personIds, options = {}) {
+        const allowedSortFields = [
+            'created_at', 'updated_at', 'relationship_type', 'start_date', 'end_date'
+        ];
+
+        const queryOptions = QueryBuilder.buildQueryOptions(
+            {
+                sortBy: options.sortBy,
+                sortOrder: options.sortOrder
+            },
+            {
+                allowedSortFields,
+                defaultSortField: 'created_at',
+                defaultSortOrder: 'desc'
+            }
+        );
+
+        queryOptions.where = {
+            [Op.or]: [
+                { person1_id: { [Op.in]: personIds } },
+                { person2_id: { [Op.in]: personIds } }
+            ]
+        };
+
+        queryOptions.include = [
+            {
+                model: Person,
+                as: 'person1',
+                attributes: ['person_id', 'first_name', 'last_name']
+            },
+            {
+                model: Person,
+                as: 'person2',
+                attributes: ['person_id', 'first_name', 'last_name']
+            }
+        ];
+
         return await this.findAll(queryOptions);
     }
 }

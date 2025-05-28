@@ -208,12 +208,18 @@ class DocumentService {
         // Check if project exists
         const projectRepository = require('../repositories/projectRepository');
         const projectExists = await projectRepository.exists(projectId);
-        
+
         if (!projectExists) {
             throw new Error(`Project with id ${projectId} not found`);
         }
-        
-        return await documentRepository.findDocumentsByProjectId(projectId, options);
+
+        const { sortBy, sortOrder, includePersons } = options;
+
+        return await documentRepository.findDocumentsByProjectId(projectId, {
+            sortBy,
+            sortOrder,
+            includePersons
+        });
     }
 
     /**

@@ -73,7 +73,7 @@ const ViewDocumentModal: React.FC<ViewDocumentModalProps> = ({
         const fileUrl = `/api/documents/${documentId}/file`;
         const downloadUrl = `/api/documents/${documentId}/file?download=true`;
 
-        console.log('[Feature to implement]Download URL:', downloadUrl);
+        console.log('[Feature to implement] Download URL:', downloadUrl);
 
         if (document.mime_type?.startsWith('image/')) {
             return (

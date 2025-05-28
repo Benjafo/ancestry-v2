@@ -7,8 +7,8 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import SuccessAlert from '../components/common/SuccessAlert';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { formatDate } from '../utils/dateUtils';
-import { getActivityIcon } from '../utils/iconUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { getActivityIcon } from '../utils/iconUtils';
 
 const ManagerDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +21,7 @@ const ManagerDashboard = () => {
         try {
             setIsLoading(true);
             const data = await managerApi.getDashboardSummary();
+            console.log('Dashboard data:', data);
             setDashboardData(data);
             setIsLoading(false);
         } catch (err: unknown) {
@@ -93,7 +94,9 @@ const ManagerDashboard = () => {
                         <div className="ml-4">
                             <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</h2>
                             <p className="text-2xl font-semibold text-gray-900 dark:text-white">{dashboardData.activeProjects}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">of {dashboardData.totalProjects} total</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                of {dashboardData.totalProjects} total ({dashboardData.projectsByStatus.on_hold} on hold)
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -117,16 +120,16 @@ const ManagerDashboard = () => {
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                     <div className="flex items-center">
-                        <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
+                        <div className="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
                             <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         </div>
                         <div className="ml-4">
-                            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</h2>
-                            <p className="text-2xl font-semibold text-gray-900 dark:text-white">{dashboardData.projectsByStatus.active}</p>
+                            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Unassigned Clients</h2>
+                            <p className="text-2xl font-semibold text-gray-900 dark:text-white">{dashboardData.unassignedClientsCount}</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {dashboardData.projectsByStatus.completed} completed, {dashboardData.projectsByStatus.on_hold} on hold
+                                Clients not assigned to any project
                             </p>
                         </div>
                     </div>
@@ -159,15 +162,6 @@ const ManagerDashboard = () => {
                                             )}
                                         </div>
                                     </div>
-                                    {activity.projectId && (
-                                        <Link
-                                            to="/projects/:projectId"
-                                            params={{ projectId: activity.projectId }}
-                                            className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300"
-                                        >
-                                            View
-                                        </Link>
-                                    )}
                                 </div>
                             ))}
 
