@@ -6,9 +6,8 @@ import {
     validateLengthRange,
     validatePersonDates,
     validateRequired
-} from '../../utils/formValidation'; // Import validation utilities
-import BaseModal from '../common/BaseModal'; // Import BaseModal
-import ErrorAlert from '../common/ErrorAlert';
+} from '../../utils/formValidation';
+import BaseModal from '../common/BaseModal';
 
 interface CreatePersonModalProps {
     projectId?: string; // Optional: if provided, will add the person to this project
