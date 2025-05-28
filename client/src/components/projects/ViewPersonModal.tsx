@@ -382,7 +382,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.spouses.map(spouse => (
                                                             <div
                                                                 key={spouse.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -411,7 +411,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.parents.map(parent => (
                                                             <div
                                                                 key={parent.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -437,7 +437,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.children.map(child => (
                                                             <div
                                                                 key={child.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -463,7 +463,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {person.relationships.siblings.map(sibling => (
                                                             <div
                                                                 key={sibling.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -489,7 +489,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).grandparents.map((grandparent) => (
                                                             <div
                                                                 key={grandparent.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -512,7 +512,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).grandchildren.map((grandchild) => (
                                                             <div
                                                                 key={grandchild.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -535,7 +535,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).auntsUncles.map((auntUncle) => (
                                                             <div
                                                                 key={auntUncle.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -558,7 +558,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).niecesNephews.map((nieceNephew) => (
                                                             <div
                                                                 key={nieceNephew.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {
@@ -581,7 +581,7 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
                                                         {(person.relationships).cousins.map((cousin) => (
                                                             <div
                                                                 key={cousin.person_id}
-                                                                className="border dark:border-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                                className="border dark:border-gray-700 rounded-lg p-4 dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 relative"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (onViewRelatedPerson) {

@@ -3,8 +3,6 @@ project:
     Overview:
       - person and event events are not displayed in recent activity, only document and relationship events
       - duplicate notifications
-    Documents:
-      - family documents with 0 people attached do not count towards tab heading count
   finished:
     General:
       - move create document button to the documents tab
@@ -29,6 +27,7 @@ project:
       - created or associated document does not appear in edit person modal until whole modal is saved
       - add filter
       - add missing icons for census, military, etc
+      - family documents with 0 people attached do not count towards tab heading count
     Timeline:
       - fix capitalization of event type
       - related person should appear before event in timeline view
@@ -157,12 +156,13 @@ future_functionality:
   Api Client:
     - rename Relationship and ApiRelationship
   Project -> documents:
-    - preview and download document modal functionality, allow uploading larger files
+    - preview and download document modal functionality
+    - allow uploading larger files
+    - handle file storage
   General:
     - links
     - tablet/mobile views
     - clean up code
-    - handle file storage
     - mass document upload page
     - import GEDCOM file page
     - payment processing
