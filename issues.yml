@@ -1,7 +1,7 @@
 project:
   active:
     Overview:
-      - person and event events are not displayed in recent activity, only document and relationship events
+      - person and event notifications are not displayed in recent activity, only document and relationship notifications
       - duplicate notifications
   finished:
     General:
@@ -164,11 +164,13 @@ future_functionality:
       - allow uploading larger files
       - handle file storage
     General:
-      - superuser functionality to delete users and projects as well as edit manager name and email
-      - links
-      - tablet/mobile views
       - clean up code
-      - mass document upload page
-      - import GEDCOM file page
+      - footer links
+      - superuser functionality to delete users and projects as well as edit manager name and email
+      - tablet/mobile views
       - payment processing
       - service purchasing
+      - import GEDCOM file page
+  discarded:
+    General:
+      - mass document upload page
