@@ -2,6 +2,8 @@
 plans/
 server/uploads
 api_tracker.txt
+.clinerules/
+memory-bank/
 
 # Logs
 logs
