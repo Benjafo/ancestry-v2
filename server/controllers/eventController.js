@@ -226,10 +226,11 @@ exports.deleteEvent = async (req, res) => {
 
         // Get project IDs before deleting the event, as associations might be removed
         let projectIds = [];
-        if (eventToDelete && eventToDelete.person_id) {
-            console.log(`[DEBUG] Event associated with person: ${eventToDelete.person_id}`);
-            projectIds = await ProjectUtils.getProjectIdsForEntity('person', eventToDelete.person_id);
-            console.log(`[DEBUG] Projects associated with person ${eventToDelete.person_id} for event deletion:`, projectIds);
+        if (eventToDelete && eventToDelete.persons && eventToDelete.persons.length > 0) {
+            const personId = eventToDelete.persons[0].person_id;
+            console.log(`[DEBUG] Event associated with person: ${personId}`);
+            projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
+            console.log(`[DEBUG] Projects associated with person ${personId} for event deletion:`, projectIds);
         } else if (req.query.projectId) { // Fallback for project-level events if no person_id
             projectIds.push(req.query.projectId);
             console.log(`[DEBUG] Event not associated with person. Explicit projectId from query: ${req.query.projectId}`);
@@ -239,9 +240,9 @@ exports.deleteEvent = async (req, res) => {
 
         // Trigger user event for event deletion for all associated projects
         if (eventToDelete) {
-            const personName = eventToDelete.person_id && eventToDelete.Person ?
-                `${eventToDelete.Person.first_name} ${eventToDelete.Person.last_name}` : '';
-            const message = eventToDelete.person_id ?
+            const personName = (eventToDelete.persons && eventToDelete.persons.length > 0) ?
+                `${eventToDelete.persons[0].first_name} ${eventToDelete.persons[0].last_name}` : '';
+            const message = (eventToDelete.persons && eventToDelete.persons.length > 0) ?
                 `Event "${eventToDelete.event_type}" for ${personName} has been deleted` :
                 `Event "${eventToDelete.event_type}" has been deleted`;
 
