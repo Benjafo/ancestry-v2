@@ -156,18 +156,19 @@ other:
       - sorting should not make api requests
 
 future_functionality:
-  Api Client:
-    - rename Relationship and ApiRelationship
-  Project -> documents:
-    - preview and download document modal functionality
-    - allow uploading larger files
-    - handle file storage
-  General:
-    - superuser functionality to delete users and projects as well as edit manager name and email
-    - links
-    - tablet/mobile views
-    - clean up code
-    - mass document upload page
-    - import GEDCOM file page
-    - payment processing
-    - service purchasing
+  active:
+    Api Client:
+      - rename Relationship and ApiRelationship
+    Project -> documents:
+      - preview and download document modal functionality
+      - allow uploading larger files
+      - handle file storage
+    General:
+      - superuser functionality to delete users and projects as well as edit manager name and email
+      - links
+      - tablet/mobile views
+      - clean up code
+      - mass document upload page
+      - import GEDCOM file page
+      - payment processing
+      - service purchasing
