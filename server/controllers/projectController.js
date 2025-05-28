@@ -103,6 +103,11 @@ exports.getProjectById = async (req, res) => {
                     ]
                 },
                 {
+                    model: Document,
+                    as: 'documents', // This alias correctly refers to documents directly associated with the project
+                    required: false // Use left join
+                },
+                {
                     model: Event,
                     as: 'events',
                     through: { attributes: [] } // Exclude junction table attributes
@@ -140,9 +145,23 @@ exports.getProjectById = async (req, res) => {
         // Process the project data to match frontend expectations
         const projectJson = project.toJSON();
 
-        // Collect all documents from all persons in the project and include associated persons
+        // Collect all documents (both directly associated with project and through persons)
         const documentsMap = new Map(); // Use a map to store unique documents by ID
 
+        // Add documents directly associated with the project
+        if (projectJson.documents && projectJson.documents.length > 0) {
+            for (const doc of projectJson.documents) {
+                documentsMap.set(doc.document_id, {
+                    id: doc.document_id,
+                    title: doc.title,
+                    type: doc.document_type,
+                    uploaded_at: doc.upload_date,
+                    persons: [] // Initialize persons array for directly associated documents
+                });
+            }
+        }
+
+        // Add documents associated with persons in the project
         if (projectJson.persons && projectJson.persons.length > 0) {
             for (const person of projectJson.persons) {
                 if (person.documents && person.documents.length > 0) {
@@ -154,7 +173,6 @@ exports.getProjectById = async (req, res) => {
                                 title: doc.title,
                                 type: doc.document_type,
                                 uploaded_at: doc.upload_date,
-                                // Initialize persons array
                                 persons: []
                             });
                         }
@@ -166,7 +184,6 @@ exports.getProjectById = async (req, res) => {
                                 person_id: person.person_id,
                                 first_name: person.first_name,
                                 last_name: person.last_name,
-                                // person_name: `${person.first_name} ${person.last_name}`
                             });
                         }
                     }

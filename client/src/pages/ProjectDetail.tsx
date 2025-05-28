@@ -35,6 +35,7 @@ const ProjectDetail = () => {
     const [viewingPersonId, setViewingPersonId] = useState<string | null>(null);
     const [deletingPersonId, setDeletingPersonId] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [documentCount, setDocumentCount] = useState(0);
 
     // Get current user from localStorage to check if they are a manager
     const currentUser: User = JSON.parse(localStorage.getItem('user_data') || '{}');
@@ -166,6 +167,7 @@ const ProjectDetail = () => {
         });
         console.log('Refreshed project data after document added:', updatedProject);
         setProject(updatedProject);
+        setDocumentCount(updatedProject.documents?.length || 0); // Update document count
 
         // Clear success message after 3 seconds
         setTimeout(() => {
@@ -195,7 +197,9 @@ const ProjectDetail = () => {
                     includeRelationships: true,
                     includeDocuments: true
                 });
+                console.log('Fetched project data:', projectData); // Log the fetched data
                 setProject(projectData);
+                setDocumentCount(projectData.documents?.length || 0); // Initialize document count
                 setIsLoading(false);
             } catch (err: unknown) {
                 const errorMessage = await getApiErrorMessage(err);
@@ -291,7 +295,7 @@ const ProjectDetail = () => {
                                 }`}
                             onClick={() => setActiveTab('documents')}
                         >
-                            Documents ({project.documents?.length || 0})
+                            Documents ({documentCount})
                         </button>
                         <button
                             className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'timeline'

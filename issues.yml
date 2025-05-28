@@ -4,7 +4,7 @@ project:
       - person and event events are not displayed in recent activity, only document and relationship events
       - duplicate notifications
     Documents:
-      - delete document does not work
+      - family documents with 0 people attached do not count towards tab heading count
   finished:
     General:
       - move create document button to the documents tab
@@ -63,6 +63,7 @@ project:
   discarded:
     Documents:
       - family documents with 0 people attached disappear after creation and reload (it doesn't, duh)
+      - delete document does not work (it does)
     Timeline:
       - duplicate events in timeline
     View person modal -> events:
