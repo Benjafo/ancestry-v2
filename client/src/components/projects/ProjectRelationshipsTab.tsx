@@ -80,7 +80,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         } else {
             // Split search term into individual words
             const searchTerms = searchTerm.trim().split(/\s+/).filter(Boolean).map(term => term.toLowerCase());
-            
+
             const filtered = relationships.filter(relationship => {
                 // Create a combined searchable text from all relevant fields
                 const searchableText = [
@@ -90,13 +90,14 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                     relationship.person2?.last_name,
                     relationship.relationship_type,
                     relationship.relationship_qualifier,
-                    relationship.notes
+                    relationship.notes,
+                    'is', 'of' // Include linking words for better search matching
                 ].filter(Boolean).join(' ').toLowerCase();
-                
+
                 // Check if ALL search terms are found in the combined text
                 return searchTerms.every(term => searchableText.includes(term));
             });
-            
+
             setFilteredRelationships(filtered);
         }
     }, [searchTerm, relationships]);
