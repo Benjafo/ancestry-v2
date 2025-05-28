@@ -1,6 +1,7 @@
 const relationshipService = require('../services/relationshipService');
 const UserEventService = require('../services/userEventService');
 const { Person, ProjectPerson } = require('../models');
+const ProjectUtils = require('../utils/projectUtils');
 
 /**
  * Relationship Controller
@@ -82,41 +83,20 @@ exports.createRelationship = async (req, res) => {
                     relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
             }
 
-            console.log(req.body)
-
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'relationship_created',
-                `Created relationship: ${relationshipDescription}`,
-                req.user.user_id,
-                'relationship'
-            );
-
-            // Check if either person is in a project and create project events
-            const projectPersons1 = await ProjectPerson.findAll({
-                where: { person_id: person1.person_id }
-            });
-
-            const projectPersons2 = await ProjectPerson.findAll({
-                where: { person_id: person2.person_id }
-            });
-
-            // Get unique project IDs
-            const projectIds = new Set();
-            projectPersons1.forEach(pp => projectIds.add(pp.project_id));
-            projectPersons2.forEach(pp => projectIds.add(pp.project_id));
+            // Get unique project IDs associated with both persons
+            const projectIds1 = await ProjectUtils.getProjectIdsForEntity('person', person1.person_id);
+            const projectIds2 = await ProjectUtils.getProjectIdsForEntity('person', person2.person_id);
+            const allProjectIds = [...new Set([...projectIds1, ...projectIds2])];
 
             // Create events for all relevant projects
-            for (const projectId of projectIds) {
+            for (const projectId of allProjectIds) {
                 await UserEventService.createEventForProjectUsers(
                     projectId,
                     req.user.user_id,
                     'relationship_created',
                     `New relationship created: ${relationshipDescription}`,
                     projectId,
-                    'relationship'
+                    'project'
                 );
             }
         }
@@ -184,39 +164,20 @@ exports.updateRelationship = async (req, res) => {
                     relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
             }
 
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'relationship_updated',
-                `Updated relationship: ${relationshipDescription}`,
-                relationshipId,
-                'relationship'
-            );
-
-            // Check if either person is in a project and create project events
-            const projectPersons1 = await ProjectPerson.findAll({
-                where: { person_id: person1.person_id }
-            });
-
-            const projectPersons2 = await ProjectPerson.findAll({
-                where: { person_id: person2.person_id }
-            });
-
-            // Get unique project IDs
-            const projectIds = new Set();
-            projectPersons1.forEach(pp => projectIds.add(pp.project_id));
-            projectPersons2.forEach(pp => projectIds.add(pp.project_id));
+            // Get unique project IDs associated with both persons
+            const projectIds1 = await ProjectUtils.getProjectIdsForEntity('person', person1.person_id);
+            const projectIds2 = await ProjectUtils.getProjectIdsForEntity('person', person2.person_id);
+            const allProjectIds = [...new Set([...projectIds1, ...projectIds2])];
 
             // Create events for all relevant projects
-            for (const projectId of projectIds) {
+            for (const projectId of allProjectIds) {
                 await UserEventService.createEventForProjectUsers(
                     projectId,
                     req.user.user_id,
                     'relationship_updated',
                     `Relationship updated: ${relationshipDescription}`,
                     projectId,
-                    'relationship'
+                    'project'
                 );
             }
         }
@@ -268,26 +229,18 @@ exports.deleteRelationship = async (req, res) => {
         const person1 = await Person.findByPk(relationship.person1_id);
         const person2 = await Person.findByPk(relationship.person2_id);
 
-        // Check if either person is in a project and get project IDs
-        let projectIds = new Set();
+        // Get unique project IDs associated with both persons before deleting
+        let allProjectIds = [];
         if (person1 && person2) {
-            const projectPersons1 = await ProjectPerson.findAll({
-                where: { person_id: person1.person_id }
-            });
-
-            const projectPersons2 = await ProjectPerson.findAll({
-                where: { person_id: person2.person_id }
-            });
-
-            // Get unique project IDs
-            projectPersons1.forEach(pp => projectIds.add(pp.project_id));
-            projectPersons2.forEach(pp => projectIds.add(pp.project_id));
+            const projectIds1 = await ProjectUtils.getProjectIdsForEntity('person', person1.person_id);
+            const projectIds2 = await ProjectUtils.getProjectIdsForEntity('person', person2.person_id);
+            allProjectIds = [...new Set([...projectIds1, ...projectIds2])];
         }
 
         // Delete the relationship
         await relationshipService.deleteRelationship(relationshipId);
 
-        // Create user events after successful deletion
+        // Create user events after successful deletion for all associated projects
         if (person1 && person2) {
             // Create a descriptive message based on relationship type
             let relationshipDescription = '';
@@ -305,25 +258,14 @@ exports.deleteRelationship = async (req, res) => {
                     relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
             }
 
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'relationship_deleted',
-                `Deleted relationship: ${relationshipDescription}`,
-                null, // No relationship ID since it's deleted
-                'relationship'
-            );
-
-            // Create events for all relevant projects
-            for (const projectId of projectIds) {
+            for (const projectId of allProjectIds) {
                 await UserEventService.createEventForProjectUsers(
                     projectId,
                     req.user.user_id,
                     'relationship_deleted',
                     `Relationship deleted: ${relationshipDescription}`,
                     projectId,
-                    'relationship'
+                    'project'
                 );
             }
         }

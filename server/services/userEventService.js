@@ -59,33 +59,46 @@ class UserEventService {
      * @returns {Promise<Array<UserEvent>>} The created user events
      */
     static async createEventForProjectUsers(projectId, actorId, eventType, message, entityId = null, entityType = null) {
-        // Get all users associated with the project
         const { ProjectUser } = require('../models');
         const projectUsers = await ProjectUser.findAll({
             where: { project_id: projectId }
         });
 
-        // Create events for all project users
-        let userIds = projectUsers.map(pu => pu.user_id);
+        let userIdsToNotify = projectUsers.map(pu => pu.user_id);
+        const eventsToCreate = [];
 
+        // Create a project-level event for the actor
+        // This ensures the actor also sees the activity in the project's feed
+        eventsToCreate.push({
+            user_id: actorId,
+            actor_id: actorId,
+            event_type: eventType,
+            message,
+            entity_id: projectId, // Always link to the project for project-level notifications
+            entity_type: 'project' // Always 'project' for project-level notifications
+        });
+
+        // Create events for all OTHER project users
         // Filter out the actorId to prevent duplicate notification to the actor
-        if (actorId) {
-            userIds = userIds.filter(uid => uid !== actorId);
+        userIdsToNotify = userIdsToNotify.filter(uid => uid !== actorId);
+        
+        if (userIdsToNotify.length > 0) {
+            const otherUserEvents = userIdsToNotify.map(userId => ({
+                user_id: userId,
+                actor_id: actorId,
+                event_type: eventType,
+                message,
+                entity_id: projectId, // Always link to the project for project-level notifications
+                entity_type: 'project' // Always 'project' for project-level notifications
+            }));
+            eventsToCreate.push(...otherUserEvents);
         }
         
-        // If there are no other users to notify, return empty array
-        if (userIds.length === 0) {
+        if (eventsToCreate.length === 0) {
             return [];
         }
-        
-        return await this.createEventForMultipleUsers(
-            userIds, // Use the filtered list
-            actorId,
-            eventType,
-            message,
-            entityId,
-            entityType
-        );
+
+        return await UserEvent.bulkCreate(eventsToCreate);
     }
 }
 
