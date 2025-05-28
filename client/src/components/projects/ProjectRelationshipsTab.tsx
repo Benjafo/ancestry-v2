@@ -73,24 +73,30 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         fetchRelationships();
     }, [project.id, sortBy, sortOrder]);
 
-    // Filter relationships based on search term
+    // Filter relationships based on search term (multi-term support)
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredRelationships(relationships);
         } else {
-            const lowerSearchTerm = searchTerm.toLowerCase();
-            const filtered = relationships.filter(relationship =>
-                // Search in person names
-                (relationship.person1?.first_name?.toLowerCase().includes(lowerSearchTerm)) ||
-                (relationship.person1?.last_name?.toLowerCase().includes(lowerSearchTerm)) ||
-                (relationship.person2?.first_name?.toLowerCase().includes(lowerSearchTerm)) ||
-                (relationship.person2?.last_name?.toLowerCase().includes(lowerSearchTerm)) ||
-                // Search in relationship type and qualifier
-                (relationship.relationship_type?.toLowerCase().includes(lowerSearchTerm)) ||
-                (relationship.relationship_qualifier?.toLowerCase().includes(lowerSearchTerm)) ||
-                // Search in notes
-                (relationship.notes?.toLowerCase().includes(lowerSearchTerm))
-            );
+            // Split search term into individual words
+            const searchTerms = searchTerm.trim().split(/\s+/).filter(Boolean).map(term => term.toLowerCase());
+            
+            const filtered = relationships.filter(relationship => {
+                // Create a combined searchable text from all relevant fields
+                const searchableText = [
+                    relationship.person1?.first_name,
+                    relationship.person1?.last_name,
+                    relationship.person2?.first_name,
+                    relationship.person2?.last_name,
+                    relationship.relationship_type,
+                    relationship.relationship_qualifier,
+                    relationship.notes
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                // Check if ALL search terms are found in the combined text
+                return searchTerms.every(term => searchableText.includes(term));
+            });
+            
             setFilteredRelationships(filtered);
         }
     }, [searchTerm, relationships]);
