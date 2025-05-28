@@ -76,6 +76,7 @@ general:
     - tree view
     - recreate seed data
     - make cards the same size
+    - deactivated users should not be able to log in
   finished:
     - move reused code into utility functions
     - success and error messages are not displayed properly
@@ -93,6 +94,8 @@ general:
 
 other:
   active:
+    Client assignment:
+      - inactive users should not be displayed on the client assignment page
   finished:
     Login:
       - fix dark mode
@@ -160,6 +163,7 @@ future_functionality:
     - allow uploading larger files
     - handle file storage
   General:
+    - superuser functionality to delete users and projects as well as edit manager name and email
     - links
     - tablet/mobile views
     - clean up code

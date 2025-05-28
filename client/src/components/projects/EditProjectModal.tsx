@@ -30,6 +30,12 @@ const EditProjectModal = <T extends Project = Project>({
             ...prev,
             [name]: value
         }));
+        // Clear error for the field being changed
+        setFormErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[name];
+            return newErrors;
+        });
     };
 
     const validateForm = () => {
