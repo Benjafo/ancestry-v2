@@ -6,7 +6,7 @@ export const Footer = () => {
             <div className="container mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <div>
-                        <p>© {currentYear} Ancestry Research. All rights reserved.</p>
+                        <p>© {currentYear} Ben Foley. All rights reserved.</p>
                     </div>
                     <div className="mt-2 md:mt-0">
                         <ul className="flex space-x-4">
