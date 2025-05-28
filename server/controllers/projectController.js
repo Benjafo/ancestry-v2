@@ -434,14 +434,30 @@ exports.getProjectPersons = async (req, res) => {
 
 // Add a person to a project
 exports.addPersonToProject = async (req, res) => {
+    console.log('[DEBUG] Entering projectController.addPersonToProject');
     try {
         const { id } = req.params;
         const { person_id, notes } = req.body;
+        console.log(`[DEBUG] addPersonToProject - projectId: ${id}, person_id: ${person_id}`);
 
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
 
         const association = await projectService.addPersonToProject(id, person_id, { notes });
+
+        try {
+            await UserEventService.createEventForProjectUsers(
+                id,
+                req.user.user_id,
+                'person_added_to_project',
+                `Added person ${person_id} to project ${id}`, // More generic message for now
+                id,
+                'project'
+            );
+            console.log(`[DEBUG] Successfully logged person_added_to_project event for project: ${id}`);
+        } catch (eventError) {
+            console.error('[DEBUG] Error logging person_added_to_project event:', eventError);
+        }
 
         res.status(201).json({
             message: 'Person added to project successfully',
@@ -530,13 +546,34 @@ exports.updateProjectPerson = async (req, res) => {
 
 // Remove a person from a project
 exports.removePersonFromProject = async (req, res) => {
+    console.log('[DEBUG] Entering projectController.removePersonFromProject');
     try {
         const { id, personId } = req.params;
+        console.log(`[DEBUG] removePersonFromProject - projectId: ${id}, personId: ${personId}`);
 
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
 
         await projectService.removePersonFromProject(id, personId);
+
+        try {
+            // Get person details for the event message before they are fully removed
+            const { Person } = require('../models');
+            const person = await Person.findByPk(personId);
+            const personName = person ? `${person.first_name} ${person.last_name}` : `ID: ${personId}`;
+
+            await UserEventService.createEventForProjectUsers(
+                id,
+                req.user.user_id,
+                'person_removed_from_project',
+                `Removed person ${personName} from project ${id}`, // More generic message for now
+                id,
+                'project'
+            );
+            console.log(`[DEBUG] Successfully logged person_removed_from_project event for project: ${id}`);
+        } catch (eventError) {
+            console.error('[DEBUG] Error logging person_removed_from_project event:', eventError);
+        }
 
         res.json({
             message: 'Person removed from project successfully'

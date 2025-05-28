@@ -3,7 +3,7 @@ const router = express.Router();
 const eventController = require('../controllers/eventController');
 const { verifyToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
-const { 
+const {
     createEventValidation,
     updateEventValidation,
     eventIdValidation,
@@ -46,7 +46,10 @@ router.put('/:eventId', validate(updateEventValidation), eventController.updateE
  * @desc    Delete an event
  * @access  Private
  */
-router.delete('/:eventId', validate(eventIdValidation), eventController.deleteEvent);
+router.delete('/:eventId', (req, res, next) => {
+    console.log(`[DEBUG] Entering events route DELETE /api/events/${req.params.eventId}`);
+    next();
+}, validate(eventIdValidation), eventController.deleteEvent);
 
 /**
  * @route   GET /api/events/person/:personId

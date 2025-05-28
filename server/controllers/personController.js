@@ -73,18 +73,8 @@ exports.createPerson = async (req, res) => {
         const person = await personService.createPerson(personData, events);
         console.log('Created person:', person);
 
-        // Create user events for person creation
-        const projectIds = await ProjectUtils.getProjectIdsForEntity('person', person.person_id);
-        for (const projectId of projectIds) {
-            await UserEventService.createEventForProjectUsers(
-                projectId,
-                req.user.user_id,
-                'person_created',
-                `New family member added: ${person.first_name} ${person.last_name}`,
-                projectId,
-                'project'
-            );
-        }
+        // Removed project-level person_created event as it's not reliably tied to a project at creation.
+        // The person_added_to_project event will serve as the project-level notification.
 
         res.status(201).json({
             message: 'Person created successfully',
@@ -168,13 +158,16 @@ exports.deletePerson = async (req, res) => {
         const personName = `${person.first_name} ${person.last_name}`;
 
         // Get project IDs before deleting the person, as associations will be removed
+        console.log(`[DEBUG] Deleting person: ${personId}`);
         const projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
+        console.log(`[DEBUG] Projects associated with person ${personId} before deletion:`, projectIds);
 
         // Delete the person
         await personService.deletePerson(personId);
 
         // Create user events for person deletion for all associated projects
         for (const projectId of projectIds) {
+            console.log(`[DEBUG] Logging person_deleted event for project: ${projectId}`);
             await UserEventService.createEventForProjectUsers(
                 projectId,
                 req.user.user_id,
@@ -289,9 +282,11 @@ exports.getPersonDocuments = async (req, res) => {
  * @param {Object} res - Express response object
  */
 exports.addPersonToProject = async (req, res) => {
+    console.log('[DEBUG] Entering addPersonToProject');
     try {
         const { projectId } = req.params;
         const { person_id } = req.body;
+        console.log(`[DEBUG] addPersonToProject - projectId: ${projectId}, person_id: ${person_id}`);
 
         if (!projectId || !person_id) {
             return res.status(400).json({
