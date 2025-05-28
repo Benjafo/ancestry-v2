@@ -3,7 +3,12 @@ require('dotenv').config();
 
 // Use individual environment variables
 const sequelize = process.env.DATABASE_URL
-    ? new Sequelize(process.env.DATABASE_URL)
+    ? new Sequelize(
+        process.env.DATABASE_URL,
+        {
+            dialect: 'postgres',
+            logging: false
+        })
     : new Sequelize({
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
@@ -11,7 +16,7 @@ const sequelize = process.env.DATABASE_URL
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
         dialect: 'postgres',
-        logging: process.env.NODE_ENV === 'development' ? console.log : false,
+        logging: false,
         pool: {
             max: 5,
             min: 0,
