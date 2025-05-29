@@ -35,6 +35,11 @@ const UserEvent = sequelize.define('UserEvent', {
     },
     entity_type: {
         type: DataTypes.STRING
+    },
+    project_ids: { // New field
+        type: DataTypes.ARRAY(DataTypes.UUID),
+        allowNull: true, // Can be null if event is not project-specific
+        defaultValue: []
     }
 }, {
     tableName: 'user_events',

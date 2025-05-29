@@ -19,25 +19,27 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
     const adminEvents = [];
 
     // Helper functions to create events
-    async function createClientEvent(type, message, entityId = null, entityType = null) {
+    async function createClientEvent(type, message, entityId = null, entityType = null, projectIds = []) {
         return await UserEvent.create({
             user_id: clientUser.user_id,
             actor_id: adminUser.user_id,
             event_type: type,
             message,
             entity_id: entityId,
-            entity_type: entityType
+            entity_type: entityType,
+            project_ids: projectIds
         }, { transaction });
     }
 
-    async function createAdminEvent(type, message, entityId = null, entityType = null) {
+    async function createAdminEvent(type, message, entityId = null, entityType = null, projectIds = []) {
         return await UserEvent.create({
             user_id: adminUser.user_id,
             actor_id: adminUser.user_id,
             event_type: type,
             message,
             entity_id: entityId,
-            entity_type: entityType
+            entity_type: entityType,
+            project_ids: projectIds
         }, { transaction });
     }
 
@@ -49,7 +51,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
         'project_assigned',
         `You've been assigned to a new project: ${project1.title}`,
         project1.id,
-        'project'
+        'project',
+        [project1.id] // Explicitly set project_ids
     ));
 
     // Document addition events
@@ -68,7 +71,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'document_created',
             message,
             doc.document_id,
-            'document'
+            'document',
+            [project1.id] // Assuming these documents are for project1
         ));
     }
 
@@ -106,7 +110,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'event_created',
             message,
             event.event_id,
-            'event'
+            'event',
+            [project1.id] // Assuming these events are for project1
         ));
     }
 
@@ -130,7 +135,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'relationship_created',
             message,
             null,
-            'relationship'
+            'relationship',
+            [project1.id] // Assuming these relationships are for project1
         ));
     }
 
@@ -148,7 +154,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'research_milestone',
             message,
             project1.id,
-            'project'
+            'project',
+            [project1.id] // Explicitly set project_ids
         ));
     }
 
@@ -184,7 +191,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             type,
             message,
             project.id,
-            'project'
+            'project',
+            [project.id] // Use the specific project ID
         ));
     }
 
@@ -208,7 +216,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'person_created',
             message,
             person.person_id,
-            'person'
+            'person',
+            [project1.id] // Assuming these persons are primarily for project1
         ));
     }
 
@@ -228,7 +237,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'document_created',
             message,
             doc.document_id,
-            'document'
+            'document',
+            [project1.id] // Assuming these documents are for project1
         ));
     }
 
@@ -251,7 +261,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'event_created',
             message,
             event.event_id,
-            'event'
+            'event',
+            [project1.id] // Assuming these events are for project1
         ));
     }
 
@@ -261,7 +272,8 @@ async function seedUserEvents(transaction, { adminUser, clientUser, project1, pr
             'relationship_created',
             message.replace('New relationship established', 'Established relationship'),
             null,
-            'relationship'
+            'relationship',
+            [project1.id] // Assuming these relationships are for project1
         ));
     }
 

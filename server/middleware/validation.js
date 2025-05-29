@@ -7,13 +7,12 @@ const { validationResult } = require('express-validator');
  */
 exports.validate = (validations) => {
     return async (req, res, next) => {
-        console.log('Validation Middleware req.body:', req.body);
         // Execute all validations
         await Promise.all(validations.map(validation => validation.run(req)));
-        
+
         // Check if there are validation errors
         const errors = validationResult(req);
-        
+
         if (!errors.isEmpty()) {
             // Format errors for response
             const formattedErrors = errors.array().reduce((acc, error) => {
@@ -24,13 +23,13 @@ exports.validate = (validations) => {
                 acc[field].push(error.msg);
                 return acc;
             }, {});
-            
+
             return res.status(400).json({
                 message: 'Validation failed',
                 errors: formattedErrors
             });
         }
-        
+
         next();
     };
 };

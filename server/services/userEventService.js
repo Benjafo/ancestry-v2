@@ -58,34 +58,38 @@ class UserEventService {
      * @param {string} [entityType] - Optional type of the related entity
      * @returns {Promise<Array<UserEvent>>} The created user events
      */
-    static async createEventForProjectUsers(projectId, actorId, eventType, message, entityId = null, entityType = null) {
-        // Get all users associated with the project
+    static async createEventForProjectUsers(projectIds, actorId, eventType, message, entityId = null, entityType = null) {
         const { ProjectUser } = require('../models');
         const projectUsers = await ProjectUser.findAll({
-            where: { project_id: projectId }
+            where: { project_id: projectIds } // Find users for all relevant projects
         });
 
-        // Create events for all project users
-        let userIds = projectUsers.map(pu => pu.user_id);
+        let userIdsToNotify = projectUsers.map(pu => pu.user_id);
+        const eventsToCreate = [];
 
-        // Filter out the actorId to prevent duplicate notification to the actor
-        if (actorId) {
-            userIds = userIds.filter(uid => uid !== actorId);
+        // Add the actor to the notification list if not already there
+        if (!userIdsToNotify.includes(actorId)) {
+            userIdsToNotify.push(actorId);
         }
-        
-        // If there are no other users to notify, return empty array
-        if (userIds.length === 0) {
+
+        // Create events for all unique users associated with the projects
+        for (const userId of new Set(userIdsToNotify)) { // Use Set to ensure unique user IDs
+            eventsToCreate.push({
+                user_id: userId,
+                actor_id: actorId,
+                event_type: eventType,
+                message,
+                entity_id: entityId, // Now refers to the actual entity (person, document, etc.)
+                entity_type: entityType, // Now refers to the actual entity type
+                project_ids: projectIds // Store the array of relevant project IDs
+            });
+        }
+
+        if (eventsToCreate.length === 0) {
             return [];
         }
-        
-        return await this.createEventForMultipleUsers(
-            userIds, // Use the filtered list
-            actorId,
-            eventType,
-            message,
-            entityId,
-            entityType
-        );
+
+        return await UserEvent.bulkCreate(eventsToCreate);
     }
 }
 

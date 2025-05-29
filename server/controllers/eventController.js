@@ -1,6 +1,7 @@
 const eventService = require('../services/eventService');
-const UserEventService = require('../services/userEventService'); // Import UserEventService
-const { Person } = require('../models'); // Import Person model
+const UserEventService = require('../services/userEventService');
+const { Person } = require('../models');
+const ProjectUtils = require('../utils/projectUtils');
 
 /**
  * Event Controller
@@ -65,42 +66,34 @@ exports.createEvent = async (req, res) => {
     try {
         const event = await eventService.createEvent(req.body);
 
-        // Extract project_id from request body if provided
-        const projectId = req.body.projectId;
-
         // Trigger user event for event creation
-        if (event.person_id) {
-            const person = await Person.findByPk(event.person_id);
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id, // Actor
-                req.user.user_id, // User receiving event (can be the actor)
-                'event_created',
-                `Created event "${event.event_type}"`,
-                projectId,
-                'event'
-            );
-
-            // Create events for project users if projectId is provided
-            if (projectId) {
+        if (event.dataValues.person_id) {
+            const person = await Person.findByPk(event.dataValues.person_id);
+            const projectIds = await ProjectUtils.getProjectIdsForEntity('person', event.dataValues.person_id);
+            if (projectIds.length > 0) {
+                const message = `New event "${event.event_type}" created for ${person.first_name} ${person.last_name}`;
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    projectIds, // Pass the array
                     req.user.user_id,
                     'event_created',
-                    `New event "${event.event_type}" created for ${person.first_name} ${person.last_name}`,
-                    projectId,
-                    'event'
+                    message,
+                    event.event_id, // entity_id is the event's ID
+                    'event' // entity_type is 'event'
                 );
             }
         } else {
-            await UserEventService.createEvent(
-                req.user.user_id, // Actor
-                req.user.user_id, // User receiving event (can be the actor)
-                'event_created',
-                `Created event "${event.event_type}"`,
-                projectId,
-                'event'
-            );
+            const projectId = req.body.projectId;
+            if (projectId) {
+                const message = `New event "${event.event_type}" created`;
+                await UserEventService.createEventForProjectUsers(
+                    [projectId], // Pass the array
+                    req.user.user_id,
+                    'event_created',
+                    message,
+                    event.event_id, // entity_id is the event's ID
+                    'event' // entity_type is 'event'
+                );
+            }
         }
 
         res.status(201).json({
@@ -137,43 +130,35 @@ exports.updateEvent = async (req, res) => {
         const { eventId } = req.params;
         const event = await eventService.updateEvent(eventId, req.body);
 
-        // Extract project_id from request body if provided
-        const projectId = req.body.projectId;
-
         // Trigger user event for event update
-        if (event.person_id) {
-            const person = await Person.findByPk(event.person_id);
+        if (event.dataValues.person_id) {
+            const person = await Person.findByPk(event.dataValues.person_id);
             if (person) {
-                // Create event for the actor
-                await UserEventService.createEvent(
-                    req.user.user_id, // Actor
-                    req.user.user_id, // User receiving event (can be the actor)
-                    'event_updated',
-                    `Updated event "${event.event_type}" for ${person.first_name} ${person.last_name}`,
-                    projectId,
-                    'event'
-                );
-
-                // Create events for project users if projectId is provided
-                if (projectId) {
+                const projectIds = await ProjectUtils.getProjectIdsForEntity('person', event.dataValues.person_id);
+                if (projectIds.length > 0) {
+                    const message = `Event "${event.event_type}" for ${person.first_name} ${person.last_name} has been updated`;
                     await UserEventService.createEventForProjectUsers(
-                        projectId,
+                        projectIds, // Pass the array
                         req.user.user_id,
                         'event_updated',
-                        `Event "${event.event_type}" for ${person.first_name} ${person.last_name} has been updated`,
-                        projectId,
-                        'event'
+                        message,
+                        event.event_id, // entity_id is the event's ID
+                        'event' // entity_type is 'event'
                     );
                 }
             } else {
-                await UserEventService.createEvent(
-                    req.user.user_id, // Actor
-                    req.user.user_id, // User receiving event (can be the actor)
-                    'event_updated',
-                    `Updated event "${event.event_type}"`,
-                    projectId,
-                    'event'
-                );
+                const projectId = req.body.projectId;
+                if (projectId) {
+                    const message = `Event "${event.event_type}" has been updated`;
+                    await UserEventService.createEventForProjectUsers(
+                        [projectId], // Pass the array
+                        req.user.user_id,
+                        'event_updated',
+                        message,
+                        event.event_id, // entity_id is the event's ID
+                        'event' // entity_type is 'event'
+                    );
+                }
             }
         }
 
@@ -217,70 +202,33 @@ exports.deleteEvent = async (req, res) => {
         // Fetch event details before deleting for the event message
         const eventToDelete = await eventService.getEventById(eventId, { includePerson: true });
 
-        // Try to determine the project_id
-        let projectId = req.query.projectId;
-
-        // If no projectId in query, try to find it from the person's associations
-        if (!projectId && eventToDelete && eventToDelete.person_id) {
-            // Import models needed for project lookup
-            const { ProjectPerson } = require('../models');
-
-            // Look for project associations for this person
-            const projectAssociation = await ProjectPerson.findOne({
-                where: { person_id: eventToDelete.person_id }
-            });
-
-            if (projectAssociation) {
-                projectId = projectAssociation.project_id;
-            }
+        // Get project IDs before deleting the event, as associations might be removed
+        let projectIds = [];
+        if (eventToDelete && eventToDelete.persons && eventToDelete.persons.length > 0) {
+            const personId = eventToDelete.persons[0].person_id;
+            projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
+        } else if (req.query.projectId) { // Fallback for project-level events if no person_id
+            projectIds.push(req.query.projectId);
         }
 
         await eventService.deleteEvent(eventId);
 
-        // Trigger user event for event deletion
+        // Trigger user event for event deletion for all associated projects
         if (eventToDelete) {
-            if (eventToDelete.person_id) {
-                const person = await Person.findByPk(eventToDelete.person_id);
-                if (person) {
-                    // Create event for the actor
-                    await UserEventService.createEvent(
-                        req.user.user_id, // Actor
-                        req.user.user_id, // User receiving event (can be the actor)
-                        'event_deleted',
-                        `Deleted event "${eventToDelete.event_type}" for ${person.first_name} ${person.last_name}`,
-                        null, // Entity ID is null as event is deleted
-                        'event'
-                    );
+            const personName = (eventToDelete.persons && eventToDelete.persons.length > 0) ?
+                `${eventToDelete.persons[0].first_name} ${eventToDelete.persons[0].last_name}` : '';
+            const message = (eventToDelete.persons && eventToDelete.persons.length > 0) ?
+                `Event "${eventToDelete.event_type}" for ${personName} has been deleted` :
+                `Event "${eventToDelete.event_type}" has been deleted`;
 
-                    // Create events for project users if projectId is available
-                    if (projectId) {
-                        await UserEventService.createEventForProjectUsers(
-                            projectId,
-                            req.user.user_id,
-                            'event_deleted',
-                            `Event "${eventToDelete.event_type}" for ${person.first_name} ${person.last_name} has been deleted`,
-                            projectId,
-                            'event'
-                        );
-                    }
-                } else {
-                    await UserEventService.createEvent(
-                        req.user.user_id, // Actor
-                        req.user.user_id, // User receiving event (can be the actor)
-                        'event_deleted',
-                        `Deleted event "${eventToDelete.event_type}"`,
-                        null, // Entity ID is null as event is deleted
-                        'event'
-                    );
-                }
-            } else {
-                await UserEventService.createEvent(
-                    req.user.user_id, // Actor
-                    req.user.user_id, // User receiving event (can be the actor)
+            if (projectIds.length > 0) {
+                await UserEventService.createEventForProjectUsers(
+                    projectIds, // Pass the array
+                    req.user.user_id,
                     'event_deleted',
-                    `Deleted event "${eventToDelete.event_type}"`,
-                    null, // Entity ID is null as event is deleted
-                    'event'
+                    message,
+                    eventToDelete.event_id, // entity_id is the event's ID
+                    'event' // entity_type is 'event'
                 );
             }
         }

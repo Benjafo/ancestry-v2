@@ -102,6 +102,7 @@ class EventRepository extends BaseRepository {
             queryOptions.include = [
                 {
                     model: Person,
+                    as: 'persons', // Add the alias here
                     attributes: ['person_id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'death_date']
                 }
             ];
@@ -140,6 +141,7 @@ class EventRepository extends BaseRepository {
         if (options.includePerson) {
             include.push({
                 model: Person,
+                as: 'persons',
                 attributes: ['person_id', 'first_name', 'middle_name', 'last_name', 'gender', 'birth_date', 'death_date']
             });
         }

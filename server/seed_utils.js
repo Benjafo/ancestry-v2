@@ -10,12 +10,12 @@ require('dotenv').config();
 const connectToDatabase = async () => {
     console.log('Connecting to the target database...');
     console.log(process.env.DB_HOST, process.env.DB_PORT, process.env.DB_USER, process.env.DB_PASSWORD, process.env.DB_NAME);
-    
+
     return new Sequelize(
         process.env.DATABASE_URL,
         {
             dialect: 'postgres',
-            logging: process.env.NODE_ENV === 'development' ? console.log : false
+            logging: false
         }
     );
 };
@@ -29,7 +29,7 @@ const connectToAdminDatabase = async () => {
         process.env.DATABASE_URL.replace('/ancestrydb', '/postgres'),
         {
             dialect: 'postgres',
-            logging: process.env.NODE_ENV === 'development' ? console.log : false
+            logging: false
         }
     );
 };
@@ -40,13 +40,13 @@ const connectToAdminDatabase = async () => {
  */
 const createDatabaseIfNotExists = async () => {
     const adminSequelize = await connectToAdminDatabase();
-    
+
     try {
         console.log('Checking if database exists...');
         const [results] = await adminSequelize.query(`
             SELECT 1 FROM pg_database WHERE datname = '${process.env.DB_NAME}'
         `);
-        
+
         if (results.length === 0) {
             console.log(`Database '${process.env.DB_NAME}' does not exist. Creating...`);
             await adminSequelize.query(`CREATE DATABASE ${process.env.DB_NAME}`);

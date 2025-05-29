@@ -3,7 +3,7 @@ const router = express.Router();
 const eventController = require('../controllers/eventController');
 const { verifyToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
-const { 
+const {
     createEventValidation,
     updateEventValidation,
     eventIdValidation,

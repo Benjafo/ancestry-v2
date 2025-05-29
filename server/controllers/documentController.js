@@ -1,6 +1,7 @@
 const documentService = require('../services/documentService');
 const UserEventService = require('../services/userEventService');
 const { Project, ProjectUser } = require('../models');
+const ProjectUtils = require('../utils/projectUtils');
 const path = require('path');
 const fs = require('fs');
 
@@ -67,28 +68,16 @@ exports.createDocument = async (req, res) => {
     try {
         const document = await documentService.createDocument(req.body);
 
-        // Create user events for all users associated with the project
-        if (document.project_id) {
-            // Create event for the actor (the user who created the document)
-            // Event for the actor about the document they uploaded
-            await UserEventService.createEvent(
-                req.user.user_id,           // Recipient: actor
-                req.user.user_id,           // Actor
-                'document_created',         // EventType
-                `Uploaded document: ${document.title}`,
-                document.document_id,       // Corrected: entity_id is the document's ID
-                'document'                  // Corrected: entityType is 'document'
-            );
-
-            // Event for OTHER project users about an update to their project
-            // UserEventService.createEventForProjectUsers now excludes the actor
+        // Create user events for document creation for all associated projects
+        const projectIds = await ProjectUtils.getProjectIdsForEntity('document', document.document_id);
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                document.project_id,        // projectId (to find users)
-                req.user.user_id,           // actorId (who performed the action)
-                'document_created',         // EventType (kept same for now, could be more specific e.g., 'project_document_added')
-                `A new document has been added to the project.`,
-                document.project_id,        // entity_id is the project
-                'project'                   // Corrected: entityType is 'project'
+                projectIds, // Pass the array
+                req.user.user_id,
+                'document_created',
+                `New document "${document.title}" added to project`,
+                document.document_id, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
 
@@ -125,26 +114,16 @@ exports.updateDocument = async (req, res) => {
         const { documentId } = req.params;
         const document = await documentService.updateDocument(documentId, req.body);
 
-        // Create user events for document update
-        if (document.project_id) {
-            // Create event for the actor (the user who updated the document)
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'document_updated',
-                `Updated document: ${document.title}`,
-                document.project_id,
-                'document'
-            );
-
-            // Create events for all project users
+        // Create user events for document update for all associated projects
+        const projectIds = await ProjectUtils.getProjectIdsForEntity('document', documentId);
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                document.project_id,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_updated',
-                `A document in your project has been updated: ${document.title}`,
-                document.project_id,
-                'document'
+                `Document "${document.title}" updated in project`,
+                document.document_id, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
         console.log('Updated Document:', document);
@@ -195,31 +174,22 @@ exports.deleteDocument = async (req, res) => {
 
         // Store document info for events
         const documentTitle = document.title;
-        const projectId = document.project_id;
+
+        // Get project IDs before deleting the document, as associations will be removed
+        const projectIds = await ProjectUtils.getProjectIdsForEntity('document', documentId);
 
         // Delete the document
         await documentService.deleteDocument(documentId);
 
-        // Create user events for document deletion
-        if (projectId) {
-            // Create event for the actor (the user who deleted the document)
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'document_deleted',
-                `Deleted document: ${documentTitle}`,
-                null, // No document ID since it's deleted
-                'document'
-            );
-
-            // Create events for all project users
+        // Create user events for document deletion for all associated projects
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_deleted',
-                `A document has been removed from your project: ${documentTitle}`,
-                projectId,
-                'document'
+                `Document "${documentTitle}" removed from project`,
+                documentId, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
 
@@ -386,31 +356,24 @@ exports.associateDocumentWithPerson = async (req, res) => {
         );
 
         // Get document and person info for events
-        const document = await documentService.getDocumentById(documentId);
+        const docForEvent = await documentService.getDocumentById(documentId);
         const { Person } = require('../models');
-        const person = await Person.findByPk(personId);
+        const personForEvent = await Person.findByPk(personId);
 
-        if (document && person && document.project_id) {
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'document_associated',
-                `Associated document "${document.title}" with person: ${person.first_name} ${person.last_name}`,
-                documentId,
-                'document'
-            );
-
-            // Create events for all project users
-            await UserEventService.createEventForProjectUsers(
-                document.project_id,
-                req.user.user_id,
-                'document_associated',
-                `Document "${document.title}" has been associated with ${person.first_name} ${person.last_name}`,
-                documentId,
-                'document'
-            );
+        if (docForEvent && personForEvent) {
+            const projectIds = await ProjectUtils.getProjectIdsForEntity('document', documentId);
+            if (projectIds.length > 0) {
+                await UserEventService.createEventForProjectUsers(
+                    projectIds, // Pass the array
+                    req.user.user_id,
+                    'document_associated',
+                    `Document "${docForEvent.title}" associated with ${personForEvent.first_name} ${personForEvent.last_name} in project`,
+                    documentId, // entity_id is the document's ID
+                    'document' // entity_type is 'document'
+                );
+            }
         }
+
 
         res.status(201).json({
             message: 'Document associated with person successfully',
@@ -518,42 +481,31 @@ exports.removeDocumentPersonAssociation = async (req, res) => {
         const { documentId, personId } = req.params;
 
         // Get document and person details before removing the association
-        const document = await documentService.getDocumentById(documentId);
+        const docForEvent = await documentService.getDocumentById(documentId);
         const { Person } = require('../models');
-        const person = await Person.findByPk(personId);
+        const personForEvent = await Person.findByPk(personId);
 
-        if (!document || !person) {
+        if (!docForEvent || !personForEvent) {
             return res.status(404).json({
                 message: 'Document or person not found'
             });
         }
 
-        // Store project_id for event creation
-        const projectId = document.project_id;
+        // Get project IDs before removing the association, as associations will be removed
+        const projectIds = await ProjectUtils.getProjectIdsForEntity('document', documentId);
 
         // Remove the association
         await documentService.removeDocumentPersonAssociation(documentId, personId);
 
-        // Create user events if the document is associated with a project
-        if (projectId) {
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'document_removed',
-                `Removed association between document "${document.title}" and person: ${person.first_name} ${person.last_name}`,
-                documentId,
-                'document'
-            );
-
-            // Create events for all project users
+        // Create user events for document-person association removal for all associated projects
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_removed',
-                `Association between document "${document.title}" and ${person.first_name} ${person.last_name} has been removed`,
-                projectId, // Change entityId to projectId
-                'document'
+                `Document "${docForEvent.title}" unassociated from ${personForEvent.first_name} ${personForEvent.last_name} in project`,
+                documentId, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
 

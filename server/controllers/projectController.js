@@ -376,12 +376,12 @@ exports.updateProject = async (req, res) => {
 
         // Create events for all project users
         await UserEventService.createEventForProjectUsers(
-            project.id,
+            [project.id], // Pass as an array
             req.user.user_id,
             'project_updated',
             `Project "${project.title}" has been updated`,
-            project.id,
-            'project'
+            project.id, // entity_id is the project's ID
+            'project' // entity_type is 'project'
         );
 
         // Ensure timestamps are included in the response
@@ -443,6 +443,21 @@ exports.addPersonToProject = async (req, res) => {
 
         const association = await projectService.addPersonToProject(id, person_id, { notes });
 
+        // Get person and project details for the event message
+        const project = await Project.findByPk(id); // Ensure project is fetched
+        const person = await Person.findByPk(person_id); // Ensure person is fetched
+
+        if (project && person) {
+            await UserEventService.createEventForProjectUsers(
+                [id], // Pass as an array
+                req.user.user_id,
+                'person_added_to_project',
+                `Added ${person.first_name} ${person.last_name} to project: ${project.title}`, // Improved message
+                person_id, // entity_id is the person's ID
+                'person' // entity_type is 'person'
+            );
+        }
+
         res.status(201).json({
             message: 'Person added to project successfully',
             association
@@ -485,25 +500,17 @@ exports.updateProjectPerson = async (req, res) => {
         const person = await Person.findByPk(personId);
 
         if (person) {
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'person_updated',
-                `Updated project notes for person: ${person.first_name} ${person.last_name}`,
-                id,
-                'project'
-            );
-
-            // Create events for all project users
-            await UserEventService.createEventForProjectUsers(
-                id,
-                req.user.user_id,
-                'person_updated',
-                `Notes updated for ${person.first_name} ${person.last_name} in this project`,
-                id,
-                'project'
-            );
+            if (person) {
+                // Create events for all project users
+                await UserEventService.createEventForProjectUsers(
+                    [id], // Pass as an array
+                    req.user.user_id,
+                    'person_updated',
+                    `Notes updated for ${person.first_name} ${person.last_name} in this project`,
+                    personId, // entity_id is the person's ID
+                    'person' // entity_type is 'person'
+                );
+            }
         }
 
         res.json({
@@ -538,6 +545,22 @@ exports.removePersonFromProject = async (req, res) => {
 
         await projectService.removePersonFromProject(id, personId);
 
+        // Get person and project details for the event message before they are fully removed
+        const project = await Project.findByPk(id); // Ensure project is fetched
+        const person = await Person.findByPk(personId); // Ensure person is fetched
+        const personName = person ? `${person.first_name} ${person.last_name}` : `ID: ${personId}`;
+
+        if (project && person) {
+            await UserEventService.createEventForProjectUsers(
+                [id], // Pass as an array
+                req.user.user_id,
+                'person_removed_from_project',
+                `Removed ${personName} from project: ${project.title}`, // Improved message
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
+            );
+        }
+
         res.json({
             message: 'Person removed from project successfully'
         });
@@ -570,11 +593,15 @@ exports.getProjectEvents = async (req, res) => {
 
         // Import UserEvent model
         const { UserEvent, User } = require('../models');
+        const { Op } = require('sequelize'); // Import Op
 
         // Build query options
         const queryOptions = {
             where: {
-                entity_id: id
+                project_ids: { // Query the new array field
+                    [Op.contains]: [id] // Check if the array contains the project ID
+                },
+                user_id: req.user.user_id
             },
             order: [[sortBy, sortOrder.toUpperCase()]],
             limit: parseInt(limit),

@@ -1,6 +1,7 @@
 const personService = require('../services/personService');
 const UserEventService = require('../services/userEventService');
 const { Project } = require('../models');
+const ProjectUtils = require('../utils/projectUtils');
 
 /**
  * Person Controller
@@ -70,29 +71,10 @@ exports.createPerson = async (req, res) => {
 
         // Pass events to personService
         const person = await personService.createPerson(personData, events);
+        console.log('Created person:', person);
 
-        // Create user events for person creation
-        if (req.body.project_id) {
-            // Create event for the actor (the user who created the person)
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'person_created',
-                `Added person: ${person.first_name} ${person.last_name}`,
-                projectId,
-                'person'
-            );
-
-            // Create events for all project users
-            await UserEventService.createEventForProjectUsers(
-                projectId,
-                req.user.user_id,
-                'person_created',
-                `New family member added to project: ${person.first_name} ${person.last_name}`,
-                projectId,
-                'person'
-            );
-        }
+        // Removed project-level person_created event as it's not reliably tied to a project at creation.
+        // The person_added_to_project event will serve as the project-level notification.
 
         res.status(201).json({
             message: 'Person created successfully',
@@ -116,8 +98,6 @@ exports.createPerson = async (req, res) => {
 exports.updatePerson = async (req, res) => {
     try {
         const { personId } = req.params;
-        const projectId = req.body.project_id
-
         // Extract events and deletedEventIds from request body
         const { events, deletedEventIds, ...personData } = req.body;
 
@@ -125,25 +105,15 @@ exports.updatePerson = async (req, res) => {
         const person = await personService.updatePerson(personId, personData, events, deletedEventIds);
 
         // Create user events for person update
-        if (projectId) {
-            // Create event for the actor (the user who updated the person)
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'person_updated',
-                `Updated person: ${person.first_name} ${person.last_name}`,
-                projectId,
-                'person'
-            );
-
-            // Create events for all project users
+        const projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'person_updated',
                 `Family member information updated: ${person.first_name} ${person.last_name}`,
-                projectId,
-                'person'
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
         }
 
@@ -184,35 +154,24 @@ exports.deletePerson = async (req, res) => {
             return res.status(404).json({ message: 'Person not found' });
         }
 
-        // Get project ID from query parameter or request body
-        const projectId = req.query.project_id || req.body.project_id;
-
         // Store person info for events
         const personName = `${person.first_name} ${person.last_name}`;
+
+        // Get project IDs before deleting the person, as associations will be removed
+        const projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
 
         // Delete the person
         await personService.deletePerson(personId);
 
-        // Create user events for person deletion
-        if (projectId) {
-            // Create event for the actor (the user who deleted the person)
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'person_deleted',
-                `Deleted person: ${personName}`,
-                null, // No person ID since it's deleted
-                'person'
-            );
-
-            // Create events for all project users
+        // Create user events for person deletion for all associated projects
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'person_deleted',
                 `Family member removed: ${personName}`,
-                projectId,
-                'person'
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
         }
 
@@ -349,25 +308,14 @@ exports.addPersonToProject = async (req, res) => {
             person_id: person_id
         });
 
-        // Create user events
-        // Create event for the actor (the user who added the person to the project)
-        await UserEventService.createEvent(
-            req.user.user_id,
+        // Create user events for adding person to project
+        await UserEventService.createEventForProjectUsers(
+            [projectId], // Still an array, but with one project
             req.user.user_id,
             'person_added_to_project',
             `Added ${person.first_name} ${person.last_name} to project: ${project.title}`,
-            person.person_id,
-            'person'
-        );
-
-        // Create events for all project users
-        await UserEventService.createEventForProjectUsers(
-            projectId,
-            req.user.user_id,
-            'person_added_to_project',
-            `New family member added to project: ${person.first_name} ${person.last_name}`,
-            person.person_id,
-            'person'
+            person_id, // entity_id is the person's ID
+            'person' // entity_type is 'person'
         );
 
         res.status(201).json({

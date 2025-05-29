@@ -191,6 +191,7 @@ CREATE TABLE
         message TEXT NOT NULL,
         entity_id UUID,
         entity_type VARCHAR(100),
+        project_ids UUID[] DEFAULT '{}', -- New field for multiple project associations
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
