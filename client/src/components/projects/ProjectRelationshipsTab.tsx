@@ -262,7 +262,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                     }}
                                                 >
                                                     {relationship.person1?.first_name} {relationship.person1?.last_name}
-                                                </button> <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is</span>
+                                                </button> <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is a</span>
                                             </span>
                                             <span className="font-medium text-gray-900 dark:text-white text-md">
                                                 {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
@@ -329,7 +329,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                             }}
                                                         >
                                                             {relationship.person1?.first_name} {relationship.person1?.last_name}
-                                                        </button> <span className="text-gray-500 dark:text-gray-400 font-normal">is</span>
+                                                        </button> <span className="text-gray-500 dark:text-gray-400 font-normal">is a</span>
                                                     </span>
                                                     <span className="mx-2 font-medium text-gray-900 dark:text-white text-md">
                                                         {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
