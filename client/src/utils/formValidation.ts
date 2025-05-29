@@ -1,5 +1,5 @@
 // client/src/utils/formValidation.ts
-import { ApiRelationship } from '../api/client';
+import { Relationship } from '../api/client';
 import { STATES_BY_COUNTRY } from './locationData'; // Import STATES_BY_COUNTRY
 
 // Generic validation functions
@@ -264,7 +264,7 @@ export const validateParentChildAgeDifference = (parentBirthDate: string, childB
 
 // Placeholder for relationship-specific validations (from validationUtils.js)
 // These might involve checking for circular relationships or other complex rules
-export const detectCircularRelationships = (person1Id: string, person2Id: string, existingRelationships: ApiRelationship[]): boolean => {
+export const detectCircularRelationships = (person1Id: string, person2Id: string, existingRelationships: Relationship[]): boolean => {
     console.log('Detecting circular relationships between:', person1Id, person2Id);
     console.log('Existing relationships:', existingRelationships);
 
@@ -284,7 +284,7 @@ export const validateRelationship = (
     person1Id: string,
     person2Id: string,
     relationshipType: string,
-    existingRelationships: ApiRelationship[]
+    existingRelationships: Relationship[]
 ): string | undefined => {
     if (person1Id === person2Id) {
         return 'Person 1 and Person 2 cannot be the same.';

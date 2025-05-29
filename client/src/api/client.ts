@@ -214,7 +214,7 @@ export interface Document {
     }[];
 }
 
-export interface Relationship {
+export interface PersonRelationship {
     person_id: string;
     first_name: string;
     last_name: string;

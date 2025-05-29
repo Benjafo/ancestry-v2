@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ApiRelationship, Person, relationshipsApi } from '../../api/client';
+import { Person, Relationship, relationshipsApi } from '../../api/client';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 import {
     validateRelationship,
@@ -53,7 +53,7 @@ interface AddRelationshipModalProps {
     onRelationshipAdded: () => void;
     projectId: string;
     persons: Person[];
-    relationships?: ApiRelationship[]; // Existing relationships in the project
+    relationships?: Relationship[]; // Existing relationships in the project
 }
 
 const AddRelationshipModal: React.FC<AddRelationshipModalProps> = ({
