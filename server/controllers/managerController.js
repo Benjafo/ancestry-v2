@@ -147,6 +147,7 @@ exports.getUsers = async (req, res) => {
                 model: Role,
                 where: { name: 'client' }
             }];
+            whereCondition.is_active = true;
         } else if (filter === 'managers') {
             includeCondition = [{
                 model: Role,
