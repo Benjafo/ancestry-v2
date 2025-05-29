@@ -8,7 +8,6 @@ import SuccessAlert from '../components/common/SuccessAlert';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { formatDate } from '../utils/dateUtils';
 import { getApiErrorMessage } from '../utils/errorUtils';
-import { getActivityIcon } from '../utils/iconUtils';
 
 const ManagerDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -140,7 +139,9 @@ const ManagerDashboard = () => {
                 {/* Recent Activity */}
                 <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-                    {dashboardData.recentActivity.length === 0 ? (
+                    <EmptyState message="No recent activity" />
+
+                    {/* {dashboardData.recentActivity.length === 0 ? (
                         <EmptyState message="No recent activity" />
                     ) : (
                         <div className="space-y-4">
@@ -173,7 +174,7 @@ const ManagerDashboard = () => {
                                 </div>
                             )}
                         </div>
-                    )}
+                    )} */}
                 </div>
 
                 {/* Pending Tasks */}
