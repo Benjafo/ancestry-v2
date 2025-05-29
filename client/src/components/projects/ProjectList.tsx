@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { useState } from 'react'; // Import useState
 import { Project } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import ErrorAlert from '../common/ErrorAlert';
@@ -20,6 +21,8 @@ const ProjectList = ({
     onEditProject,
     viewMode
 }: ProjectListProps) => {
+    const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null); // New state for hover
+
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-40">
@@ -54,7 +57,12 @@ const ProjectList = ({
     return (
         <div className={viewMode === 'grid' ? gridClasses : listClasses}>
             {projects.map((project) => (
-                <div key={project.id} className={projectItemClasses}>
+                <div
+                    key={project.id}
+                    className={projectItemClasses}
+                    onMouseEnter={() => setHoveredProjectId(project.id)}
+                    onMouseLeave={() => setHoveredProjectId(null)}
+                >
                     {viewMode === 'grid' ? (
                         <>
                             {/* Card Header - Title and Edit Button */}
@@ -67,7 +75,7 @@ const ProjectList = ({
                                     >
                                         {project.title}
                                     </Link>
-                                    {isManager && onEditProject && (
+                                    {isManager && onEditProject && hoveredProjectId === project.id && (
                                         <button
                                             onClick={() => onEditProject(project)}
                                             className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
@@ -148,7 +156,7 @@ const ProjectList = ({
                                     </span>
                                 </div>
                             </div>
-                            {isManager && onEditProject && (
+                            {isManager && onEditProject && hoveredProjectId === project.id && (
                                 <button
                                     onClick={() => onEditProject(project)}
                                     className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 ml-4"
