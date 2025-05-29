@@ -1,7 +1,5 @@
 project:
   active:
-    Overview:
-      - duplicate notifications
   finished:
     General:
       - move create document button to the documents tab
@@ -12,8 +10,10 @@ project:
       - recent activity should be accurate
       - recent activity should show create, edit, and delete events for documents, events, persons, and relationships
       - person and event notifications are not displayed in recent activity, only document and relationship notifications
+      - duplicate notifications in recent activity
     Overview -> notifications:
       - no notifications displayed
+      - duplicate notifications
     Documents:
       - no date on documents
       - type is blank

@@ -443,16 +443,19 @@ exports.addPersonToProject = async (req, res) => {
 
         const association = await projectService.addPersonToProject(id, person_id, { notes });
 
-        try {
+        // Get person and project details for the event message
+        const project = await Project.findByPk(id); // Ensure project is fetched
+        const person = await Person.findByPk(person_id); // Ensure person is fetched
+
+        if (project && person) {
             await UserEventService.createEventForProjectUsers(
-                id,
+                [id], // Pass as an array
                 req.user.user_id,
                 'person_added_to_project',
-                `Added person ${person_id} to project ${id}`, // More generic message for now
-                id,
-                'project'
+                `Added ${person.first_name} ${person.last_name} to project: ${project.title}`, // Improved message
+                person_id, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
-        } catch (eventError) {
         }
 
         res.status(201).json({
@@ -542,22 +545,20 @@ exports.removePersonFromProject = async (req, res) => {
 
         await projectService.removePersonFromProject(id, personId);
 
-        try {
-            // Get person details for the event message before they are fully removed
-            const { Person } = require('../models');
-            const person = await Person.findByPk(personId);
-            const personName = person ? `${person.first_name} ${person.last_name}` : `ID: ${personId}`;
+        // Get person and project details for the event message before they are fully removed
+        const project = await Project.findByPk(id); // Ensure project is fetched
+        const person = await Person.findByPk(personId); // Ensure person is fetched
+        const personName = person ? `${person.first_name} ${person.last_name}` : `ID: ${personId}`;
 
+        if (project && person) {
             await UserEventService.createEventForProjectUsers(
-                id,
+                [id], // Pass as an array
                 req.user.user_id,
                 'person_removed_from_project',
-                `Removed person ${personName} from project ${id}`, // More generic message for now
-                id,
-                'project'
+                `Removed ${personName} from project: ${project.title}`, // Improved message
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
-        } catch (eventError) {
-            console.error('Error logging person_removed_from_project event:', eventError);
         }
 
         res.json({
