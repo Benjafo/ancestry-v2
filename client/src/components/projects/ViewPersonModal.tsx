@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Person, Relationship, projectsApi } from '../../api/client';
+import { Person, PersonRelationship, projectsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import BaseModal from '../common/BaseModal';
 import ErrorAlert from '../common/ErrorAlert';
@@ -55,10 +55,10 @@ const ViewPersonModal: React.FC<ViewPersonModalProps> = ({
     // Function to organize relationships from relationshipsAsSubject and relationshipsAsObject
     const organizeRelationships = (personData: Person) => {
         const organizedRelationships = {
-            parents: [] as Relationship[],
-            children: [] as Relationship[],
-            spouses: [] as Relationship[],
-            siblings: [] as Relationship[]
+            parents: [] as PersonRelationship[],
+            children: [] as PersonRelationship[],
+            spouses: [] as PersonRelationship[],
+            siblings: [] as PersonRelationship[]
         };
 
         // Process relationships where this person is the subject (person1)

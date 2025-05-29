@@ -214,7 +214,7 @@ export interface Document {
     }[];
 }
 
-export interface Relationship {
+export interface PersonRelationship {
     person_id: string;
     first_name: string;
     last_name: string;
@@ -243,18 +243,18 @@ export interface Person {
     events?: Event[];
     documents?: Document[];
     relationships?: {
-        parents?: Relationship[];
-        children?: Relationship[];
-        spouses?: Relationship[];
-        siblings?: Relationship[];
-        grandparents?: Relationship[]; // Added
-        grandchildren?: Relationship[]; // Added
-        auntsUncles?: Relationship[]; // Added
-        niecesNephews?: Relationship[]; // Added
-        cousins?: Relationship[]; // Added
+        parents?: PersonRelationship[];
+        children?: PersonRelationship[];
+        spouses?: PersonRelationship[];
+        siblings?: PersonRelationship[];
+        grandparents?: PersonRelationship[]; // Added
+        grandchildren?: PersonRelationship[]; // Added
+        auntsUncles?: PersonRelationship[]; // Added
+        niecesNephews?: PersonRelationship[]; // Added
+        cousins?: PersonRelationship[]; // Added
     };
-    relationshipsAsSubject?: ApiRelationship[]; // Keep for now, might be used elsewhere
-    relationshipsAsObject?: ApiRelationship[]; // Keep for now, might be used elsewhere
+    relationshipsAsSubject?: Relationship[]; // Keep for now, might be used elsewhere
+    relationshipsAsObject?: Relationship[]; // Keep for now, might be used elsewhere
 }
 
 export interface ProjectDetail extends Project {
@@ -739,7 +739,7 @@ export const documentsApi = {
 };
 
 // Interface for relationship objects returned by the API
-export interface ApiRelationship {
+export interface Relationship {
     relationship_id: string; // Corrected: Use relationship_id as per backend model
     person1_id: string;
     person2_id: string;
@@ -756,12 +756,12 @@ export interface ApiRelationship {
 
 // Relationship API service
 export const relationshipsApi = {
-    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: ApiRelationship[]; metadata: ApiMetadata }> => {
+    getRelationships: async (params?: Record<string, string | number | boolean>): Promise<{ relationships: Relationship[]; metadata: ApiMetadata }> => {
         const response = await apiClient.get('relationships', { searchParams: params });
         return response.json();
     },
 
-    getRelationshipById: async (relationshipId: string): Promise<ApiRelationship> => {
+    getRelationshipById: async (relationshipId: string): Promise<Relationship> => {
         const response = await apiClient.get(`relationships/${relationshipId}`);
         return response.json();
     },
@@ -774,7 +774,7 @@ export const relationshipsApi = {
         start_date?: string;
         end_date?: string;
         notes?: string;
-    }): Promise<{ message: string; relationship: ApiRelationship }> => {
+    }): Promise<{ message: string; relationship: Relationship }> => {
         const response = await apiClient.post('relationships', { json: relationshipData });
         return response.json();
     },
@@ -785,7 +785,7 @@ export const relationshipsApi = {
         start_date?: string;
         end_date?: string;
         notes?: string;
-    }>): Promise<{ message: string; relationship: ApiRelationship }> => {
+    }>): Promise<{ message: string; relationship: Relationship }> => {
         const response = await apiClient.put(`relationships/${relationshipId}`, { json: relationshipData });
         return response.json();
     },
@@ -795,17 +795,17 @@ export const relationshipsApi = {
         return response.json();
     },
 
-    getRelationshipsByPersonId: async (personId: string): Promise<ApiRelationship[]> => {
+    getRelationshipsByPersonId: async (personId: string): Promise<Relationship[]> => {
         const response = await apiClient.get(`relationships/person/${personId}`);
         return response.json();
     },
 
-    getRelationshipsByType: async (type: string): Promise<ApiRelationship[]> => {
+    getRelationshipsByType: async (type: string): Promise<Relationship[]> => {
         const response = await apiClient.get(`relationships/type/${type}`);
         return response.json();
     },
 
-    getRelationshipsBetweenPersons: async (person1Id: string, person2Id: string): Promise<ApiRelationship[]> => {
+    getRelationshipsBetweenPersons: async (person1Id: string, person2Id: string): Promise<Relationship[]> => {
         const response = await apiClient.get(`relationships/between/${person1Id}/${person2Id}`);
         return response.json();
     },
@@ -813,7 +813,7 @@ export const relationshipsApi = {
     getRelationshipsByProjectId: async (projectId: string, options?: {
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
-    }): Promise<ApiRelationship[]> => {
+    }): Promise<Relationship[]> => {
         const params = new URLSearchParams();
         if (options?.sortBy) {
             params.append('sortBy', options.sortBy);

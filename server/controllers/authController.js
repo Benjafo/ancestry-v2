@@ -91,6 +91,11 @@ exports.login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
+
+        // Check if user is active
+        if (!user.is_active) {
+            return res.status(401).json({ message: 'Your account is deactivated. Please contact support.' });
+        }
         
         // Update last login
         user.last_login = new Date();

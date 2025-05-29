@@ -215,8 +215,10 @@ const ProjectFamilyMembersTab: React.FC<ProjectFamilyMembersTabProps> = ({
                                                 {person.birth_date && (
                                                     <p>Born: {formatDate(person.birth_date)}</p>
                                                 )}
-                                                {person.death_date && (
+                                                {person.death_date ? (
                                                     <p>Died: {formatDate(person.death_date)}</p>
+                                                ) : (
+                                                    <p>&nbsp;</p>
                                                 )}
                                             </div>
 

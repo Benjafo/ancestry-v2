@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ApiRelationship, ProjectDetail, relationshipsApi } from '../../api/client';
+import { ProjectDetail, Relationship, relationshipsApi } from '../../api/client';
 import { formatDate } from '../../utils/dateUtils';
 import ConfirmDeleteModal from '../common/ConfirmDeleteModal';
 import ErrorAlert from '../common/ErrorAlert';
@@ -15,8 +15,8 @@ interface ProjectRelationshipsTabProps {
 
 const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ project, onViewPerson }) => {
     // State for relationships data
-    const [relationships, setRelationships] = useState<ApiRelationship[]>([]);
-    const [filteredRelationships, setFilteredRelationships] = useState<ApiRelationship[]>([]);
+    const [relationships, setRelationships] = useState<Relationship[]>([]);
+    const [filteredRelationships, setFilteredRelationships] = useState<Relationship[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -44,7 +44,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
 
     // State for modal visibility
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [editingRelationship, setEditingRelationship] = useState<ApiRelationship | null>(null);
+    const [editingRelationship, setEditingRelationship] = useState<Relationship | null>(null);
     const [deletingRelationshipId, setDeletingRelationshipId] = useState<string | null>(null);
 
     // State to track which relationship is being hovered
@@ -55,8 +55,8 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
         const fetchRelationships = async () => {
             try {
                 setIsLoading(true);
-                // Fetch the full ApiRelationship data with sorting
-                const data: ApiRelationship[] = await relationshipsApi.getRelationshipsByProjectId(project.id, {
+                // Fetch the full Relationship data with sorting
+                const data: Relationship[] = await relationshipsApi.getRelationshipsByProjectId(project.id, {
                     sortBy,
                     sortOrder
                 });
@@ -113,7 +113,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
     };
 
     // Handler for editing a relationship
-    const handleEditRelationship = (relationship: ApiRelationship) => {
+    const handleEditRelationship = (relationship: Relationship) => {
         setEditingRelationship(relationship);
     };
 
@@ -205,7 +205,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
             ) : (
                 <div className={viewMode === 'grid' ? "" : "overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-md"}>
                     <ul className={viewMode === 'grid' ? gridClasses : listClasses}>
-                        {filteredRelationships.map((relationship: ApiRelationship) => (
+                        {filteredRelationships.map((relationship: Relationship) => (
                             <li
                                 key={relationship.relationship_id}
                                 className={relationshipItemClasses}
@@ -262,7 +262,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                     }}
                                                 >
                                                     {relationship.person1?.first_name} {relationship.person1?.last_name}
-                                                </button> <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is</span>
+                                                </button> <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">is a</span>
                                             </span>
                                             <span className="font-medium text-gray-900 dark:text-white text-md">
                                                 {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}
@@ -329,7 +329,7 @@ const ProjectRelationshipsTab: React.FC<ProjectRelationshipsTabProps> = ({ proje
                                                             }}
                                                         >
                                                             {relationship.person1?.first_name} {relationship.person1?.last_name}
-                                                        </button> <span className="text-gray-500 dark:text-gray-400 font-normal">is</span>
+                                                        </button> <span className="text-gray-500 dark:text-gray-400 font-normal">is a</span>
                                                     </span>
                                                     <span className="mx-2 font-medium text-gray-900 dark:text-white text-md">
                                                         {relationship.relationship_qualifier ? `${relationship.relationship_qualifier} ` : ''}

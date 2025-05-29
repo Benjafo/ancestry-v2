@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ApiRelationship, relationshipsApi } from '../../api/client';
+import { Relationship, relationshipsApi } from '../../api/client';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 import {
     validateRelationshipDates,
@@ -13,7 +13,7 @@ interface EditRelationshipModalProps {
     onClose: () => void;
     onRelationshipUpdated: () => void;
     relationshipId: string;
-    relationship: ApiRelationship;
+    relationship: Relationship;
 }
 
 const EditRelationshipModal: React.FC<EditRelationshipModalProps> = ({
