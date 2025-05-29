@@ -1,9 +1,11 @@
 # Custom files
 plans/
 server/uploads
-api_tracker.txt
 .clinerules/
 memory-bank/
+
+api_tracker.txt
+issues.yml
 
 # Logs
 logs
