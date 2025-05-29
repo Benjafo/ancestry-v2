@@ -17,8 +17,11 @@ import Notifications from './pages/Notifications';
 import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
-import RequestPasswordReset from './pages/RequestPasswordReset'; // Import new page
-import ResetPassword from './pages/ResetPassword'; // Import new page
+import RequestPasswordReset from './pages/RequestPasswordReset';
+import ResetPassword from './pages/ResetPassword';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Contact from './pages/Contact';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
 
@@ -104,6 +107,24 @@ const resetPasswordRoute = new Route({
     component: ResetPassword,
     // This route will receive the token as a query parameter, e.g., /reset-password?token=abc
     // No authentication check here as it's for unauthenticated users
+});
+
+const privacyPolicyRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/privacy-policy',
+    component: PrivacyPolicy,
+});
+
+const termsOfServiceRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/terms-of-service',
+    component: TermsOfService,
+});
+
+const contactRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/contact',
+    component: Contact,
 });
 
 // Auth layout route
@@ -206,8 +227,11 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     loginRoute,
     registerRoute,
-    requestPasswordResetRoute, // Add new route
-    resetPasswordRoute, // Add new route
+    requestPasswordResetRoute,
+    resetPasswordRoute,
+    privacyPolicyRoute,
+    termsOfServiceRoute,
+    contactRoute,
     authLayoutRoute.addChildren([
         dashboardRoute,
         settingsRoute,
