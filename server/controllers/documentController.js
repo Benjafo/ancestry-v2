@@ -70,14 +70,14 @@ exports.createDocument = async (req, res) => {
 
         // Create user events for document creation for all associated projects
         const projectIds = await ProjectUtils.getProjectIdsForEntity('document', document.document_id);
-        for (const projectId of projectIds) {
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_created',
                 `New document "${document.title}" added to project`,
-                projectId,
-                'project'
+                document.document_id, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
 
@@ -116,14 +116,14 @@ exports.updateDocument = async (req, res) => {
 
         // Create user events for document update for all associated projects
         const projectIds = await ProjectUtils.getProjectIdsForEntity('document', documentId);
-        for (const projectId of projectIds) {
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_updated',
                 `Document "${document.title}" updated in project`,
-                projectId,
-                'project'
+                document.document_id, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
         console.log('Updated Document:', document);
@@ -182,14 +182,14 @@ exports.deleteDocument = async (req, res) => {
         await documentService.deleteDocument(documentId);
 
         // Create user events for document deletion for all associated projects
-        for (const projectId of projectIds) {
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_deleted',
                 `Document "${documentTitle}" removed from project`,
-                projectId,
-                'project'
+                documentId, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
 
@@ -362,14 +362,14 @@ exports.associateDocumentWithPerson = async (req, res) => {
 
         if (docForEvent && personForEvent) {
             const projectIds = await ProjectUtils.getProjectIdsForEntity('document', documentId);
-            for (const projectId of projectIds) {
+            if (projectIds.length > 0) {
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    projectIds, // Pass the array
                     req.user.user_id,
                     'document_associated',
                     `Document "${docForEvent.title}" associated with ${personForEvent.first_name} ${personForEvent.last_name} in project`,
-                    projectId,
-                    'project'
+                    documentId, // entity_id is the document's ID
+                    'document' // entity_type is 'document'
                 );
             }
         }
@@ -498,14 +498,14 @@ exports.removeDocumentPersonAssociation = async (req, res) => {
         await documentService.removeDocumentPersonAssociation(documentId, personId);
 
         // Create user events for document-person association removal for all associated projects
-        for (const projectId of projectIds) {
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'document_removed',
-                `Document "${document.title}" unassociated from ${person.first_name} ${person.last_name} in project`,
-                projectId,
-                'project'
+                `Document "${docForEvent.title}" unassociated from ${personForEvent.first_name} ${personForEvent.last_name} in project`,
+                documentId, // entity_id is the document's ID
+                'document' // entity_type is 'document'
             );
         }
 

@@ -149,6 +149,7 @@ export interface UserEvent {
     message: string;
     entity_id?: string;
     entity_type?: string;
+    project_ids?: string[]; // New field
     createdAt: string;
     updatedAt: string;
     actor?: {

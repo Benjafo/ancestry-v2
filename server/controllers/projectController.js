@@ -376,12 +376,12 @@ exports.updateProject = async (req, res) => {
 
         // Create events for all project users
         await UserEventService.createEventForProjectUsers(
-            project.id,
+            [project.id], // Pass as an array
             req.user.user_id,
             'project_updated',
             `Project "${project.title}" has been updated`,
-            project.id,
-            'project'
+            project.id, // entity_id is the project's ID
+            'project' // entity_type is 'project'
         );
 
         // Ensure timestamps are included in the response
@@ -501,25 +501,17 @@ exports.updateProjectPerson = async (req, res) => {
         const person = await Person.findByPk(personId);
 
         if (person) {
-            // Create event for the actor
-            await UserEventService.createEvent(
-                req.user.user_id,
-                req.user.user_id,
-                'person_updated',
-                `Updated project notes for person: ${person.first_name} ${person.last_name}`,
-                id,
-                'project'
-            );
-
+        if (person) {
             // Create events for all project users
             await UserEventService.createEventForProjectUsers(
-                id,
+                [id], // Pass as an array
                 req.user.user_id,
                 'person_updated',
                 `Notes updated for ${person.first_name} ${person.last_name} in this project`,
-                id,
-                'project'
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
+        }
         }
 
         res.json({
@@ -607,11 +599,14 @@ exports.getProjectEvents = async (req, res) => {
 
         // Import UserEvent model
         const { UserEvent, User } = require('../models');
+        const { Op } = require('sequelize'); // Import Op
 
         // Build query options
         const queryOptions = {
             where: {
-                entity_id: id
+                project_ids: { // Query the new array field
+                    [Op.contains]: [id] // Check if the array contains the project ID
+                }
             },
             order: [[sortBy, sortOrder.toUpperCase()]],
             limit: parseInt(limit),

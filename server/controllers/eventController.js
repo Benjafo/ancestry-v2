@@ -72,37 +72,29 @@ exports.createEvent = async (req, res) => {
 
         if (event.dataValues.person_id) {
             const person = await Person.findByPk(event.dataValues.person_id);
-            console.log(`[DEBUG] Event associated with person: ${event.dataValues.person_id}`);
             const projectIds = await ProjectUtils.getProjectIdsForEntity('person', event.dataValues.person_id);
-            console.log(`[DEBUG] Projects associated with person ${event.dataValues.person_id}:`, projectIds);
-
-            for (const projectId of projectIds) {
+            if (projectIds.length > 0) {
                 const message = `New event "${event.event_type}" created for ${person.first_name} ${person.last_name}`;
-                console.log(`[DEBUG] Logging event_created for project ${projectId}: ${message}`);
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    projectIds, // Pass the array
                     req.user.user_id,
                     'event_created',
                     message,
-                    projectId,
-                    'project'
+                    event.event_id, // entity_id is the event's ID
+                    'event' // entity_type is 'event'
                 );
             }
         } else {
-            // If event is not associated with a person, it might be a project-level event
-            // This case is less common for events, but we handle it if a projectId is explicitly provided
             const projectId = req.body.projectId;
-            console.log(`[DEBUG] Event not associated with person. Explicit projectId from body: ${projectId}`);
             if (projectId) {
                 const message = `New event "${event.event_type}" created`;
-                console.log(`[DEBUG] Logging event_created for project ${projectId}: ${message}`);
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    [projectId], // Pass the array
                     req.user.user_id,
                     'event_created',
                     message,
-                    projectId,
-                    'project'
+                    event.event_id, // entity_id is the event's ID
+                    'event' // entity_type is 'event'
                 );
             }
         }
@@ -147,37 +139,30 @@ exports.updateEvent = async (req, res) => {
 
         if (event.dataValues.person_id) {
             const person = await Person.findByPk(event.dataValues.person_id);
-            console.log(`[DEBUG] Event associated with person: ${event.dataValues.person_id}`);
             if (person) {
                 const projectIds = await ProjectUtils.getProjectIdsForEntity('person', event.dataValues.person_id);
-                console.log(`[DEBUG] Projects associated with person ${event.dataValues.person_id}:`, projectIds);
-
-                for (const projectId of projectIds) {
+                if (projectIds.length > 0) {
                     const message = `Event "${event.event_type}" for ${person.first_name} ${person.last_name} has been updated`;
-                    console.log(`[DEBUG] Logging event_updated for project ${projectId}: ${message}`);
                     await UserEventService.createEventForProjectUsers(
-                        projectId,
+                        projectIds, // Pass the array
                         req.user.user_id,
                         'event_updated',
                         message,
-                        projectId,
-                        'project'
+                        event.event_id, // entity_id is the event's ID
+                        'event' // entity_type is 'event'
                     );
                 }
             } else {
-                // If event is not associated with a person, it might be a project-level event
                 const projectId = req.body.projectId;
-                console.log(`[DEBUG] Event not associated with person. Explicit projectId from body: ${projectId}`);
                 if (projectId) {
                     const message = `Event "${event.event_type}" has been updated`;
-                    console.log(`[DEBUG] Logging event_updated for project ${projectId}: ${message}`);
                     await UserEventService.createEventForProjectUsers(
-                        projectId,
+                        [projectId], // Pass the array
                         req.user.user_id,
                         'event_updated',
                         message,
-                        projectId,
-                        'project'
+                        event.event_id, // entity_id is the event's ID
+                        'event' // entity_type is 'event'
                     );
                 }
             }
@@ -246,22 +231,15 @@ exports.deleteEvent = async (req, res) => {
                 `Event "${eventToDelete.event_type}" for ${personName} has been deleted` :
                 `Event "${eventToDelete.event_type}" has been deleted`;
 
-            console.log(`[DEBUG] Attempting to log event_deleted for event: ${eventId}`);
-            for (const projectId of projectIds) {
-                try {
-                    console.log(`[DEBUG] Logging event_deleted for project ${projectId}: ${message}`);
-                    await UserEventService.createEventForProjectUsers(
-                        projectId,
-                        req.user.user_id,
-                        'event_deleted',
-                        message,
-                        projectId,
-                        'project'
-                    );
-                    console.log(`[DEBUG] Successfully logged event_deleted for project: ${projectId}`);
-                } catch (eventError) {
-                    console.error(`[DEBUG] Error logging event_deleted for project ${projectId}:`, eventError);
-                }
+            if (projectIds.length > 0) {
+                await UserEventService.createEventForProjectUsers(
+                    projectIds, // Pass the array
+                    req.user.user_id,
+                    'event_deleted',
+                    message,
+                    eventToDelete.event_id, // entity_id is the event's ID
+                    'event' // entity_type is 'event'
+                );
             }
         }
 

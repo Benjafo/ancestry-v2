@@ -58,42 +58,33 @@ class UserEventService {
      * @param {string} [entityType] - Optional type of the related entity
      * @returns {Promise<Array<UserEvent>>} The created user events
      */
-    static async createEventForProjectUsers(projectId, actorId, eventType, message, entityId = null, entityType = null) {
+    static async createEventForProjectUsers(projectIds, actorId, eventType, message, entityId = null, entityType = null) {
         const { ProjectUser } = require('../models');
         const projectUsers = await ProjectUser.findAll({
-            where: { project_id: projectId }
+            where: { project_id: projectIds } // Find users for all relevant projects
         });
 
         let userIdsToNotify = projectUsers.map(pu => pu.user_id);
         const eventsToCreate = [];
 
-        // Create a project-level event for the actor
-        // This ensures the actor also sees the activity in the project's feed
-        eventsToCreate.push({
-            user_id: actorId,
-            actor_id: actorId,
-            event_type: eventType,
-            message,
-            entity_id: projectId, // Always link to the project for project-level notifications
-            entity_type: 'project' // Always 'project' for project-level notifications
-        });
+        // Add the actor to the notification list if not already there
+        if (!userIdsToNotify.includes(actorId)) {
+            userIdsToNotify.push(actorId);
+        }
 
-        // Create events for all OTHER project users
-        // Filter out the actorId to prevent duplicate notification to the actor
-        userIdsToNotify = userIdsToNotify.filter(uid => uid !== actorId);
-        
-        if (userIdsToNotify.length > 0) {
-            const otherUserEvents = userIdsToNotify.map(userId => ({
+        // Create events for all unique users associated with the projects
+        for (const userId of new Set(userIdsToNotify)) { // Use Set to ensure unique user IDs
+            eventsToCreate.push({
                 user_id: userId,
                 actor_id: actorId,
                 event_type: eventType,
                 message,
-                entity_id: projectId, // Always link to the project for project-level notifications
-                entity_type: 'project' // Always 'project' for project-level notifications
-            }));
-            eventsToCreate.push(...otherUserEvents);
+                entity_id: entityId, // Now refers to the actual entity (person, document, etc.)
+                entity_type: entityType, // Now refers to the actual entity type
+                project_ids: projectIds // Store the array of relevant project IDs
+            });
         }
-        
+
         if (eventsToCreate.length === 0) {
             return [];
         }

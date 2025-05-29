@@ -89,14 +89,14 @@ exports.createRelationship = async (req, res) => {
             const allProjectIds = [...new Set([...projectIds1, ...projectIds2])];
 
             // Create events for all relevant projects
-            for (const projectId of allProjectIds) {
+            if (allProjectIds.length > 0) {
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    allProjectIds, // Pass the array
                     req.user.user_id,
                     'relationship_created',
                     `New relationship created: ${relationshipDescription}`,
-                    projectId,
-                    'project'
+                    relationship.relationship_id, // entity_id is the relationship's ID
+                    'relationship' // entity_type is 'relationship'
                 );
             }
         }
@@ -170,14 +170,14 @@ exports.updateRelationship = async (req, res) => {
             const allProjectIds = [...new Set([...projectIds1, ...projectIds2])];
 
             // Create events for all relevant projects
-            for (const projectId of allProjectIds) {
+            if (allProjectIds.length > 0) {
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    allProjectIds, // Pass the array
                     req.user.user_id,
                     'relationship_updated',
                     `Relationship updated: ${relationshipDescription}`,
-                    projectId,
-                    'project'
+                    relationship.relationship_id, // entity_id is the relationship's ID
+                    'relationship' // entity_type is 'relationship'
                 );
             }
         }
@@ -258,14 +258,14 @@ exports.deleteRelationship = async (req, res) => {
                     relationshipDescription = `${person1.first_name} ${person1.last_name} and ${person2.first_name} ${person2.last_name}`;
             }
 
-            for (const projectId of allProjectIds) {
+            if (allProjectIds.length > 0) {
                 await UserEventService.createEventForProjectUsers(
-                    projectId,
+                    allProjectIds, // Pass the array
                     req.user.user_id,
                     'relationship_deleted',
                     `Relationship deleted: ${relationshipDescription}`,
-                    projectId,
-                    'project'
+                    relationshipId, // entity_id is the relationship's ID
+                    'relationship' // entity_type is 'relationship'
                 );
             }
         }

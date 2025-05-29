@@ -106,14 +106,14 @@ exports.updatePerson = async (req, res) => {
 
         // Create user events for person update
         const projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
-        for (const projectId of projectIds) {
+        if (projectIds.length > 0) {
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'person_updated',
                 `Family member information updated: ${person.first_name} ${person.last_name}`,
-                projectId,
-                'project'
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
         }
 
@@ -166,15 +166,15 @@ exports.deletePerson = async (req, res) => {
         await personService.deletePerson(personId);
 
         // Create user events for person deletion for all associated projects
-        for (const projectId of projectIds) {
-            console.log(`[DEBUG] Logging person_deleted event for project: ${projectId}`);
+        if (projectIds.length > 0) {
+            console.log(`[DEBUG] Logging person_deleted event for project: ${projectIds}`);
             await UserEventService.createEventForProjectUsers(
-                projectId,
+                projectIds, // Pass the array
                 req.user.user_id,
                 'person_deleted',
                 `Family member removed: ${personName}`,
-                projectId,
-                'project'
+                personId, // entity_id is the person's ID
+                'person' // entity_type is 'person'
             );
         }
 
@@ -315,12 +315,12 @@ exports.addPersonToProject = async (req, res) => {
 
         // Create user events for adding person to project
         await UserEventService.createEventForProjectUsers(
-            projectId,
+            [projectId], // Still an array, but with one project
             req.user.user_id,
             'person_added_to_project',
             `Added ${person.first_name} ${person.last_name} to project: ${project.title}`,
-            projectId,
-            'project'
+            person_id, // entity_id is the person's ID
+            'person' // entity_type is 'person'
         );
 
         res.status(201).json({

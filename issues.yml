@@ -1,7 +1,6 @@
 project:
   active:
     Overview:
-      - person and event notifications are not displayed in recent activity, only document and relationship notifications
       - duplicate notifications
   finished:
     General:
@@ -12,6 +11,7 @@ project:
     Overview:
       - recent activity should be accurate
       - recent activity should show create, edit, and delete events for documents, events, persons, and relationships
+      - person and event notifications are not displayed in recent activity, only document and relationship notifications
     Overview -> notifications:
       - no notifications displayed
     Documents:
