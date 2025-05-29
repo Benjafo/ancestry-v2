@@ -74,9 +74,7 @@ project:
 general:
   active:
     - tree view
-    - recreate seed data
     - make cards the same size
-    - deactivated users should not be able to log in
   finished:
     - move reused code into utility functions
     - success and error messages are not displayed properly
@@ -89,8 +87,10 @@ general:
     - add user events for removing person to project, updating user
     - add toggles between list and grid view user management and client assignment
     - add sorting for all relevant pages/components
+    - deactivated users should not be able to log in
   discarded:
     - implement the task feature
+    - recreate seed data
 
 other:
   active:
