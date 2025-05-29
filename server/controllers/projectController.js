@@ -434,11 +434,9 @@ exports.getProjectPersons = async (req, res) => {
 
 // Add a person to a project
 exports.addPersonToProject = async (req, res) => {
-    console.log('[DEBUG] Entering projectController.addPersonToProject');
     try {
         const { id } = req.params;
         const { person_id, notes } = req.body;
-        console.log(`[DEBUG] addPersonToProject - projectId: ${id}, person_id: ${person_id}`);
 
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
@@ -454,9 +452,7 @@ exports.addPersonToProject = async (req, res) => {
                 id,
                 'project'
             );
-            console.log(`[DEBUG] Successfully logged person_added_to_project event for project: ${id}`);
         } catch (eventError) {
-            console.error('[DEBUG] Error logging person_added_to_project event:', eventError);
         }
 
         res.status(201).json({
@@ -501,17 +497,17 @@ exports.updateProjectPerson = async (req, res) => {
         const person = await Person.findByPk(personId);
 
         if (person) {
-        if (person) {
-            // Create events for all project users
-            await UserEventService.createEventForProjectUsers(
-                [id], // Pass as an array
-                req.user.user_id,
-                'person_updated',
-                `Notes updated for ${person.first_name} ${person.last_name} in this project`,
-                personId, // entity_id is the person's ID
-                'person' // entity_type is 'person'
-            );
-        }
+            if (person) {
+                // Create events for all project users
+                await UserEventService.createEventForProjectUsers(
+                    [id], // Pass as an array
+                    req.user.user_id,
+                    'person_updated',
+                    `Notes updated for ${person.first_name} ${person.last_name} in this project`,
+                    personId, // entity_id is the person's ID
+                    'person' // entity_type is 'person'
+                );
+            }
         }
 
         res.json({
@@ -538,10 +534,8 @@ exports.updateProjectPerson = async (req, res) => {
 
 // Remove a person from a project
 exports.removePersonFromProject = async (req, res) => {
-    console.log('[DEBUG] Entering projectController.removePersonFromProject');
     try {
         const { id, personId } = req.params;
-        console.log(`[DEBUG] removePersonFromProject - projectId: ${id}, personId: ${personId}`);
 
         // Check if user has edit access to this project
         await checkProjectEditAccess(req, id);
@@ -562,9 +556,8 @@ exports.removePersonFromProject = async (req, res) => {
                 id,
                 'project'
             );
-            console.log(`[DEBUG] Successfully logged person_removed_from_project event for project: ${id}`);
         } catch (eventError) {
-            console.error('[DEBUG] Error logging person_removed_from_project event:', eventError);
+            console.error('Error logging person_removed_from_project event:', eventError);
         }
 
         res.json({
@@ -606,7 +599,8 @@ exports.getProjectEvents = async (req, res) => {
             where: {
                 project_ids: { // Query the new array field
                     [Op.contains]: [id] // Check if the array contains the project ID
-                }
+                },
+                user_id: req.user.user_id
             },
             order: [[sortBy, sortOrder.toUpperCase()]],
             limit: parseInt(limit),

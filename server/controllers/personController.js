@@ -158,16 +158,13 @@ exports.deletePerson = async (req, res) => {
         const personName = `${person.first_name} ${person.last_name}`;
 
         // Get project IDs before deleting the person, as associations will be removed
-        console.log(`[DEBUG] Deleting person: ${personId}`);
         const projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
-        console.log(`[DEBUG] Projects associated with person ${personId} before deletion:`, projectIds);
 
         // Delete the person
         await personService.deletePerson(personId);
 
         // Create user events for person deletion for all associated projects
         if (projectIds.length > 0) {
-            console.log(`[DEBUG] Logging person_deleted event for project: ${projectIds}`);
             await UserEventService.createEventForProjectUsers(
                 projectIds, // Pass the array
                 req.user.user_id,
@@ -282,11 +279,9 @@ exports.getPersonDocuments = async (req, res) => {
  * @param {Object} res - Express response object
  */
 exports.addPersonToProject = async (req, res) => {
-    console.log('[DEBUG] Entering addPersonToProject');
     try {
         const { projectId } = req.params;
         const { person_id } = req.body;
-        console.log(`[DEBUG] addPersonToProject - projectId: ${projectId}, person_id: ${person_id}`);
 
         if (!projectId || !person_id) {
             return res.status(400).json({

@@ -46,10 +46,7 @@ router.put('/:eventId', validate(updateEventValidation), eventController.updateE
  * @desc    Delete an event
  * @access  Private
  */
-router.delete('/:eventId', (req, res, next) => {
-    console.log(`[DEBUG] Entering events route DELETE /api/events/${req.params.eventId}`);
-    next();
-}, validate(eventIdValidation), eventController.deleteEvent);
+router.delete('/:eventId', validate(eventIdValidation), eventController.deleteEvent);
 
 /**
  * @route   GET /api/events/person/:personId

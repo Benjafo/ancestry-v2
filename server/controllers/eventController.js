@@ -67,9 +67,6 @@ exports.createEvent = async (req, res) => {
         const event = await eventService.createEvent(req.body);
 
         // Trigger user event for event creation
-        console.log(`[DEBUG] Entering createEvent for event type: ${event.event_type}`);
-        console.log(`[DEBUG] Event object after service call:`, event);
-
         if (event.dataValues.person_id) {
             const person = await Person.findByPk(event.dataValues.person_id);
             const projectIds = await ProjectUtils.getProjectIdsForEntity('person', event.dataValues.person_id);
@@ -134,9 +131,6 @@ exports.updateEvent = async (req, res) => {
         const event = await eventService.updateEvent(eventId, req.body);
 
         // Trigger user event for event update
-        console.log(`[DEBUG] Entering updateEvent for event ID: ${eventId}, Type: ${event.event_type}`);
-        console.log(`[DEBUG] Event object after service call:`, event);
-
         if (event.dataValues.person_id) {
             const person = await Person.findByPk(event.dataValues.person_id);
             if (person) {
@@ -207,18 +201,14 @@ exports.deleteEvent = async (req, res) => {
         const { eventId } = req.params;
         // Fetch event details before deleting for the event message
         const eventToDelete = await eventService.getEventById(eventId, { includePerson: true });
-        console.log(`[DEBUG] Deleting event: ${eventId}, Type: ${eventToDelete?.event_type}`);
 
         // Get project IDs before deleting the event, as associations might be removed
         let projectIds = [];
         if (eventToDelete && eventToDelete.persons && eventToDelete.persons.length > 0) {
             const personId = eventToDelete.persons[0].person_id;
-            console.log(`[DEBUG] Event associated with person: ${personId}`);
             projectIds = await ProjectUtils.getProjectIdsForEntity('person', personId);
-            console.log(`[DEBUG] Projects associated with person ${personId} for event deletion:`, projectIds);
         } else if (req.query.projectId) { // Fallback for project-level events if no person_id
             projectIds.push(req.query.projectId);
-            console.log(`[DEBUG] Event not associated with person. Explicit projectId from query: ${req.query.projectId}`);
         }
 
         await eventService.deleteEvent(eventId);
