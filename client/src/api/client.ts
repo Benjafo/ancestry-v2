@@ -337,6 +337,54 @@ export interface ManagerDashboardSummary {
     };
 }
 
+export interface ServicePackage {
+    id: string;
+    name: string;
+    description: string;
+    price: number; // Amount in cents
+    features: string[]; // JSONB array of strings
+    estimated_delivery_weeks: number;
+    is_active: boolean;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CustomerInfo {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    specialRequests?: string;
+    familyInfo?: string;
+}
+
+export interface Order {
+    id: string;
+    user_id: string;
+    service_package_id: string;
+    status: 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled';
+    total_amount: number; // Amount in cents
+    stripe_payment_intent_id?: string;
+    customer_info: CustomerInfo; // JSONB object
+    created_at: string;
+    updated_at: string;
+    service_package?: ServicePackage; // Eager loaded
+    user?: User; // Eager loaded
+    project?: Project; // Eager loaded via OrderProject
+}
+
+export interface OrderProject {
+    id: string;
+    order_id: string;
+    project_id: string;
+    created_at: string;
+}
+
 export interface ProjectAssignment {
     client_id: string;
     project_id: string;
@@ -921,4 +969,56 @@ export const managerApi = {
         const response = await apiClient.delete(`manager/clients/${clientId}/projects/${projectId}`);
         return response.json();
     }
-}
+};
+
+export const servicePackagesApi = {
+    getActiveServicePackages: async (): Promise<{ servicePackages: ServicePackage[] }> => {
+        const response = await apiClient.get('service-packages');
+        return response.json();
+    },
+    // Admin functions (will be implemented later in Phase 5)
+    createServicePackage: async (data: Omit<ServicePackage, 'id' | 'created_at' | 'updated_at'>): Promise<{ message: string; servicePackage: ServicePackage }> => {
+        const response = await apiClient.post('service-packages', { json: data });
+        return response.json();
+    },
+    updateServicePackage: async (id: string, data: Partial<ServicePackage>): Promise<{ message: string; servicePackage: ServicePackage }> => {
+        const response = await apiClient.put(`service-packages/${id}`, { json: data });
+        return response.json();
+    },
+    deleteServicePackage: async (id: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete(`service-packages/${id}`);
+        return response.json();
+    },
+};
+
+export const ordersApi = {
+    createOrder: async (data: { service_package_id: string; customer_info: CustomerInfo }): Promise<{ message: string; order: Order; client_secret: string }> => {
+        const response = await apiClient.post('orders', { json: data });
+        return response.json();
+    },
+    getOrderById: async (id: string): Promise<{ order: Order }> => {
+        const response = await apiClient.get(`orders/${id}`);
+        return response.json();
+    },
+    getOrders: async (params?: {
+        status?: 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled';
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<{ orders: Order[]; metadata: ApiMetadata }> => {
+        const response = await apiClient.get('orders', { searchParams: params });
+        return response.json();
+    },
+    updateOrderStatus: async (id: string, status: Order['status']): Promise<{ message: string; order: Order }> => {
+        const response = await apiClient.put(`orders/${id}/status`, { json: { status } });
+        return response.json();
+    },
+};
+
+export const paymentsApi = {
+    getPaymentStatus: async (orderId: string): Promise<{ status: Order['status']; message: string }> => {
+        const response = await apiClient.get(`payments/status/${orderId}`);
+        return response.json();
+    },
+};
