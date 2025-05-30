@@ -6,14 +6,15 @@ const {
 
 // Import seed modules
 const seedDatabaseSchema = require('./seeds/database');
-const seedUsers = require('./seeds/users');
-const seedProjects = require('./seeds/projects');
-const seedPersons = require('./seeds/persons');
-const seedRelationships = require('./seeds/relationships');
-const seedEvents = require('./seeds/events');
 const seedDocuments = require('./seeds/documents');
+const seedEvents = require('./seeds/events');
+const seedOrders = require('./seeds/orders');
+const seedPersons = require('./seeds/persons');
+const seedProjects = require('./seeds/projects');
+const seedRelationships = require('./seeds/relationships');
+const seedServicePackages = require('./seeds/servicePackages');
 const seedUserEvents = require('./seeds/userEvents');
-const seedOrders = require('./seeds/orders'); // Import the new seedOrders
+const seedUsers = require('./seeds/users');
 
 /**
  * Main function to seed the database
@@ -81,11 +82,12 @@ async function seedDatabase() {
                 );
 
             // Seed service packages
-            const servicePackages = await runSeed(
-                (t) => seedServicePackages(t),
-                'Service Packages',
-                transaction
-            );
+            const servicePackages =
+                await runSeed(
+                    (t) => seedServicePackages(t),
+                    'Service Packages',
+                    transaction
+                );
 
             // Seed orders
             await runSeed(

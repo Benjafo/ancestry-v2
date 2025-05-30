@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { servicePackagesApi, ServicePackage } from '../api/client';
+import { Link, useNavigate } from '@tanstack/react-router';
+import React, { useState } from 'react';
+import { ServicePackage, servicePackagesApi } from '../api/client';
 import ServicePackageCard from '../components/payment/ServicePackageCard';
-import { useNavigate, Link } from '@tanstack/react-router';
 
 const ServiceSelection: React.FC = () => {
     const [selectedPackage, setSelectedPackage] = useState<ServicePackage | null>(null);
@@ -80,7 +80,7 @@ const ServiceSelection: React.FC = () => {
 
                 <div className="mt-16 text-center text-gray-500 dark:text-gray-400 text-sm">
                     <p className="mb-2">
-                        <span className="font-semibold">Professional Service - No Refunds:</span> Due to the nature of genealogical research, all sales are final. We commit to delivering high-quality, expert-led research based on the selected package.
+                        We commit to delivering high-quality, expert-led research based on the selected package.
                     </p>
                     <p className="mb-2">
                         For questions or custom requests, please <Link to="/contact" className="text-indigo-600 hover:underline dark:text-indigo-400">contact us</Link>.

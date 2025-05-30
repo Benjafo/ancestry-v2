@@ -9,7 +9,7 @@ const servicePackageController = {
     getAllActiveServicePackages: async (req, res) => {
         try {
             const packages = await servicePackageService.getActiveServicePackages();
-            res.status(200).json(packages);
+            res.status(200).json({ servicePackages: packages });
         } catch (error) {
             console.error('Error in getAllActiveServicePackages:', error);
             res.status(500).json({ message: error });

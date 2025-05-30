@@ -1,7 +1,4 @@
-const { Order, ServicePackage, User, Project } = require('../models');
-const { generateRandomPassword } = require('../../server/utils/validationUtils');
-const stripeService = require('../services/stripeService');
-const userService = require('../services/userService');
+const { Order, Project } = require('../models');
 const orderService = require('../services/orderService');
 
 /**
