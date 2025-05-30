@@ -60,8 +60,12 @@ const paymentController = {
                         'order'
                     );
                     break;
+                case 'payment_intent.created':
+                    // Payment Intent created, no action needed as order is already 'pending' in our DB
+                    console.log(`Stripe event: PaymentIntent ${paymentIntent.id} created for order ${orderId}.`);
+                    break;
+                // Handle other event types as needed
                 default:
-                    // Log unhandled events if necessary
                     console.log(`Unhandled Stripe event type: ${type}`);
             }
 
