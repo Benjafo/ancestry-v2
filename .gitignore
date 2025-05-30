@@ -3,6 +3,7 @@ plans/
 server/uploads
 .clinerules/
 memory-bank/
+memory-bank **/
 
 api_tracker.txt
 issues.yml
