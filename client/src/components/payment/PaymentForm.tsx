@@ -1,6 +1,5 @@
+import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import React from 'react';
-import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
-import { StripeError } from '@stripe/stripe-js';
 
 interface PaymentFormProps {
     clientSecret: string;

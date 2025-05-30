@@ -3,7 +3,7 @@ const router = express.Router();
 const relationshipController = require('../controllers/relationshipController');
 const { verifyToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
-const { 
+const {
     createRelationshipValidation,
     updateRelationshipValidation,
     relationshipIdValidation,

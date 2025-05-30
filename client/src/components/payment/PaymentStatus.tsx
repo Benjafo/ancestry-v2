@@ -1,6 +1,5 @@
-import React from 'react';
 import { Link } from '@tanstack/react-router';
-import { formatOrderStatus } from '../../utils/orderUtils';
+import React from 'react';
 
 interface PaymentStatusProps {
     status: 'success' | 'failed' | 'processing' | 'unknown';
