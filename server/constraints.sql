@@ -133,7 +133,8 @@ DECLARE
         'users', 'roles', 'user_roles', 'projects', 'project_users',
         'persons', 'events', 'documents', 'relationships',
         'person_events', 'project_events', 'document_persons', 'project_persons',
-        'client_profiles', 'user_events', 'password_reset_tokens'
+    'client_profiles', 'user_events', 'password_reset_tokens',
+    'service_packages', 'orders', 'order_projects'
     ];
     t TEXT;
 BEGIN
@@ -148,6 +149,41 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Add check constraints for service_packages table
+ALTER TABLE service_packages DROP CONSTRAINT IF EXISTS check_service_package_price_positive;
+ALTER TABLE service_packages
+ADD CONSTRAINT check_service_package_price_positive
+CHECK (price_cents >= 0);
+
+ALTER TABLE service_packages DROP CONSTRAINT IF EXISTS check_service_package_delivery_weeks_positive;
+ALTER TABLE service_packages
+ADD CONSTRAINT check_service_package_delivery_weeks_positive
+CHECK (estimated_delivery_weeks > 0);
+
+-- Add check constraints for orders table
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS check_order_status_values;
+ALTER TABLE orders
+ADD CONSTRAINT check_order_status_values
+CHECK (status IN ('pending', 'succeeded', 'failed', 'refunded', 'processing', 'completed'));
+
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS check_order_total_amount_positive;
+ALTER TABLE orders
+ADD CONSTRAINT check_order_total_amount_positive
+CHECK (total_amount_cents >= 0);
+
+-- Add indexes for new tables
+CREATE INDEX IF NOT EXISTS idx_service_packages_name ON service_packages(name);
+CREATE INDEX IF NOT EXISTS idx_service_packages_active ON service_packages(is_active);
+CREATE INDEX IF NOT EXISTS idx_service_packages_sort_order ON service_packages(sort_order);
+
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_service_package ON orders(service_package_id);
+CREATE INDEX IF NOT EXISTS idx_orders_stripe_payment_intent ON orders(stripe_payment_intent_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+
+CREATE INDEX IF NOT EXISTS idx_order_projects_order ON order_projects(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_projects_project ON order_projects(project_id);
 
 -- Modified trigger for birth/death consistency to use person_events junction table
 CREATE OR REPLACE FUNCTION check_birth_death_consistency()

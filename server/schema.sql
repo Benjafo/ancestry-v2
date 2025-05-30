@@ -205,3 +205,43 @@ CREATE TABLE
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+-- Service Packages table
+CREATE TABLE
+    service_packages (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+        name VARCHAR(255) UNIQUE NOT NULL,
+        description TEXT,
+        price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
+        currency VARCHAR(3) NOT NULL DEFAULT 'usd',
+        features JSONB DEFAULT '[]'::jsonb,
+        estimated_delivery_weeks INTEGER CHECK (estimated_delivery_weeks > 0),
+        is_active BOOLEAN DEFAULT TRUE,
+        sort_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Orders table
+CREATE TABLE
+    orders (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+        user_id UUID REFERENCES users (user_id),
+        service_package_id UUID REFERENCES service_packages (id),
+        status VARCHAR(50) NOT NULL DEFAULT 'pending', -- e.g., 'pending', 'succeeded', 'failed', 'refunded'
+        total_amount_cents INTEGER NOT NULL CHECK (total_amount_cents >= 0),
+        currency VARCHAR(3) NOT NULL DEFAULT 'usd',
+        stripe_payment_intent_id VARCHAR(255) UNIQUE,
+        customer_info JSONB DEFAULT '{}'::jsonb, -- Stores contact details, special requests, family info
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- Order-Project junction table (one-to-one relationship)
+CREATE TABLE
+    order_projects (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+        order_id UUID UNIQUE REFERENCES orders (id),
+        project_id UUID UNIQUE REFERENCES projects (id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
