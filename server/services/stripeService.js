@@ -188,6 +188,30 @@ const stripeService = {
             throw error;
         }
     },
+    /**
+     * New function to list products with their default prices from Stripe.
+     * @returns {Promise<Array>} - An array of Stripe Product objects with expanded default_price.
+     */
+    listProductsWithPrices: async () => {
+        try {
+            const products = await stripe.products.list({ active: true, expand: ['data.default_price'] });
+            // Filter out products that don't have a default_price or where the price is not active
+            const productsWithPrices = products.data.filter(product =>
+                product.default_price && product.default_price.active
+            ).map(product => ({
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                active: product.active,
+                metadata: product.metadata,
+                prices: [product.default_price], // Attach the default price directly
+            }));
+            return productsWithPrices;
+        } catch (error) {
+            console.error('Error listing products with prices from Stripe:', error);
+            throw error;
+        }
+    },
 };
 
 module.exports = stripeService;

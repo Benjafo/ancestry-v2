@@ -35,7 +35,7 @@ export const formatPrice = (amount: number, currency: string = 'USD'): string =>
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: currency,
-    }).format(amount / 100); // Convert cents to dollars
+    }).format(amount); // Convert cents to dollars
 };
 
 /**

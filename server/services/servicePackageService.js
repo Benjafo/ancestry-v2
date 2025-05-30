@@ -1,109 +1,65 @@
 const { ServicePackage } = require('../models');
+const stripeService = require('./stripeService'); // Import stripeService
 
 const servicePackageService = {
-    /**
-     * Gets a list of active service packages, ordered by sort_order.
-     * @returns {Promise<Array<ServicePackage>>} - An array of active service packages.
-     */
+    // This function will now fetch from Stripe
     getActiveServicePackages: async () => {
         try {
-            const packages = await ServicePackage.scope('active').findAll();
-            return packages;
+            // Fetch products from Stripe
+            const stripeProducts = await stripeService.listProductsWithPrices();
+
+            // Map Stripe products to your ServicePackage format
+            const servicePackages = stripeProducts.map(product => {
+                // Assuming a product has at least one price, and we take the first one
+                const price = product.prices && product.prices.length > 0 ? product.prices[0] : null;
+
+                if (!price) {
+                    console.warn(`Stripe Product ${product.id} has no active prices. Skipping.`);
+                    return null;
+                }
+
+                return {
+                    id: product.id, // Use Stripe Product ID as the service package ID
+                    name: product.name,
+                    description: product.description,
+                    price: price.unit_amount / 100, // Convert cents to dollars
+                    features: product.metadata.features ? JSON.parse(product.metadata.features) : [], // Assuming features are JSON string in metadata
+                    estimated_delivery_weeks: product.metadata.estimated_delivery_weeks || 'N/A', // Assuming in metadata
+                    is_active: product.active,
+                    sort_order: product.metadata.sort_order ? parseInt(product.metadata.sort_order) : 999, // Assuming sort_order in metadata
+                };
+            }).filter(pkg => pkg !== null && pkg.is_active) // Filter out products without prices or inactive ones
+                .sort((a, b) => a.sort_order - b.sort_order); // Sort by sort_order
+
+            return servicePackages;
         } catch (error) {
-            console.error('Error fetching active service packages:', error);
-            throw error;
+            console.error('Error fetching service packages from Stripe:', error);
+            throw new Error('Failed to retrieve service packages.');
         }
     },
 
-    /**
-     * Gets a service package by its ID.
-     * @param {string} id - The ID of the service package.
-     * @returns {Promise<ServicePackage>} - The service package object.
-     */
-    getServicePackageById: async (id) => {
-        try {
-            const servicePackage = await ServicePackage.findByPk(id);
-            if (!servicePackage) {
-                throw new Error('Service package not found.');
-            }
-            return servicePackage;
-        } catch (error) {
-            console.error(`Error fetching service package with ID ${id}:`, error);
-            throw error;
-        }
-    },
-
-    /**
-     * Creates a new service package (admin only).
-     * @param {object} packageData - The data for the new service package.
-     * @returns {Promise<ServicePackage>} - The created service package.
-     */
+    // Keep other admin CRUD functions if they are still needed for local management
+    // or decide to remove them if Stripe becomes the sole source of truth.
+    // For now, we'll assume these might be used for other purposes or will be adapted.
     createServicePackage: async (packageData) => {
-        try {
-            const newPackage = await ServicePackage.create(packageData);
-            return newPackage;
-        } catch (error) {
-            console.error('Error creating service package:', error);
-            throw error;
-        }
+        // This function would typically interact with Stripe API to create products
+        // or manage local database if it's still the source of truth for admin.
+        // For now, leaving as a placeholder.
+        console.warn('createServicePackage: This function needs to be adapted for Stripe integration.');
+        throw new Error('Not implemented for Stripe integration yet.');
     },
-
-    /**
-     * Updates an existing service package (admin only).
-     * @param {string} id - The ID of the service package to update.
-     * @param {object} updateData - The data to update.
-     * @returns {Promise<ServicePackage>} - The updated service package.
-     */
-    updateServicePackage: async (id, updateData) => {
-        try {
-            const servicePackage = await ServicePackage.findByPk(id);
-            if (!servicePackage) {
-                throw new Error('Service package not found.');
-            }
-            await servicePackage.update(updateData);
-            return servicePackage;
-        } catch (error) {
-            console.error(`Error updating service package with ID ${id}:`, error);
-            throw error;
-        }
+    updateServicePackage: async (id, packageData) => {
+        console.warn('updateServicePackage: This function needs to be adapted for Stripe integration.');
+        throw new Error('Not implemented for Stripe integration yet.');
     },
-
-    /**
-     * Deactivates a service package (admin only).
-     * @param {string} id - The ID of the service package to deactivate.
-     * @returns {Promise<void>}
-     */
-    deactivateServicePackage: async (id) => {
-        try {
-            const servicePackage = await ServicePackage.findByPk(id);
-            if (!servicePackage) {
-                throw new Error('Service package not found.');
-            }
-            servicePackage.is_active = false;
-            await servicePackage.save();
-        } catch (error) {
-            console.error(`Error deactivating service package with ID ${id}:`, error);
-            throw error;
-        }
+    deleteServicePackage: async (id) => {
+        console.warn('deleteServicePackage: This function needs to be adapted for Stripe integration.');
+        throw new Error('Not implemented for Stripe integration yet.');
     },
-
-    /**
-     * Reactivates a service package (admin only).
-     * @param {string} id - The ID of the service package to reactivate.
-     * @returns {Promise<void>}
-     */
-    reactivateServicePackage: async (id) => {
-        try {
-            const servicePackage = await ServicePackage.findByPk(id);
-            if (!servicePackage) {
-                throw new Error('Service package not found.');
-            }
-            servicePackage.is_active = true;
-            await servicePackage.save();
-        } catch (error) {
-            console.error(`Error reactivating service package with ID ${id}:`, error);
-            throw error;
-        }
+    getServicePackageById: async (id) => {
+        // This function would typically fetch from Stripe by product ID
+        console.warn('getServicePackageById: This function needs to be adapted for Stripe integration.');
+        throw new Error('Not implemented for Stripe integration yet.');
     },
 };
 

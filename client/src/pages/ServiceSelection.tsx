@@ -13,6 +13,8 @@ const ServiceSelection: React.FC = () => {
         queryFn: servicePackagesApi.getActiveServicePackages,
     });
 
+    console.log('Service packages data:', data);
+
     const handleSelectPackage = (pkg: ServicePackage) => {
         setSelectedPackage(pkg);
     };
@@ -57,7 +59,7 @@ const ServiceSelection: React.FC = () => {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {servicePackages.map((pkg) => (
+                    {servicePackages.sort((a, b) => a.price > b.price ? 1 : -1).map((pkg) => (
                         <ServicePackageCard
                             key={pkg.id}
                             servicePackage={pkg}

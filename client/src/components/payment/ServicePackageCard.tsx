@@ -11,6 +11,8 @@ interface ServicePackageCardProps {
 const ServicePackageCard: React.FC<ServicePackageCardProps> = ({ servicePackage, onSelect, isSelected }) => {
     const features = processFeatures(servicePackage.features);
 
+    console.log('Rendering ServicePackageCard:', servicePackage);
+
     return (
         <div
             className={`
