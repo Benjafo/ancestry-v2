@@ -49,11 +49,11 @@ const OrderCheckout: React.FC = () => {
         mutationFn: ordersApi.createOrder,
         onSuccess: (data) => {
             setClientSecret(data.client_secret);
-            setOrderId(data.order.id);
+            setOrderId(data.orderId);
             setCurrentStep(2); // Move to payment step
         },
-        onError: (error) => {
-            const errorMessage = getApiErrorMessage(error);
+        onError: async (error) => { // Made onError async
+            const errorMessage = await getApiErrorMessage(error); // Await the promise
             setPaymentStatus('failed');
             setPaymentMessage(`Failed to create order: ${errorMessage}`);
             setCurrentStep(3); // Show error on confirmation page

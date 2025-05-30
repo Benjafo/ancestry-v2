@@ -992,7 +992,7 @@ export const servicePackagesApi = {
 };
 
 export const ordersApi = {
-    createOrder: async (data: { stripeProductId: string; customer_info: CustomerInfo }): Promise<{ message: string; order: Order; client_secret: string }> => {
+    createOrder: async (data: { stripeProductId: string; customer_info: CustomerInfo }): Promise<{ message: string; orderId: string; client_secret: string; publishableKey: string }> => {
         const response = await apiClient.post('orders', { json: data });
         return response.json();
     },
