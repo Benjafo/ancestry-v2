@@ -16,6 +16,11 @@ const PersonEvent = require('./personEvent');
 const ProjectEvent = require('./projectEvent');
 const ProjectUser = require('./projectUser');
 
+// Payment and Service models
+const ServicePackage = require('./servicePackage');
+const Order = require('./order');
+const OrderProject = require('./orderProject');
+
 // Define User-Role associations
 User.belongsToMany(Role, {
     through: 'user_roles',
@@ -172,6 +177,55 @@ Relationship.belongsTo(Person, {
     as: 'person2'
 });
 
+// Define ServicePackage-Order association
+ServicePackage.hasMany(Order, {
+    foreignKey: 'service_package_id',
+    as: 'orders'
+});
+Order.belongsTo(ServicePackage, {
+    foreignKey: 'service_package_id',
+    as: 'servicePackage'
+});
+
+// Define User-Order association
+User.hasMany(Order, {
+    foreignKey: 'user_id',
+    as: 'orders'
+});
+Order.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user'
+});
+
+// Define Order-Project one-to-one association
+Order.hasOne(OrderProject, {
+    foreignKey: 'order_id',
+    as: 'orderProject'
+});
+OrderProject.belongsTo(Order, {
+    foreignKey: 'order_id',
+    as: 'order'
+});
+
+Project.hasOne(OrderProject, {
+    foreignKey: 'project_id',
+    as: 'orderProject'
+});
+OrderProject.belongsTo(Project, {
+    foreignKey: 'project_id',
+    as: 'project'
+});
+
+// Add service_package_id to Project model
+Project.belongsTo(ServicePackage, {
+    foreignKey: 'service_package_id',
+    as: 'servicePackage'
+});
+ServicePackage.hasMany(Project, {
+    foreignKey: 'service_package_id',
+    as: 'projects'
+});
+
 module.exports = {
     User,
     Role,
@@ -188,5 +242,9 @@ module.exports = {
     ProjectPerson,
     PersonEvent,
     ProjectEvent,
-    ProjectUser
+    ProjectUser,
+    // Payment and Service models
+    ServicePackage,
+    Order,
+    OrderProject
 };
