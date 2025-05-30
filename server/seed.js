@@ -13,7 +13,7 @@ const seedRelationships = require('./seeds/relationships');
 const seedEvents = require('./seeds/events');
 const seedDocuments = require('./seeds/documents');
 const seedUserEvents = require('./seeds/userEvents');
-const seedServicePackages = require('./seeds/servicePackages');
+const seedOrders = require('./seeds/orders'); // Import the new seedOrders
 
 /**
  * Main function to seed the database
@@ -81,9 +81,16 @@ async function seedDatabase() {
                 );
 
             // Seed service packages
-            await runSeed(
+            const servicePackages = await runSeed(
                 (t) => seedServicePackages(t),
                 'Service Packages',
+                transaction
+            );
+
+            // Seed orders
+            await runSeed(
+                (t) => seedOrders(t, { clientUser, servicePackages }),
+                'Orders',
                 transaction
             );
 
