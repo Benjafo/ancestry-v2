@@ -23,6 +23,8 @@ var servicePackagesRouter = require('./routes/servicePackages');
 var ordersRouter = require('./routes/orders');
 var paymentsRouter = require('./routes/payments'); // Import payments router
 
+const paymentController = require('./controllers/paymentController');
+
 var app = express();
 
 // Enable CORS for all routes
@@ -53,8 +55,10 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 
-// Stripe webhook needs the raw body, so it must come before express.json()
-app.use('/api/payments/webhook', paymentsRouter);
+// Stripe webhook needs the raw body, so it must come before express.json() and other body parsers
+// This specific route will bypass general middleware like apiLimiter
+const bodyParser = require('body-parser'); // Required for raw body parsing for webhooks
+app.post('/api/payments/webhook', bodyParser.raw({ type: '*/*' }), paymentController.handleStripeWebhook);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -65,7 +69,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
-// Apply rate limiting to all API routes
+// Apply rate limiting to all API routes *except* the webhook
 app.use('/api', apiLimiter);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -83,6 +87,7 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/user-events', userEventsRouter);
 app.use('/api/service-packages', servicePackagesRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/payments', paymentsRouter); // Re-add paymentsRouter for other routes
 
 // catch 404 and forward to error handler
 app.use(notFoundHandler);

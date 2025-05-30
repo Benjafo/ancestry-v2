@@ -162,14 +162,6 @@ const stripeService = {
                     console.log(`PaymentIntent ${paymentIntent.id} failed for order ${order.id}. Reason: ${paymentIntent.last_payment_error ? paymentIntent.last_payment_error.message : 'N/A'}`);
                     // Event logging will be handled by the controller
                     break;
-                case 'charge.refunded':
-                    order.status = 'refunded';
-                    await order.save({ transaction });
-                    console.log(`Charge for PaymentIntent ${paymentIntent.id} was refunded for order ${order.id}.`);
-                    // Event logging will be handled by the controller
-                    break;
-                // Handle other event types as needed
-                default:
                     console.log(`Unhandled event type ${type} for PaymentIntent ${paymentIntent.id}`);
             }
 
@@ -221,4 +213,7 @@ const stripeService = {
     },
 };
 
-module.exports = stripeService;
+module.exports = {
+    ...stripeService,
+    stripe: stripe
+};
