@@ -10,7 +10,7 @@ const Order = sequelize.define('Order', {
     },
     user_id: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: 'users',
             key: 'user_id',

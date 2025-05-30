@@ -366,14 +366,14 @@ export interface CustomerInfo {
 export interface Order {
     id: string;
     user_id: string;
-    service_package_id: string;
+    stripe_product_id: string; // Changed from service_package_id
     status: 'pending' | 'paid' | 'processing' | 'completed' | 'cancelled';
     total_amount: number; // Amount in cents
     stripe_payment_intent_id?: string;
     customer_info: CustomerInfo; // JSONB object
     created_at: string;
     updated_at: string;
-    service_package?: ServicePackage; // Eager loaded
+    stripeProductDetails?: ServicePackage; // Added to hold fetched Stripe product details
     user?: User; // Eager loaded
     project?: Project; // Eager loaded via OrderProject
 }
@@ -992,7 +992,7 @@ export const servicePackagesApi = {
 };
 
 export const ordersApi = {
-    createOrder: async (data: { service_package_id: string; customer_info: CustomerInfo }): Promise<{ message: string; order: Order; client_secret: string }> => {
+    createOrder: async (data: { stripeProductId: string; customer_info: CustomerInfo }): Promise<{ message: string; order: Order; client_secret: string }> => {
         const response = await apiClient.post('orders', { json: data });
         return response.json();
     },

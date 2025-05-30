@@ -179,11 +179,11 @@ Relationship.belongsTo(Person, {
 
 // Define ServicePackage-Order association
 ServicePackage.hasMany(Order, {
-    foreignKey: 'service_package_id',
+    foreignKey: 'stripe_product_id',
     as: 'orders'
 });
 Order.belongsTo(ServicePackage, {
-    foreignKey: 'service_package_id',
+    foreignKey: 'stripe_product_id',
     as: 'servicePackage'
 });
 

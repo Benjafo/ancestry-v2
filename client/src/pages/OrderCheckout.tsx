@@ -19,7 +19,6 @@ const OrderCheckout: React.FC = () => {
     const navigate = useNavigate();
     const search = useSearch({ from: '/checkout' });
     const packageId = search.packageId;
-    // const packageId = '3ffb3ccd-1841-4201-8596-a9b71e7952e9'
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Customer Info, 2: Payment, 3: Confirmation
     const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
@@ -72,7 +71,7 @@ const OrderCheckout: React.FC = () => {
         setCustomerInfo(data);
         if (servicePackageData) {
             createOrderMutation.mutate({
-                service_package_id: servicePackageData.id,
+                stripeProductId: servicePackageData.id, // Changed to stripeProductId
                 customer_info: data,
             });
         }

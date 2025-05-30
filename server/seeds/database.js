@@ -30,6 +30,9 @@ async function seedDatabase(sequelize, transaction) {
         DROP TABLE IF EXISTS client_profiles CASCADE;
         DROP TABLE IF EXISTS user_events CASCADE;
         DROP TABLE IF EXISTS password_reset_tokens CASCADE;
+        DROP TABLE IF EXISTS service_packages CASCADE;
+        DROP TABLE IF EXISTS orders CASCADE;
+        DROP TABLE IF EXISTS order_projects CASCADE;
     `, { transaction });
     console.log('Tables dropped successfully');
 

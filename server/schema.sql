@@ -226,8 +226,8 @@ CREATE TABLE
 CREATE TABLE
     orders (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-        user_id UUID REFERENCES users (user_id),
-        service_package_id UUID REFERENCES service_packages (id),
+        user_id UUID REFERENCES users (user_id) NULL, -- Changed to allow null
+        stripe_product_id VARCHAR(255) NOT NULL, -- Changed from service_package_id and type
         status VARCHAR(50) NOT NULL DEFAULT 'pending', -- e.g., 'pending', 'succeeded', 'failed', 'refunded'
         total_amount_cents INTEGER NOT NULL CHECK (total_amount_cents >= 0),
         currency VARCHAR(3) NOT NULL DEFAULT 'usd',

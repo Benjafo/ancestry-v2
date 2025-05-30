@@ -4,9 +4,11 @@ const orderController = require('../controllers/orderController');
 const { verifyToken, hasRole } = require('../middleware/auth');
 
 // Route to create a new order and payment intent (can be accessed by authenticated users or new users)
-router.post('/', orderController.createOrder);
+router.post('/', verifyToken, orderController.createOrder);
+// Removed this line as it was causing the user id to always be null even for authenticated users
 
 // Protected routes for authenticated users
+// router.post('/', verifyToken, orderController.createOrder);
 router.get('/', verifyToken, orderController.getOrders); // Get user's order history or all orders for admin
 router.get('/:id', verifyToken, orderController.getOrderDetails); // Get specific order details
 

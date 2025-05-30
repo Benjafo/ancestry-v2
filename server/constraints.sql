@@ -178,7 +178,6 @@ CREATE INDEX IF NOT EXISTS idx_service_packages_active ON service_packages(is_ac
 CREATE INDEX IF NOT EXISTS idx_service_packages_sort_order ON service_packages(sort_order);
 
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_orders_service_package ON orders(service_package_id);
 CREATE INDEX IF NOT EXISTS idx_orders_stripe_payment_intent ON orders(stripe_payment_intent_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 

@@ -28,7 +28,7 @@ async function seedOrders(transaction, { clientUser, servicePackages }) {
     // Create a pending order
     const pendingOrder = await Order.create({
         user_id: clientUser.id,
-        service_package_id: basicPackage.id,
+        stripe_product_id: basicPackage.id,
         status: 'pending',
         total_amount: basicPackage.price,
         customer_info: {
@@ -51,7 +51,7 @@ async function seedOrders(transaction, { clientUser, servicePackages }) {
     // This will also trigger project creation and user event logging
     const paidOrder = await Order.create({
         user_id: clientUser.id,
-        service_package_id: comprehensivePackage.id,
+        stripe_product_id: comprehensivePackage.id,
         status: 'paid',
         total_amount: comprehensivePackage.price,
         customer_info: {
@@ -78,7 +78,7 @@ async function seedOrders(transaction, { clientUser, servicePackages }) {
     // Create a completed order (simulating a completed project)
     const completedOrder = await Order.create({
         user_id: clientUser.id,
-        service_package_id: basicPackage.id,
+        stripe_product_id: basicPackage.id,
         status: 'completed',
         total_amount: basicPackage.price,
         customer_info: {

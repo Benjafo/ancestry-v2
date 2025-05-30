@@ -24,6 +24,9 @@ const orderService = {
             );
 
             await transaction.commit();
+
+            console.log(`Order ${orderId} created with client_secret ${client_secret} and publishableKey ${publishableKey}.`);
+
             return { client_secret, orderId, publishableKey };
         } catch (error) {
             await transaction.rollback();
