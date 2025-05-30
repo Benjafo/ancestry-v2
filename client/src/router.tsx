@@ -9,24 +9,24 @@ import { hasRole, isAuthenticated } from './utils/auth';
 
 // Import pages
 import ClientAssignment from './pages/ClientAssignment';
+import Contact from './pages/Contact';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import ManagerDashboard from './pages/ManagerDashboard';
 import NotFound from './pages/NotFound';
 import Notifications from './pages/Notifications';
+import OrderCheckout from './pages/OrderCheckout';
+import OrderConfirmation from './pages/OrderConfirmation';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import ProjectDetail from './pages/ProjectDetail';
 import Projects from './pages/Projects';
 import Register from './pages/Register';
 import RequestPasswordReset from './pages/RequestPasswordReset';
 import ResetPassword from './pages/ResetPassword';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import Contact from './pages/Contact';
-import Settings from './pages/Settings';
-import UserManagement from './pages/UserManagement';
 import ServiceSelection from './pages/ServiceSelection';
-import OrderCheckout from './pages/OrderCheckout';
-import OrderConfirmation from './pages/OrderConfirmation';
+import Settings from './pages/Settings';
+import TermsOfService from './pages/TermsOfService';
+import UserManagement from './pages/UserManagement';
 
 // Import layout components
 import { Layout } from './components/layout/Layout';
@@ -188,9 +188,12 @@ const orderCheckoutRoute = new Route({
     getParentRoute: () => authLayoutRoute,
     path: '/checkout',
     component: OrderCheckout,
-    validateSearch: (search: Record<string, unknown>) => {
+    validateSearch: (search: Record<string, unknown>): { packageId: string } => {
+        if (!search.packageId || typeof search.packageId !== 'string') {
+            throw new Error('packageId is required');
+        }
         return {
-            packageId: search.packageId as string,
+            packageId: search.packageId,
         };
     },
 });
@@ -261,15 +264,15 @@ const routeTree = rootRoute.addChildren([
     privacyPolicyRoute,
     termsOfServiceRoute,
     contactRoute,
-    serviceSelectionRoute, // Public route for service browsing
+    serviceSelectionRoute,
+    orderCheckoutRoute,
     authLayoutRoute.addChildren([
         dashboardRoute,
         settingsRoute,
         projectsRoute,
         projectDetailRoute,
         notificationsRoute,
-        orderCheckoutRoute, // Protected checkout
-        orderConfirmationRoute, // Protected confirmation
+        orderConfirmationRoute,
         // Manager routes
         managerDashboardRoute,
         userManagementRoute,
