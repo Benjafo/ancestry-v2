@@ -216,15 +216,8 @@ OrderProject.belongsTo(Project, {
     as: 'project'
 });
 
-// Add service_package_id to Project model
-Project.belongsTo(ServicePackage, {
-    foreignKey: 'service_package_id',
-    as: 'servicePackage'
-});
-ServicePackage.hasMany(Project, {
-    foreignKey: 'service_package_id',
-    as: 'projects'
-});
+// Note: Projects are linked to ServicePackages through Orders → OrderProject junction
+// No direct association needed as the relationship is: ServicePackage → Order → OrderProject → Project
 
 module.exports = {
     User,

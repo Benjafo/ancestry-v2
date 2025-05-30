@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Elements } from '@stripe/react-stripe-js';
-import { getStripe } from '../utils/stripe';
-import { servicePackagesApi, ordersApi, ServicePackage, CustomerInfo } from '../api/client';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
+import React, { useEffect, useState } from 'react';
+import { CustomerInfo, ordersApi, servicePackagesApi } from '../api/client';
 import CustomerInfoForm from '../components/payment/CustomerInfoForm';
 import OrderSummary from '../components/payment/OrderSummary';
 import PaymentForm from '../components/payment/PaymentForm';
 import PaymentStatus from '../components/payment/PaymentStatus';
 import { getApiErrorMessage } from '../utils/errorUtils';
+import { getStripe } from '../utils/stripe';
 
 // Define the search schema for the route
 interface OrderCheckoutSearch {
@@ -17,7 +17,8 @@ interface OrderCheckoutSearch {
 
 const OrderCheckout: React.FC = () => {
     const navigate = useNavigate();
-    const { packageId } = useSearch<OrderCheckoutSearch>();
+    const search = useSearch({ from: '/checkout' });
+    const packageId = (search as any).packageId;
 
     const [currentStep, setCurrentStep] = useState(1); // 1: Customer Info, 2: Payment, 3: Confirmation
     const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);

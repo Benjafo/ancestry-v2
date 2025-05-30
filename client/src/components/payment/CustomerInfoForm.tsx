@@ -4,6 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CustomerInfo } from '../../api/client';
 
+type CustomerInfoForm = CustomerInfo & {
+    acceptTerms: boolean;
+};
+
 interface CustomerInfoFormProps {
     initialData?: CustomerInfo;
     onSubmit: (data: CustomerInfo) => void;
@@ -21,6 +25,9 @@ const customerInfoSchema = z.object({
     zip: z.string().optional(),
     specialRequests: z.string().optional(),
     familyInfo: z.string().optional(),
+    acceptTerms: z.boolean().refine(val => val === true, {
+        message: 'You must accept the terms and conditions'
+    }),
 });
 
 const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ initialData, onSubmit, isLoading }) => {
@@ -28,13 +35,18 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ initialData, onSubm
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<CustomerInfo>({
+    } = useForm<CustomerInfoForm>({
         resolver: zodResolver(customerInfoSchema),
-        defaultValues: initialData,
+        defaultValues: { ...initialData, acceptTerms: false },
     });
 
+    const handleFormSubmit = (data: CustomerInfoForm) => {
+        const { acceptTerms, ...customerInfo } = data;
+        onSubmit(customerInfo);
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -163,6 +175,33 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({ initialData, onSubm
                     {...register('familyInfo')}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 ></textarea>
+            </div>
+
+            <div className="flex items-start">
+                <div className="flex items-center h-5">
+                    <input
+                        id="acceptTerms"
+                        type="checkbox"
+                        {...register('acceptTerms')}
+                        className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    />
+                </div>
+                <div className="ml-3 text-sm">
+                    <label htmlFor="acceptTerms" className="font-medium text-gray-700 dark:text-gray-300">
+                        I accept the{' '}
+                        <a href="/terms" target="_blank" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+                            Terms and Conditions
+                        </a>{' '}
+                        and{' '}
+                        <a href="/privacy" target="_blank" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+                            Privacy Policy
+                        </a>
+                        <span className="text-red-500"> *</span>
+                    </label>
+                    {errors.acceptTerms && (
+                        <p className="mt-1 text-sm text-red-600">{errors.acceptTerms.message}</p>
+                    )}
+                </div>
             </div>
 
             <button
