@@ -24,6 +24,9 @@ import TermsOfService from './pages/TermsOfService';
 import Contact from './pages/Contact';
 import Settings from './pages/Settings';
 import UserManagement from './pages/UserManagement';
+import ServiceSelection from './pages/ServiceSelection';
+import OrderCheckout from './pages/OrderCheckout';
+import OrderConfirmation from './pages/OrderConfirmation';
 
 // Import layout components
 import { Layout } from './components/layout/Layout';
@@ -127,6 +130,13 @@ const contactRoute = new Route({
     component: Contact,
 });
 
+// Public service selection route (no auth required)
+const serviceSelectionRoute = new Route({
+    getParentRoute: () => rootRoute,
+    path: '/services',
+    component: ServiceSelection,
+});
+
 // Auth layout route
 const authLayoutRoute = new Route({
     getParentRoute: () => rootRoute,
@@ -171,6 +181,25 @@ const notificationsRoute = new Route({
     getParentRoute: () => authLayoutRoute,
     path: '/notifications',
     component: Notifications,
+});
+
+// Protected checkout route (requires auth)
+const orderCheckoutRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/checkout',
+    component: OrderCheckout,
+    validateSearch: (search: Record<string, unknown>) => {
+        return {
+            packageId: search.packageId as string,
+        };
+    },
+});
+
+// Protected order confirmation route
+const orderConfirmationRoute = new Route({
+    getParentRoute: () => authLayoutRoute,
+    path: '/order-confirmation/$orderId',
+    component: OrderConfirmation,
 });
 
 const notFoundRoute = new Route({
@@ -232,12 +261,15 @@ const routeTree = rootRoute.addChildren([
     privacyPolicyRoute,
     termsOfServiceRoute,
     contactRoute,
+    serviceSelectionRoute, // Public route for service browsing
     authLayoutRoute.addChildren([
         dashboardRoute,
         settingsRoute,
         projectsRoute,
         projectDetailRoute,
         notificationsRoute,
+        orderCheckoutRoute, // Protected checkout
+        orderConfirmationRoute, // Protected confirmation
         // Manager routes
         managerDashboardRoute,
         userManagementRoute,

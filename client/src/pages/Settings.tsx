@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { ClientProfile, authApi, clientApi } from '../api/client';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SuccessAlert from '../components/common/SuccessAlert';
-import { getUser } from '../utils/auth';
+import { getUser, hasRole } from '../utils/auth';
+import OrderHistory from '../components/payment/OrderHistory';
 import { getApiErrorMessage } from '../utils/errorUtils';
 import {
     validateLengthRange, // Add this import
@@ -637,6 +638,15 @@ const Settings = () => {
                     </form>
                 </div>
             </div>
+
+            {/* Order History Section */}
+            {hasRole('client') && (
+                <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
+                    <div className="p-6">
+                        <OrderHistory />
+                    </div>
+                </div>
+            )}
 
             {/* Delete Account Section
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg">

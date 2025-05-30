@@ -9,6 +9,7 @@ interface LayoutProps {
 
 export const Sidebar = () => {
     const isManager = hasRole('manager');
+    const isClient = hasRole('client');
 
     return (
         <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-full">
@@ -32,6 +33,15 @@ export const Sidebar = () => {
                             Projects
                         </Link>
                     </li>
+                    
+                    {/* Service selection for clients */}
+                    {isClient && (
+                        <li>
+                            <Link to="/services" className="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
+                                Order Services
+                            </Link>
+                        </li>
+                    )}
 
                     {isManager && (
                         <>
@@ -51,6 +61,16 @@ export const Sidebar = () => {
                             <li>
                                 <Link to="/manager/client-assignment" className="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
                                     Client Assignment
+                                </Link>
+                            </li>
+                            
+                            {/* Payment management section for managers */}
+                            <li className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+                                <span className="block p-2 text-sm font-medium text-gray-500 dark:text-gray-400">Payment Management</span>
+                            </li>
+                            <li>
+                                <Link to="/services" className="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200">
+                                    Manage Services
                                 </Link>
                             </li>
                         </>
