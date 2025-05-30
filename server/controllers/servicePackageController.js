@@ -1,5 +1,4 @@
 const servicePackageService = require('../services/servicePackageService');
-const { getApiErrorMessage } = require('../utils/errorUtils');
 
 const servicePackageController = {
     /**
@@ -13,7 +12,7 @@ const servicePackageController = {
             res.status(200).json(packages);
         } catch (error) {
             console.error('Error in getAllActiveServicePackages:', error);
-            res.status(500).json({ message: getApiErrorMessage(error) });
+            res.status(500).json({ message: error });
         }
     },
 
@@ -29,7 +28,7 @@ const servicePackageController = {
             res.status(200).json(servicePackage);
         } catch (error) {
             console.error('Error in getServicePackageById:', error);
-            res.status(404).json({ message: getApiErrorMessage(error) });
+            res.status(404).json({ message: error });
         }
     },
 
@@ -44,7 +43,7 @@ const servicePackageController = {
             res.status(201).json({ message: 'Service package created successfully.', servicePackage: newPackage });
         } catch (error) {
             console.error('Error in createServicePackage:', error);
-            res.status(400).json({ message: getApiErrorMessage(error) });
+            res.status(400).json({ message: error });
         }
     },
 
@@ -60,7 +59,7 @@ const servicePackageController = {
             res.status(200).json({ message: 'Service package updated successfully.', servicePackage: updatedPackage });
         } catch (error) {
             console.error('Error in updateServicePackage:', error);
-            res.status(400).json({ message: getApiErrorMessage(error) });
+            res.status(400).json({ message: error });
         }
     },
 
@@ -76,7 +75,7 @@ const servicePackageController = {
             res.status(200).json({ message: 'Service package deactivated successfully.' });
         } catch (error) {
             console.error('Error in deactivateServicePackage:', error);
-            res.status(400).json({ message: getApiErrorMessage(error) });
+            res.status(400).json({ message: error });
         }
     },
 
@@ -92,7 +91,7 @@ const servicePackageController = {
             res.status(200).json({ message: 'Service package reactivated successfully.' });
         } catch (error) {
             console.error('Error in reactivateServicePackage:', error);
-            res.status(400).json({ message: getApiErrorMessage(error) });
+            res.status(400).json({ message: error });
         }
     },
 };

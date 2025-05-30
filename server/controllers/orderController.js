@@ -1,6 +1,5 @@
 const orderService = require('../services/orderService');
 const UserEventService = require('../services/userEventService'); // Import UserEventService
-const { getApiErrorMessage } = require('../utils/errorUtils');
 
 const orderController = {
     /**
@@ -27,7 +26,7 @@ const orderController = {
             });
         } catch (error) {
             console.error('Error in createOrder:', error);
-            res.status(400).json({ message: getApiErrorMessage(error) });
+            res.status(400).json({ message: error });
         }
     },
 
@@ -46,7 +45,7 @@ const orderController = {
             res.status(200).json(order);
         } catch (error) {
             console.error('Error in getOrderDetails:', error);
-            res.status(404).json({ message: getApiErrorMessage(error) });
+            res.status(404).json({ message: error });
         }
     },
 
@@ -70,7 +69,7 @@ const orderController = {
             res.status(200).json({ orders, metadata });
         } catch (error) {
             console.error('Error in getOrders:', error);
-            res.status(500).json({ message: getApiErrorMessage(error) });
+            res.status(500).json({ message: error });
         }
     },
 
@@ -99,7 +98,7 @@ const orderController = {
             res.status(200).json({ message: 'Order status updated successfully.', order: updatedOrder });
         } catch (error) {
             console.error('Error in adminUpdateOrderStatus:', error);
-            res.status(400).json({ message: getApiErrorMessage(error) });
+            res.status(400).json({ message: error });
         }
     },
 };

@@ -1,6 +1,5 @@
 const stripeService = require('../services/stripeService');
 const UserEventService = require('../services/userEventService'); // Import UserEventService
-const { getApiErrorMessage } = require('../utils/errorUtils');
 
 const paymentController = {
     /**
@@ -69,7 +68,7 @@ const paymentController = {
             res.json({ received: true });
         } catch (error) {
             console.error('Error processing Stripe webhook event:', error);
-            res.status(500).json({ message: getApiErrorMessage(error) });
+            res.status(500).json({ message: error });
         }
     },
 
@@ -92,7 +91,7 @@ const paymentController = {
             });
         } catch (error) {
             console.error('Error in getPaymentIntentStatus:', error);
-            res.status(404).json({ message: getApiErrorMessage(error) });
+            res.status(404).json({ message: error });
         }
     },
 };
