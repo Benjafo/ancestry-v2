@@ -2,6 +2,7 @@ const projectRepository = require('../repositories/projectRepository');
 const personRepository = require('../repositories/personRepository');
 const relationshipRepository = require('../repositories/relationshipRepository');
 const TransactionManager = require('../utils/transactionManager');
+const { User, ProjectUser, Role } = require('../models'); // Import User, ProjectUser, and Role models
 
 /**
  * Project Service
@@ -35,11 +36,69 @@ class ProjectService {
      * @param {Object} projectData - Project data
      * @returns {Promise<Object>} Created project
      */
-    async createProject(projectData) {
-        return await TransactionManager.executeTransaction(async (transaction) => {
-            const project = await projectRepository.create(projectData, { transaction });
+    async createProject(projectData, transaction) {
+        return await TransactionManager.executeTransaction(async (t) => {
+            const currentTransaction = transaction || t;
+
+            // Extract client_user_id and service_package_id if provided
+            const { client_user_id, service_package_id, ...restOfProjectData } = projectData;
+
+            // Find a default researcher (e.g., the first user with 'manager' role)
+            // In a real application, this might be configurable or more complex
+            const defaultResearcherRole = await Role.findOne({ where: { name: 'manager' }, transaction: currentTransaction });
+            let defaultResearcher = null;
+            if (defaultResearcherRole) {
+                defaultResearcher = await User.findOne({
+                    include: [{
+                        model: Role,
+                        where: { role_id: defaultResearcherRole.role_id },
+                        through: { attributes: [] } // Don't fetch through table attributes
+                    }],
+                    transaction: currentTransaction
+                });
+            }
+
+            const projectToCreate = {
+                ...restOfProjectData,
+                researcher_id: defaultResearcher ? defaultResearcher.user_id : null, // Assign default researcher
+                service_package_id: service_package_id || null, // Link to service package if provided
+            };
+
+            const project = await projectRepository.create(projectToCreate, { transaction: currentTransaction });
+
+            // If a client_user_id is provided, associate the client with the project
+            if (client_user_id) {
+                await ProjectUser.create({
+                    project_id: project.id,
+                    user_id: client_user_id,
+                    access_level: 'view', // Clients typically have 'view' access
+                }, { transaction: currentTransaction });
+
+                // Log project assignment to client
+                await createEvent(
+                    client_user_id,
+                    defaultResearcher ? defaultResearcher.user_id : null, // Actor is researcher if assigned, else null
+                    'project_assigned',
+                    `Project "${project.title}" assigned to client.`,
+                    project.id,
+                    'project',
+                    currentTransaction
+                );
+            }
+
+            // Log project creation event
+            await createEvent(
+                defaultResearcher ? defaultResearcher.user_id : null, // Actor is researcher if assigned, else null
+                defaultResearcher ? defaultResearcher.user_id : null,
+                'project_created',
+                `New project "${project.title}" created.`,
+                project.id,
+                'project',
+                currentTransaction
+            );
+
             return project;
-        });
+        }, transaction); // Pass the transaction if it exists, otherwise a new one will be created
     }
 
     /**

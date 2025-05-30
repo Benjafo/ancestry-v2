@@ -1,4 +1,5 @@
 const stripeService = require('../services/stripeService');
+const UserEventService = require('../services/userEventService'); // Import UserEventService
 const { getApiErrorMessage } = require('../utils/errorUtils');
 
 const paymentController = {
@@ -21,7 +22,50 @@ const paymentController = {
         }
 
         try {
-            await stripeService.handleWebhookEvent(event);
+            const { type, data } = event;
+            const paymentIntent = data.object;
+            const orderId = paymentIntent.metadata.order_id;
+            const userId = paymentIntent.metadata.user_id; // User who initiated the payment
+
+            await stripeService.handleWebhookEvent(event); // This updates the order status and creates project/user
+
+            // Log events based on webhook type
+            switch (type) {
+                case 'payment_intent.succeeded':
+                    await UserEventService.createEvent(
+                        userId, // Actor is the user who made the payment
+                        userId,
+                        'service_purchased',
+                        `Payment succeeded for order ${orderId}.`,
+                        orderId,
+                        'order'
+                    );
+                    break;
+                case 'payment_intent.payment_failed':
+                    await UserEventService.createEvent(
+                        userId,
+                        userId,
+                        'payment_failed',
+                        `Payment failed for order ${orderId}. Reason: ${paymentIntent.last_payment_error ? paymentIntent.last_payment_error.message : 'N/A'}`,
+                        orderId,
+                        'order'
+                    );
+                    break;
+                case 'charge.refunded':
+                    await UserEventService.createEvent(
+                        userId,
+                        userId,
+                        'payment_refunded',
+                        `Payment for order ${orderId} was refunded.`,
+                        orderId,
+                        'order'
+                    );
+                    break;
+                default:
+                    // Log unhandled events if necessary
+                    console.log(`Unhandled Stripe event type: ${type}`);
+            }
+
             res.json({ received: true });
         } catch (error) {
             console.error('Error processing Stripe webhook event:', error);

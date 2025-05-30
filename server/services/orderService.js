@@ -1,6 +1,5 @@
 const { Order, ServicePackage, User, Project, OrderProject } = require('../models');
 const { sequelize } = require('../models');
-const { createEvent } = require('./userEventService');
 const { createProject } = require('./projectService');
 const { createNewUserAndAssignRole } = require('./userService'); // For auto-user creation
 const stripeService = require('./stripeService'); // To retrieve payment intent status
@@ -63,16 +62,7 @@ const orderService = {
         order.status = newStatus;
         await order.save({ transaction });
 
-        // Log status change event
-        await createEvent(
-            order.user_id,
-            null, // Actor can be null for system events (webhooks)
-            'order_status_updated',
-            `Order ${order.id} status changed from ${oldStatus} to ${newStatus}.`,
-            order.id,
-            'order',
-            transaction
-        );
+        // Event logging will be handled by the controller
 
         return order;
     },
@@ -140,8 +130,6 @@ const orderService = {
                 order.user_id = userId;
                 await order.save({ transaction });
             }
-
-            await createEvent(userId, null, 'user_created', `New client account created via service purchase: ${customerEmail}`, null, null, transaction);
         }
 
         const servicePackage = await ServicePackage.findByPk(servicePackageId, { transaction });
@@ -160,9 +148,6 @@ const orderService = {
             order_id: orderId,
             project_id: newProject.id,
         }, { transaction });
-
-        await createEvent(userId, userId, 'project_created', `New project "${newProject.title}" created from order ${orderId}`, newProject.id, 'project', transaction);
-        await createEvent(userId, userId, 'service_purchased', `Service "${servicePackage.name}" purchased for $${(servicePackage.price_cents / 100).toFixed(2)}`, orderId, 'order', transaction);
 
         // TODO: Send confirmation email to client
         // TODO: Send notification email to assigned researcher

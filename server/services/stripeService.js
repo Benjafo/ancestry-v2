@@ -1,7 +1,6 @@
 const Stripe = require('stripe');
 const { Order, ServicePackage, Project, User, OrderProject, UserEvent } = require('../models');
 const { sequelize } = require('../models'); // Import sequelize instance for transactions
-const { createEvent } = require('./userEventService'); // Assuming this service exists
 const { createProject } = require('./projectService'); // Assuming this service exists
 const { createNewUserAndAssignRole } = require('./userService'); // Assuming this service exists for auto-user creation
 
@@ -124,9 +123,6 @@ const stripeService = {
                         userId = user.user_id; // Update userId for order and project
                         order.user_id = userId;
                         await order.save({ transaction });
-
-                        // Log user creation event
-                        await createEvent(userId, null, 'user_created', `New client account created via service purchase: ${email}`, null, null, transaction);
                     }
 
                     // Create a new project for the order
@@ -149,12 +145,6 @@ const stripeService = {
                         project_id: newProject.id,
                     }, { transaction });
 
-                    // Log project creation event
-                    await createEvent(userId, userId, 'project_created', `New project "${newProject.title}" created from order ${order.id}`, newProject.id, 'project', transaction);
-
-                    // Log service purchased event
-                    await createEvent(userId, userId, 'service_purchased', `Service "${servicePackage.name}" purchased for $${(servicePackage.price_cents / 100).toFixed(2)}`, order.id, 'order', transaction);
-
                     // TODO: Send confirmation email to client
                     // TODO: Send notification email to assigned researcher
 
@@ -163,13 +153,13 @@ const stripeService = {
                     order.status = 'failed';
                     await order.save({ transaction });
                     console.log(`PaymentIntent ${paymentIntent.id} failed for order ${order.id}. Reason: ${paymentIntent.last_payment_error ? paymentIntent.last_payment_error.message : 'N/A'}`);
-                    await createEvent(order.user_id, null, 'payment_failed', `Payment for order ${order.id} failed.`, order.id, 'order', transaction);
+                    // Event logging will be handled by the controller
                     break;
                 case 'charge.refunded':
                     order.status = 'refunded';
                     await order.save({ transaction });
                     console.log(`Charge for PaymentIntent ${paymentIntent.id} was refunded for order ${order.id}.`);
-                    await createEvent(order.user_id, null, 'payment_refunded', `Payment for order ${order.id} was refunded.`, order.id, 'order', transaction);
+                    // Event logging will be handled by the controller
                     break;
                 // Handle other event types as needed
                 default:

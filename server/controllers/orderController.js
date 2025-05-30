@@ -1,4 +1,5 @@
 const orderService = require('../services/orderService');
+const UserEventService = require('../services/userEventService'); // Import UserEventService
 const { getApiErrorMessage } = require('../utils/errorUtils');
 
 const orderController = {
@@ -85,6 +86,16 @@ const orderController = {
             const adminUserId = req.user.user_id;
 
             const updatedOrder = await orderService.adminUpdateOrderStatus(id, status, adminUserId);
+
+            await UserEventService.createEvent(
+                adminUserId,
+                adminUserId,
+                'order_status_manual_update',
+                `Admin updated order ${updatedOrder.id} status to ${status}.`,
+                updatedOrder.id,
+                'order'
+            );
+
             res.status(200).json({ message: 'Order status updated successfully.', order: updatedOrder });
         } catch (error) {
             console.error('Error in adminUpdateOrderStatus:', error);

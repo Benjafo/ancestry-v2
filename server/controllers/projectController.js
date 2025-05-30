@@ -2,6 +2,7 @@ const { Project, User, Person, Event, Document, DocumentPerson } = require('../m
 const { Sequelize } = require('sequelize');
 const projectService = require('../services/projectService');
 const UserEventService = require('../services/userEventService');
+const { createEvent } = require('../services/userEventService'); // Import createEvent for direct use
 
 // Get all projects
 exports.getProjects = async (req, res) => {
@@ -263,14 +264,13 @@ exports.createProject = async (req, res) => {
             });
         }
 
-        const project = await Project.create({
+        const project = await projectService.createProject({
             title,
             description,
             status: 'active',
             researcher_id: req.user.user_id // Assign current user as researcher
         });
 
-        // Create user event for project creation
         await UserEventService.createEvent(
             req.user.user_id, // User receiving the event
             req.user.user_id, // Actor (user who created the project)
@@ -383,6 +383,7 @@ exports.updateProject = async (req, res) => {
             project.id, // entity_id is the project's ID
             'project' // entity_type is 'project'
         );
+
 
         // Ensure timestamps are included in the response
         const projectJson = project.toJSON();
