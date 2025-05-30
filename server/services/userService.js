@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { User, Role } = require('../models');
-const { sequelize } = require('../models'); // For transactions
+const { sequelize } = require('../config/database'); // For transactions
 
 const userService = {
     /**

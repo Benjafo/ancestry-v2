@@ -1,18 +1,11 @@
 const { body, param } = require('express-validator');
-const { Order, ServicePackage } = require('../models'); // Import models to check existence
+// Removed ServicePackage import as it's no longer directly validated here
 
 const orderValidations = {
     createOrder: [
-        body('servicePackageId')
-            .notEmpty().withMessage('Service package ID is required.')
-            .isUUID().withMessage('Service package ID must be a valid UUID.')
-            .custom(async (value) => {
-                const servicePackage = await ServicePackage.findByPk(value);
-                if (!servicePackage || !servicePackage.is_active) {
-                    throw new Error('Selected service package is invalid or not active.');
-                }
-                return true;
-            }),
+        body('stripeProductId') // Changed from servicePackageId
+            .notEmpty().withMessage('Stripe Product ID is required.')
+            .isString().withMessage('Stripe Product ID must be a string.'), // Stripe Product IDs are strings
         body('customerInfo')
             .isObject().withMessage('Customer information must be an object.')
             .notEmpty().withMessage('Customer information cannot be empty.'),

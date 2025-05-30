@@ -13,8 +13,6 @@ const ServiceSelection: React.FC = () => {
         queryFn: servicePackagesApi.getActiveServicePackages,
     });
 
-    console.log('Service packages data:', data);
-
     const handleSelectPackage = (pkg: ServicePackage) => {
         setSelectedPackage(pkg);
     };

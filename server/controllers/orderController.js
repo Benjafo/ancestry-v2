@@ -9,11 +9,11 @@ const orderController = {
      */
     createOrder: async (req, res) => {
         try {
-            const { servicePackageId, customerInfo } = req.body;
+            const { stripeProductId, customerInfo } = req.body; // Changed from servicePackageId
             const userId = req.user ? req.user.user_id : null; // User ID from authenticated session, can be null for new users
 
             const { client_secret, orderId, publishableKey } = await orderService.createOrderAndPaymentIntent(
-                servicePackageId,
+                stripeProductId, // Pass stripeProductId
                 userId,
                 customerInfo
             );

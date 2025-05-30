@@ -1,6 +1,6 @@
 const Stripe = require('stripe');
-const { Order, ServicePackage, Project, User, OrderProject, UserEvent } = require('../models');
-const { sequelize } = require('../models'); // Import sequelize instance for transactions
+const { Order, Project, User, OrderProject, UserEvent } = require('../models'); // Removed ServicePackage
+const { sequelize } = require('../config/database'); // Import sequelize instance for transactions
 const { createProject } = require('./projectService'); // Assuming this service exists
 const { createNewUserAndAssignRole } = require('./userService'); // Assuming this service exists for auto-user creation
 
@@ -9,36 +9,42 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const stripeService = {
     /**
-     * Creates a Stripe Payment Intent for a given service package.
-     * @param {string} servicePackageId - The ID of the service package.
+     * Creates a Stripe Payment Intent for a given Stripe Product ID.
+     * @param {string} stripeProductId - The ID of the Stripe Product.
      * @param {string} userId - The ID of the user initiating the payment (can be null for new users).
      * @param {object} customerInfo - Customer details from the checkout form.
      * @returns {Promise<object>} - Contains client_secret and orderId.
      */
-    createPaymentIntent: async (servicePackageId, userId, customerInfo) => {
+    createPaymentIntent: async (stripeProductId, userId, customerInfo) => {
         const transaction = await sequelize.transaction();
         try {
-            const servicePackage = await ServicePackage.findByPk(servicePackageId, { transaction });
-            if (!servicePackage || !servicePackage.is_active) {
-                throw new Error('Service package not found or is not active.');
+            // Retrieve product and its default price directly from Stripe
+            const product = await stripe.products.retrieve(stripeProductId, {
+                expand: ['default_price'],
+            });
+
+            if (!product || !product.active || !product.default_price || !product.default_price.active) {
+                throw new Error('Stripe Product not found, not active, or has no active price.');
             }
+
+            const price = product.default_price;
 
             // Create a pending order in our database
             const order = await Order.create({
                 user_id: userId, // Can be null if user is not logged in (auto-create user later)
-                service_package_id: servicePackage.id,
+                stripe_product_id: stripeProductId, // Store Stripe Product ID
                 status: 'pending',
-                total_amount_cents: servicePackage.price_cents,
-                currency: servicePackage.currency,
+                total_amount_cents: price.unit_amount,
+                currency: price.currency,
                 customer_info: customerInfo,
             }, { transaction });
 
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: servicePackage.price_cents,
-                currency: servicePackage.currency,
+                amount: price.unit_amount,
+                currency: price.currency,
                 metadata: {
                     order_id: order.id,
-                    service_package_id: servicePackage.id,
+                    stripe_product_id: stripeProductId, // Include Stripe Product ID in metadata for webhook
                     user_id: userId, // Include user_id in metadata for webhook
                 },
                 // Add payment_method_types if you want to restrict payment methods
@@ -74,7 +80,7 @@ const stripeService = {
             const paymentIntent = data.object;
 
             const orderId = paymentIntent.metadata.order_id;
-            const servicePackageId = paymentIntent.metadata.service_package_id;
+            const stripeProductId = paymentIntent.metadata.stripe_product_id; // Use stripeProductId
             let userId = paymentIntent.metadata.user_id; // This might be null if user was new
 
             if (!orderId) {
@@ -126,9 +132,10 @@ const stripeService = {
                     }
 
                     // Create a new project for the order
-                    const servicePackage = await ServicePackage.findByPk(servicePackageId, { transaction });
-                    const projectTitle = `Research Project for ${order.customer_info.first_name} ${order.customer_info.last_name} - ${servicePackage ? servicePackage.name : 'Custom Service'}`;
-                    const projectDescription = `Project initiated from order ${order.id} for service: ${servicePackage ? servicePackage.name : 'N/A'}. Customer notes: ${order.customer_info.special_requests || 'None'}`;
+                    // Retrieve product details from Stripe for project title/description
+                    const product = await stripe.products.retrieve(stripeProductId, { transaction });
+                    const projectTitle = `Research Project for ${order.customer_info.first_name} ${order.customer_info.last_name} - ${product ? product.name : 'Custom Service'}`;
+                    const projectDescription = `Project initiated from order ${order.id} for service: ${product ? product.name : 'N/A'}. Customer notes: ${order.customer_info.special_requests || 'None'}`;
 
                     // Assuming createProject handles default researcher assignment and ProjectUser creation
                     const newProject = await createProject({
@@ -136,7 +143,7 @@ const stripeService = {
                         description: projectDescription,
                         status: 'active',
                         client_user_id: userId, // Pass client user ID for association
-                        service_package_id: servicePackageId, // Link project to service package
+                        stripe_product_id: stripeProductId, // Link project to Stripe Product ID
                     }, transaction);
 
                     // Link order to project

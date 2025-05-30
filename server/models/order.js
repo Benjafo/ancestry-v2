@@ -16,13 +16,9 @@ const Order = sequelize.define('Order', {
             key: 'user_id',
         },
     },
-    service_package_id: {
-        type: DataTypes.UUID,
+    stripe_product_id: {
+        type: DataTypes.STRING(255), // Stripe Product IDs are strings, not UUIDs
         allowNull: false,
-        references: {
-            model: 'service_packages',
-            key: 'id',
-        },
     },
     status: {
         type: DataTypes.STRING(50),

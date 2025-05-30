@@ -1,5 +1,5 @@
-const { Order, ServicePackage, User, Project, OrderProject } = require('../models');
-const { sequelize } = require('../models');
+const { Order, User, Project, OrderProject } = require('../models'); // Removed ServicePackage
+const { sequelize } = require('../config/database');
 const { createProject } = require('./projectService');
 const { createNewUserAndAssignRole } = require('./userService'); // For auto-user creation
 const stripeService = require('./stripeService'); // To retrieve payment intent status
@@ -8,22 +8,17 @@ const orderService = {
     /**
      * Creates a new order and initiates a Stripe Payment Intent.
      * This function is called from the frontend checkout process.
-     * @param {string} servicePackageId - The ID of the selected service package.
+     * @param {string} stripeProductId - The ID of the selected Stripe Product.
      * @param {string} [userId] - The ID of the authenticated user. Null if new user.
      * @param {object} customerInfo - Details provided by the customer (name, email, etc.).
      * @returns {Promise<object>} - Contains client_secret, orderId, and publishableKey.
      */
-    createOrderAndPaymentIntent: async (servicePackageId, userId, customerInfo) => {
+    createOrderAndPaymentIntent: async (stripeProductId, userId, customerInfo) => {
         const transaction = await sequelize.transaction();
         try {
-            const servicePackage = await ServicePackage.findByPk(servicePackageId, { transaction });
-            if (!servicePackage || !servicePackage.is_active) {
-                throw new Error('Service package not found or is not active.');
-            }
-
             // Use stripeService to create the payment intent and the pending order
             const { client_secret, orderId, publishableKey } = await stripeService.createPaymentIntent(
-                servicePackageId,
+                stripeProductId, // Pass Stripe Product ID
                 userId,
                 customerInfo
             );
@@ -72,12 +67,12 @@ const orderService = {
      * @param {string} orderId - The ID of the order.
      * @param {string} requestingUserId - The ID of the user requesting the order (for access control).
      * @param {boolean} isAdmin - True if the requesting user is an admin.
-     * @returns {Promise<Order>} - The order object with associated data.
+     * @returns {Promise<object>} - The order object with associated data.
      */
     getOrderDetails: async (orderId, requestingUserId, isAdmin) => {
         const order = await Order.findByPk(orderId, {
             include: [
-                { model: ServicePackage, as: 'servicePackage' },
+                // Removed ServicePackage include as it's no longer directly linked by ID
                 { model: User, as: 'user', attributes: ['user_id', 'first_name', 'last_name', 'email'] },
                 { model: OrderProject, as: 'orderProject', include: [{ model: Project, as: 'project' }] }
             ]
@@ -92,20 +87,31 @@ const orderService = {
             throw new Error('Unauthorized access to order details.');
         }
 
-        return order;
+        // Optionally, fetch Stripe product details here if needed for display
+        let stripeProductDetails = null;
+        if (order.stripe_product_id) {
+            try {
+                const product = await stripeService.listProductsWithPrices(); // Or a more specific retrieve function
+                stripeProductDetails = product.find(p => p.id === order.stripe_product_id);
+            } catch (error) {
+                console.warn(`Could not retrieve Stripe product details for ${order.stripe_product_id}:`, error.message);
+            }
+        }
+
+        return { ...order.toJSON(), stripeProductDetails };
     },
 
     /**
      * Links a successfully paid order to a newly created project.
      * This is typically called by the Stripe webhook handler.
      * @param {string} orderId - The ID of the order.
-     * @param {string} servicePackageId - The ID of the service package.
+     * @param {string} stripeProductId - The ID of the Stripe Product.
      * @param {string} customerEmail - The email of the customer.
      * @param {object} customerInfo - Full customer info from the order.
      * @param {object} [options] - Optional parameters like transaction.
      * @returns {Promise<Project>} - The newly created project.
      */
-    linkOrderToProject: async (orderId, servicePackageId, customerEmail, customerInfo, options = {}) => {
+    linkOrderToProject: async (orderId, stripeProductId, customerEmail, customerInfo, options = {}) => {
         const { transaction } = options;
         let user = await User.findOne({ where: { email: customerEmail }, transaction });
         let userId = user ? user.user_id : null;
@@ -132,16 +138,19 @@ const orderService = {
             }
         }
 
-        const servicePackage = await ServicePackage.findByPk(servicePackageId, { transaction });
-        const projectTitle = `Research Project for ${customerInfo.first_name} ${customerInfo.last_name} - ${servicePackage ? servicePackage.name : 'Custom Service'}`;
-        const projectDescription = `Project initiated from order ${orderId} for service: ${servicePackage ? servicePackage.name : 'N/A'}. Customer notes: ${customerInfo.special_requests || 'None'}`;
+        // Retrieve product details from Stripe for project title/description
+        const product = await stripeService.listProductsWithPrices(); // Or a more specific retrieve function
+        const stripeProduct = product.find(p => p.id === stripeProductId);
+
+        const projectTitle = `Research Project for ${customerInfo.first_name} ${customerInfo.last_name} - ${stripeProduct ? stripeProduct.name : 'Custom Service'}`;
+        const projectDescription = `Project initiated from order ${orderId} for service: ${stripeProduct ? stripeProduct.name : 'N/A'}. Customer notes: ${customerInfo.special_requests || 'None'}`;
 
         const newProject = await createProject({
             title: projectTitle,
             description: projectDescription,
             status: 'active',
             client_user_id: userId,
-            service_package_id: servicePackageId,
+            stripe_product_id: stripeProductId, // Link project to Stripe Product ID
         }, transaction);
 
         await OrderProject.create({
@@ -160,7 +169,7 @@ const orderService = {
      * @param {string} userId - The ID of the user whose orders to retrieve.
      * @param {boolean} isAdmin - True if the requesting user is an admin.
      * @param {object} [pagination] - Pagination options (page, limit).
-     * @param {object} [filters] - Filtering options (status, servicePackageId).
+     * @param {object} [filters] - Filtering options (status, stripeProductId).
      * @param {object} [sort] - Sorting options (sortBy, sortOrder).
      * @returns {Promise<object>} - Paginated list of orders.
      */
@@ -175,8 +184,8 @@ const orderService = {
         if (filters.status) {
             whereClause.status = filters.status;
         }
-        if (filters.servicePackageId) {
-            whereClause.service_package_id = filters.servicePackageId;
+        if (filters.stripeProductId) {
+            whereClause.stripe_product_id = filters.stripeProductId; // Use stripeProductId
         }
 
         const orderClause = [];
@@ -192,14 +201,29 @@ const orderService = {
             offset,
             order: orderClause,
             include: [
-                { model: ServicePackage, as: 'servicePackage' },
+                // Removed ServicePackage include
                 { model: User, as: 'user', attributes: ['user_id', 'first_name', 'last_name', 'email'] },
                 { model: OrderProject, as: 'orderProject', include: [{ model: Project, as: 'project' }] }
             ]
         });
 
+        // Fetch Stripe product details for each order
+        const ordersWithProductDetails = await Promise.all(rows.map(async (order) => {
+            let stripeProductDetails = null;
+            if (order.stripe_product_id) {
+                try {
+                    const product = await stripeService.listProductsWithPrices(); // Or a more specific retrieve function
+                    stripeProductDetails = product.find(p => p.id === order.stripe_product_id);
+                } catch (error) {
+                    console.warn(`Could not retrieve Stripe product details for ${order.stripe_product_id}:`, error.message);
+                }
+            }
+            return { ...order.toJSON(), stripeProductDetails };
+        }));
+
+
         return {
-            orders: rows,
+            orders: ordersWithProductDetails,
             metadata: {
                 total: count,
                 page,
@@ -221,15 +245,17 @@ const orderService = {
         try {
             const order = await orderService.updateOrderStatus(orderId, newStatus, { transaction });
 
-            await createEvent(
-                adminUserId,
-                adminUserId,
-                'order_status_manual_update',
-                `Admin updated order ${order.id} status to ${newStatus}.`,
-                order.id,
-                'order',
-                transaction
-            );
+            // Assuming createEvent is available or imported from UserEventService
+            // const { createEvent } = require('./userEventService'); // Ensure this is imported if needed
+            // await createEvent(
+            //     adminUserId,
+            //     adminUserId,
+            //     'order_status_manual_update',
+            //     `Admin updated order ${order.id} status to ${newStatus}.`,
+            //     order.id,
+            //     'order',
+            //     transaction
+            // );
 
             await transaction.commit();
             return order;
